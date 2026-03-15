@@ -248,13 +248,28 @@ body {
   margin-bottom: 2px;
   font-family: 'VT323', monospace;
 }
-#hdr-name .hs { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
-#hdr-name .hi { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
-#hdr-name .hn { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
-#hdr-name .hX { color: var(--am);  text-shadow: 0 0 22px var(--am), 0 0 50px var(--amd); }
-#hdr-name .hn2{ color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
-#hdr-name .he { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
-#hdr-name .h0 { color: var(--mg);  text-shadow: 0 0 22px var(--mg), 0 0 50px #440033; }
+#hdr-name .hs { }
+#hdr-name .hi { }
+#hdr-name .hn { }
+#hdr-name .hX { }
+#hdr-name .hn2{ }
+#hdr-name .he { }
+#hdr-name .h0 { }
+
+@keyframes letterCycle {
+  0%   { color: #00e8ff; text-shadow: 0 0 18px #00e8ff, 0 0 40px #003550; }
+  25%  { color: #00ff41; text-shadow: 0 0 18px #00ff41, 0 0 40px #003510; }
+  50%  { color: #ffb300; text-shadow: 0 0 22px #ffb300, 0 0 50px #cc8800; }
+  75%  { color: #ff44cc; text-shadow: 0 0 22px #ff44cc, 0 0 50px #440033; }
+  100% { color: #00e8ff; text-shadow: 0 0 18px #00e8ff, 0 0 40px #003550; }
+}
+#hdr-name .hs  { animation: letterCycle 6s ease-in-out infinite 0.0s; }
+#hdr-name .hi  { animation: letterCycle 6s ease-in-out infinite 0.7s; }
+#hdr-name .hn  { animation: letterCycle 6s ease-in-out infinite 1.4s; }
+#hdr-name .hX  { animation: letterCycle 6s ease-in-out infinite 2.1s; }
+#hdr-name .hn2 { animation: letterCycle 6s ease-in-out infinite 2.8s; }
+#hdr-name .he  { animation: letterCycle 6s ease-in-out infinite 3.5s; }
+#hdr-name .h0  { animation: letterCycle 6s ease-in-out infinite 4.2s; }
 
 /* BBS label below */
 #hdr-bbs {
@@ -351,6 +366,9 @@ body {
   color: var(--g);
   text-shadow: 0 0 10px var(--g), 0 0 20px var(--gd);
 }
+
+.nav-tab { text-shadow: 0 0 4px rgba(0,255,65,0.3), 3px 3px 0 rgba(0,255,65,0.04); }
+#sysbar  { text-shadow: 2px 2px 0 rgba(0,255,65,0.05); }
 
 /* ── MAIN GRID ── */
 #grid {
@@ -642,6 +660,7 @@ body {
   width: calc(100% - 160px);
   text-shadow: 0 0 8px var(--g);
   caret-color: var(--g);
+  caret-shape: block;
 }
 
 #cmd-feedback {
@@ -816,6 +835,25 @@ body {
   text-decoration: none;
 }
 .ad-cta:hover { background: rgba(255,179,0,0.12); }
+
+/* TIP OF THE DAY */
+.tip-label {
+  color: var(--am);
+  font-size: 13px;
+  text-shadow: 0 0 6px var(--amd);
+  margin-bottom: 4px;
+}
+.tip-text {
+  color: var(--g);
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: 0 0 4px var(--gd);
+}
+.tip-num {
+  color: var(--gm);
+  font-size: 12px;
+  margin-top: 4px;
+}
 
 /* LAST CALLERS */
 .caller-row {
@@ -1130,6 +1168,111 @@ body {
   gap: 8px;
 }
 
+/* MATRIX RAIN */
+#matrix-canvas {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 7800;
+  pointer-events: none;
+}
+#matrix-canvas.vis { display: block; }
+#matrix-close-btn {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 7900;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid var(--g);
+  color: var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+#matrix-close-btn.vis { display: block; }
+
+/* GAME MODAL */
+#game-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: rgba(0,0,0,0.88);
+  align-items: center;
+  justify-content: center;
+}
+#game-modal.vis { display: flex; }
+#game-box {
+  background: #00000c;
+  border: 2px solid var(--am);
+  box-shadow: 0 0 30px var(--amd), inset 0 0 20px rgba(0,0,0,0.9);
+  padding: 10px;
+  max-width: 520px;
+  width: 98%;
+  font-family: 'VT323', monospace;
+}
+#game-title {
+  color: var(--am);
+  font-size: 20px;
+  text-align: center;
+  letter-spacing: 3px;
+  border-bottom: 1px solid var(--amd);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px var(--am);
+}
+#game-canvas {
+  display: block;
+  margin: 0 auto;
+  border: 1px solid var(--bdr);
+  background: #000;
+}
+#game-text {
+  color: var(--g);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 280px;
+  padding: 4px;
+  overflow-y: auto;
+  max-height: 280px;
+  white-space: pre-wrap;
+}
+#game-close {
+  display: block;
+  margin-top: 8px;
+  color: var(--rd);
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  letter-spacing: 2px;
+  border: 1px solid var(--rd);
+  padding: 2px;
+}
+#game-close:hover { background: rgba(255,51,85,0.15); }
+#game-input-row { margin-top: 6px; display: flex; gap: 6px; }
+#game-input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--bdr);
+  color: var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 2px 6px;
+  outline: none;
+}
+.game-btn {
+  background: rgba(0,50,0,0.5);
+  border: 1px solid var(--bdr);
+  color: var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+.game-btn:hover { background: rgba(0,80,0,0.6); color: var(--am); }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 680px) {
   #grid { grid-template-columns: 1fr; }
@@ -1223,6 +1366,7 @@ body {
     <div class="nav-tab"        data-board="osint"   onclick="switchBoard('osint')"  ><b class="aa">[4]</b> OSINT</div>
     <div class="nav-tab"        data-board="general" onclick="switchBoard('general')"><b class="aa">[5]</b> GENERAL</div>
     <div class="nav-tab"        data-board="doors"   onclick="openDoorsMenu()"       ><b class="aa">[D]</b> DOORS</div>
+    <div class="nav-tab" data-board="guestbook" onclick="switchBoard('guestbook')"><b class="aa">[G]</b> GUESTBOOK</div>
   </div>
 
   <!-- MAIN GRID -->
@@ -1277,6 +1421,23 @@ body {
       <div id="board-hackrf"  class="board-section"></div>
       <div id="board-osint"   class="board-section"></div>
       <div id="board-general" class="board-section"></div>
+
+      <!-- GUESTBOOK BOARD -->
+      <div class="board-section" id="board-guestbook">
+        <div class="board-hdr">
+          <span class="board-icon">✍</span>
+          <span>GUESTBOOK</span>
+          <span class="board-count" id="count-guestbook">0 entries</span>
+        </div>
+        <div id="posts-guestbook"></div>
+        <div style="margin-top:10px;padding:8px;border:1px solid var(--gm);background:rgba(0,8,0,0.8);">
+          <div style="color:var(--cy);font-size:14px;margin-bottom:6px;">&#x2554;&#x2550; SIGN THE GUESTBOOK &#x2550;&#x2557;</div>
+          <div style="color:var(--gd);font-size:13px;line-height:1.8;">
+            Leave your handle and a message. Clicking SIGN opens GitHub — log in and submit the issue to post your entry.<br>
+            <a href="https://github.com/sinXne0/sinXne0.github.io/issues/new?title=Guestbook+Entry&body=Handle%3A+%0A%0AMessage%3A+%0A&labels=bbs%2Cboard%3Aguestbook" target="_blank" style="color:var(--am);text-shadow:0 0 8px var(--amd);">[ ✍ SIGN GUESTBOOK → ]</a>
+          </div>
+        </div>
+      </div>
 
       <!-- POST VIEW -->
       <div id="post-view">
@@ -1348,6 +1509,15 @@ body {
         </div>
       </div>
 
+      <!-- TIP OF THE DAY -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; TIP OF THE DAY &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="tip-label">&#x25BA; HACKER TIP #<span id="tip-num">001</span></div>
+          <div class="tip-text" id="tip-text">Loading...</div>
+        </div>
+      </div>
+
       <!-- LAST CALLERS -->
       <div class="widget">
         <div class="widget-hdr">&#x2554;&#x2550; LAST CALLERS &#x2550;&#x2557;</div>
@@ -1385,21 +1555,21 @@ body {
       <div class="widget">
         <div class="widget-hdr">&#x2554;&#x2550; FILE AREAS &#x2550;&#x2557;</div>
         <div class="widget-body">
-          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
-            <span class="fa-name">[UTILS]</span><span class="fa-count">42 files</span>
-          </div>
-          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
-            <span class="fa-name">[ANSI ART]</span><span class="fa-count">18 files</span>
-          </div>
-          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
-            <span class="fa-name">[DOCS]</span><span class="fa-count">31 files</span>
-          </div>
-          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
-            <span class="fa-name">[TOOLS]</span><span class="fa-count">67 files</span>
-          </div>
-          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
-            <span class="fa-name">[MISC]</span><span class="fa-count">24 files</span>
-          </div>
+          <a class="file-area-row" href="https://github.com/sinXne0/linux-security-tools" target="_blank" style="text-decoration:none;display:flex;justify-content:space-between;">
+            <span class="fa-name">[LINUX-SEC]</span><span class="fa-count">10 tools</span>
+          </a>
+          <a class="file-area-row" href="https://github.com/sinXne0/osint-tools" target="_blank" style="text-decoration:none;display:flex;justify-content:space-between;">
+            <span class="fa-name">[OSINT]</span><span class="fa-count">10 tools</span>
+          </a>
+          <a class="file-area-row" href="https://github.com/sinXne0/pager-tools" target="_blank" style="text-decoration:none;display:flex;justify-content:space-between;">
+            <span class="fa-name">[PAGER]</span><span class="fa-count">8 tools</span>
+          </a>
+          <a class="file-area-row" href="https://github.com/sinXne0/sinXne0.github.io" target="_blank" style="text-decoration:none;display:flex;justify-content:space-between;">
+            <span class="fa-name">[BBS-SRC]</span><span class="fa-count">1 file</span>
+          </a>
+          <a class="file-area-row" href="https://github.com/sinXne0" target="_blank" style="text-decoration:none;display:flex;justify-content:space-between;">
+            <span class="fa-name">[ALL REPOS]</span><span class="fa-count">&#x2192;</span>
+          </a>
         </div>
       </div>
 
@@ -1466,13 +1636,32 @@ body {
     <a href="#" onclick="playModemSound();return false;">[(&#x25BA;) MODEM SFX]</a>
   </div>
 
+<!-- MATRIX RAIN CANVAS -->
+<canvas id="matrix-canvas"></canvas>
+<button id="matrix-close-btn" onclick="stopMatrix()">[ ✕ CLOSE ]</button>
+
+<!-- GAME MODAL -->
+<div id="game-modal">
+  <div id="game-box">
+    <div id="game-title">DOOR GAME</div>
+    <canvas id="game-canvas" width="400" height="300" style="display:none"></canvas>
+    <div id="game-text"></div>
+    <div id="game-input-row" style="display:none">
+      <span style="color:var(--g);font-size:16px;align-self:center">&gt;&nbsp;</span>
+      <input id="game-input" type="text" autocomplete="off" spellcheck="false" maxlength="80">
+      <button class="game-btn" onclick="gameSubmit()">SEND</button>
+    </div>
+    <div id="game-close" onclick="closeGame()">[ CLOSE DOOR ]</div>
+  </div>
+</div>
+
 </div><!-- /wrapper -->
 </div></div><!-- /screen /monitor -->
 
 <!-- FIXED STATUS BAR -->
 <div id="status-bar">
   <div class="keys">
-    <b>[0]</b>ALL <b>[1]</b>LINUX <b>[2]</b>PAGER <b>[3]</b>HACKRF <b>[4]</b>OSINT <b>[5]</b>GENERAL <b>[N]</b>NEW <b>[D]</b>DOORS <b>[ESC]</b>BACK
+    <b>[0]</b>ALL <b>[1]</b>LINUX <b>[2]</b>PAGER <b>[3]</b>HACKRF <b>[4]</b>OSINT <b>[5]</b>GENERAL <b>[G]</b>GUESTBOOK <b>[N]</b>NEW <b>[D]</b>DOORS <b>[ESC]</b>BACK
   </div>
   <div id="status-msg">CONNECTED // 2400 BAUD</div>
 </div>
@@ -1659,13 +1848,23 @@ body {
     '[ NEW ] pager-tools monorepo now live on GitHub',
     '[ SYS ] MK-Ultra Pentest Suite updated \u2014 Flask+SocketIO web UI',
     '[ NEW ] osint-tools monorepo \u2014 10 tools consolidated',
-    '[ MSG ] Use keys 0-5 to switch boards \u2014 N to compose \u2014 ESC to go back',
+    '[ MSG ] Use keys 0-5 to switch boards \u2014 N to compose \u2014 G for guestbook',
     '[ SYS ] Board uptime: 99.9% \u2014 No carrier drops in 48h',
     '[ INFO ] BAUD RATE: 2400/ARQ \u2014 PROTOCOL: ZMODEM \u2014 NODES: 1/1',
     '\u2605 HACK THE PLANET \u2605 INFORMATION WANTS TO BE FREE \u2605 STAY ANONYMOUS \u2605',
-    '[ FILE ] New uploads in TOOLS area \u2014 67 files available',
+    '[ QUOTE ] "The only truly secure system is one that is powered off." \u2014 Gene Spafford',
+    '[ QUOTE ] "Security through obscurity is no security at all." \u2014 Bruce Schneier',
+    '[ QUOTE ] "Hackers are breaking the systems for profit. Before, it was about intellectual curiosity." \u2014 Kevin Mitnick',
+    '[ QUOTE ] "The quieter you become, the more you are able to hear." \u2014 BackTrack',
+    '[ QUOTE ] "In God we trust. All others we monitor." \u2014 NSA motto (unofficial)',
+    '[ QUOTE ] "Complexity is the worst enemy of security." \u2014 Bruce Schneier',
+    '[ TIP ] Try typing KONAMI CODE for a surprise \u2014 \u2191\u2191\u2193\u2193\u2190\u2192\u2190\u2192BA',
+    '[ FILE ] linux-security-tools \u2014 10 tools \u2014 github.com/sinXne0',
+    '[ FILE ] osint-tools \u2014 10 tools \u2014 github.com/sinXne0',
+    '[ FILE ] pager-tools \u2014 8 tools \u2014 github.com/sinXne0',
     '[ SYS ] FOSSIL driver v9.1 loaded \u2014 DTR: ON \u2014 RTS: ON',
-    '[ DOOR ] Trade Wars 2002 \u2014 Legend of the Red Dragon \u2014 Usurper \u2014 coming soon',
+    '[ DOOR ] Snake \u2014 Text RPG \u2014 More doors coming soon \u2014 press D',
+    '\u2605 Sign the guestbook! Press G \u2605',
   ];
   var full = msgs.join('   \u00b7   ') + '   \u00b7   ' + msgs.join('   \u00b7   ');
   document.getElementById('ticker-track').textContent = full;
@@ -1684,6 +1883,50 @@ body {
     '"The quieter you become, the more you are able to hear."',
   ];
   document.getElementById('motd-text').textContent = motds[Math.floor(Math.random() * motds.length)];
+})();
+
+// ══════════════════════════════════════════════════════════
+// TIP OF THE DAY
+// ══════════════════════════════════════════════════════════
+(function setTip() {
+  var tips = [
+    'Use Wireshark with display filter "http.request" to see all HTTP GET/POST in cleartext on LAN.',
+    'nmap -sV -sC -p- target — full port scan with version detection and default scripts.',
+    'Always use a VPN + Tor combo. VPN first, then Tor. Never trust just one layer.',
+    'hashcat -m 0 hashes.txt rockyou.txt — crack MD5 hashes with wordlist attack.',
+    'Set your MAC address to random before connecting to any public network: macchanger -r eth0',
+    'Use "strings" on any binary to quickly find hardcoded credentials and API keys.',
+    'curl -I https://target.com — grab HTTP headers to fingerprint the web server stack.',
+    'Shodan.io — the search engine for internet-connected devices. Know it, use it.',
+    'Always check robots.txt and sitemap.xml first when recon\'ing a web target.',
+    'gpg --full-generate-key then encrypt sensitive files: gpg -c filename',
+    'Use "exiftool" to strip metadata from images before sharing them publicly.',
+    'netstat -tulnp — show all listening ports and the processes behind them.',
+    'chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys — harden your SSH dir.',
+    'airmon-ng start wlan0 then airodump-ng wlan0mon — start capturing WiFi frames.',
+    'The best OSINT tool is patience. Correlate. Cross-reference. Verify.',
+    'Use "john --wordlist=rockyou.txt hash.txt" to crack password hashes with John.',
+    'tcpdump -i any -w capture.pcap — capture all traffic to a file for later analysis.',
+    'ss -tulwn — modern replacement for netstat. Faster, more info.',
+    'Never use the same password twice. Use a password manager. KeePassXC is FOSS.',
+    'Burp Suite Community is free. Learn to intercept and modify HTTP requests.',
+    'Check HaveIBeenPwned.com — if your email is in a breach, change that password NOW.',
+    'hydra -L users.txt -P pass.txt ssh://target — brute force SSH login (authorized testing only).',
+    '"rm -rf" is permanent. Always double-check your path before deleting.',
+    'Learn grep, awk, sed. They will save you more time than any GUI tool.',
+    'Use tmux. Split terminal, detach sessions, run long jobs in background.',
+    'Keep your tools updated. Old exploits get patched. New ones get released daily.',
+    'Physical security is digital security. A compromised machine = game over.',
+    'Read the source code. Don\'t trust closed-source security tools.',
+    'Use "dig +trace domain.com" to trace the full DNS resolution chain.',
+    'OSINT rule #1: never interact with the target directly from your real identity.',
+  ];
+  var day = Math.floor(Date.now() / 86400000);
+  var idx = day % tips.length;
+  var el = document.getElementById('tip-text');
+  var numEl = document.getElementById('tip-num');
+  if (el) el.textContent = tips[idx];
+  if (numEl) numEl.textContent = String(idx + 1).padStart(3, '0');
 })();
 
 // ══════════════════════════════════════════════════════════
@@ -1881,12 +2124,13 @@ var allPosts = [];
 var currentPostId = null;
 
 var BOARD_NAMES = {
-  'linux':   'LINUX/SEC',
-  'pager':   'WIFI PAGER',
-  'hackrf':  'HACKRF/SDR',
-  'osint':   'OSINT',
-  'general': 'GENERAL',
-  'all':     'ALL BOARDS',
+  'linux':     'LINUX/SEC',
+  'pager':     'WIFI PAGER',
+  'hackrf':    'HACKRF/SDR',
+  'osint':     'OSINT',
+  'general':   'GENERAL',
+  'guestbook': 'GUESTBOOK',
+  'all':       'ALL BOARDS',
 };
 
 function parseBoardFromLabels(labels) {
@@ -2120,32 +2364,247 @@ function submitCompose() {
 // DOOR GAMES
 // ══════════════════════════════════════════════════════════
 var doorData = {
-  tw2002: {
-    title: 'TRADE WARS 2002',
-    desc: 'Trade Wars 2002 is the classic space trading and combat BBS door game.\nBattle for control of sectors, build trading empires, and crush your enemies.\n\nOriginally developed by Gary Martin and Chris Sherrick.\nA staple of BBS culture since 1986.\n\nThis door connects to an external telnet host.'
-  },
-  lord: {
-    title: 'LEGEND OF THE RED DRAGON',
-    desc: 'Legend of the Red Dragon (L.O.R.D.) is an epic fantasy RPG door game.\nBattle monsters, gain experience, fight other players, and slay the dragon.\n\nCreated by Seth Robinson in 1989.\nOne of the most popular BBS door games ever made.'
-  },
-  usurper: {
-    title: 'USURPER',
-    desc: 'Usurper is a fantasy RPG door game where you fight monsters,\ninteract with townsfolk, and battle other players for dominance.\n\nCreated by Jaakko Peltonen in 1990.\nFeatures real-time player interaction and a rich game world.'
-  },
-  chess: {
-    title: 'DOOR CHESS',
-    desc: 'Classic correspondence chess played through the BBS.\nChallenge other users to a game \u2014 moves are made one per session.\n\nAn old favourite from the golden age of BBS gaming.'
-  }
+  tw2002: { title: 'TRADE WARS 2002', game: 'snake' },
+  lord:   { title: 'LEGEND OF THE RED DRAGON', game: 'rpg' },
+  usurper: { title: 'USURPER', game: 'rpg' },
+  chess:  { title: 'DOOR CHESS', game: 'chess' }
 };
+
+// ── SNAKE GAME ──
+var snakeState = null;
+
+function initSnake() {
+  var canvas = document.getElementById('game-canvas');
+  canvas.style.display = 'block';
+  canvas.width = 400; canvas.height = 300;
+  document.getElementById('game-text').style.display = 'none';
+  document.getElementById('game-input-row').style.display = 'none';
+  var CELL = 20, COLS = 20, ROWS = 15;
+  var snake = [{x:10,y:7},{x:9,y:7},{x:8,y:7}];
+  var dir = {x:1,y:0}, nextDir = {x:1,y:0};
+  var food = randomFood();
+  var score = 0, alive = true;
+  var ctx = canvas.getContext('2d');
+
+  function randomFood() {
+    return {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)};
+  }
+
+  function draw() {
+    ctx.fillStyle = '#000008';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // grid dots
+    ctx.fillStyle = 'rgba(0,60,20,0.3)';
+    for(var gx=0;gx<COLS;gx++) for(var gy=0;gy<ROWS;gy++) ctx.fillRect(gx*CELL+9,gy*CELL+9,2,2);
+    // food
+    ctx.fillStyle = '#ffb300';
+    ctx.shadowColor = '#ffb300'; ctx.shadowBlur = 10;
+    ctx.fillRect(food.x*CELL+3,food.y*CELL+3,CELL-6,CELL-6);
+    ctx.shadowBlur = 0;
+    // snake
+    snake.forEach(function(s,i) {
+      ctx.fillStyle = i===0 ? '#00ff41' : '#00cc33';
+      ctx.shadowColor = i===0 ? '#00ff41' : '#009922';
+      ctx.shadowBlur = i===0 ? 8 : 3;
+      ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2);
+    });
+    ctx.shadowBlur = 0;
+    // score
+    ctx.fillStyle = '#00e8ff';
+    ctx.font = '16px VT323, monospace';
+    ctx.fillText('SCORE: '+score, 4, 16);
+    if (!alive) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#ff3355';
+      ctx.font = '32px VT323, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2-10);
+      ctx.fillStyle = '#00ff41';
+      ctx.font = '20px VT323, monospace';
+      ctx.fillText('SCORE: '+score+'  [SPACE] RESTART', canvas.width/2, canvas.height/2+20);
+      ctx.textAlign = 'left';
+    }
+  }
+
+  function step() {
+    if (!alive) return;
+    dir = nextDir;
+    var head = {x: snake[0].x+dir.x, y: snake[0].y+dir.y};
+    if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS) { alive=false; draw(); return; }
+    for(var i=0;i<snake.length;i++) if(snake[i].x===head.x&&snake[i].y===head.y){alive=false;draw();return;}
+    snake.unshift(head);
+    if (head.x===food.x&&head.y===food.y) { score+=10; food=randomFood(); } else { snake.pop(); }
+    draw();
+  }
+
+  var interval = setInterval(step, 130);
+
+  function keyHandler(e) {
+    var k = e.key;
+    if(k==='ArrowUp'&&dir.y!==1)    nextDir={x:0,y:-1};
+    if(k==='ArrowDown'&&dir.y!==-1) nextDir={x:0,y:1};
+    if(k==='ArrowLeft'&&dir.x!==1)  nextDir={x:-1,y:0};
+    if(k==='ArrowRight'&&dir.x!==-1)nextDir={x:1,y:0};
+    if(k===' ') {
+      if(!alive){
+        clearInterval(interval);
+        initSnake();
+      }
+      e.preventDefault();
+    }
+    e.stopPropagation();
+  }
+
+  document.addEventListener('keydown', keyHandler);
+  snakeState = { interval: interval, keyHandler: keyHandler };
+  draw();
+}
+
+function stopSnake() {
+  if (snakeState) {
+    clearInterval(snakeState.interval);
+    document.removeEventListener('keydown', snakeState.keyHandler);
+    snakeState = null;
+  }
+}
+
+// ── TEXT RPG ──
+var rpgState = null;
+
+function initRPG(title) {
+  document.getElementById('game-canvas').style.display = 'none';
+  var textEl = document.getElementById('game-text');
+  textEl.style.display = 'block';
+  document.getElementById('game-input-row').style.display = 'flex';
+  document.getElementById('game-input').focus();
+
+  var hp = 30, xp = 0, gold = 10, level = 1;
+  var monsters = [
+    {name:'SLIME',hp:8,atk:3,xp:5,gold:2},
+    {name:'GOBLIN',hp:12,atk:5,xp:10,gold:5},
+    {name:'ORC',hp:20,atk:8,xp:20,gold:12},
+    {name:'DARK KNIGHT',hp:35,atk:14,xp:50,gold:30},
+    {name:'RED DRAGON',hp:80,atk:22,xp:200,gold:100},
+  ];
+  var currentMonster = null;
+  var inCombat = false;
+
+  function log(msg) {
+    textEl.textContent += msg + '\n';
+    textEl.scrollTop = textEl.scrollHeight;
+  }
+
+  function stats() { return '[HP:'+hp+' XP:'+xp+' LVL:'+level+' GOLD:'+gold+'g]'; }
+
+  function encounter() {
+    var m = Object.assign({}, monsters[Math.min(level-1, monsters.length-1)]);
+    m.hp = m.hp + Math.floor(Math.random()*4);
+    currentMonster = m;
+    inCombat = true;
+    log('\n\u2550\u2550 A ' + m.name + ' appears! [HP:'+m.hp+'] \u2550\u2550');
+    log('Commands: ATTACK  FLEE  STATS');
+  }
+
+  textEl.textContent = '';
+  log('╔══════════════════════════════════╗');
+  log('║  ' + title + '  ║');
+  log('╚══════════════════════════════════╝');
+  log('Welcome, adventurer. Your quest begins.');
+  log(stats());
+  log('\nCommands: GO  STATS  INVENTORY  QUIT\n');
+
+  rpgState = {
+    handle: function(cmd) {
+      cmd = cmd.trim().toUpperCase();
+      if (!inCombat) {
+        if (cmd==='GO' || cmd==='WALK' || cmd==='EXPLORE') {
+          log('\nYou venture into the darkness...');
+          if (Math.random() < 0.7) { encounter(); }
+          else { var g=Math.floor(Math.random()*5)+1; gold+=g; log('You find '+g+' gold on the ground!'); }
+        } else if (cmd==='STATS') {
+          log(stats());
+        } else if (cmd==='INVENTORY') {
+          log('[SWORD+1] [LEATHER ARMOR] [POTION x'+Math.max(1,3-Math.floor(xp/30))+']');
+        } else if (cmd==='QUIT') {
+          closeGame();
+        } else if (cmd==='HEAL' || cmd==='REST') {
+          hp = Math.min(30 + (level-1)*10, hp + 15);
+          log('You rest. HP restored. ' + stats());
+        } else {
+          log('Unknown command. Try: GO  STATS  INVENTORY  HEAL  QUIT');
+        }
+      } else {
+        if (cmd==='ATTACK' || cmd==='A') {
+          var dmg = 6 + level*2 + Math.floor(Math.random()*5);
+          currentMonster.hp -= dmg;
+          log('You strike the '+currentMonster.name+' for '+dmg+' damage!');
+          if (currentMonster.hp <= 0) {
+            log('** '+currentMonster.name+' DEFEATED! **');
+            xp += currentMonster.xp; gold += currentMonster.gold;
+            if (xp >= level*40) { level++; log('>>> LEVEL UP! You are now level '+level+'!'); }
+            inCombat = false;
+            log(stats());
+            log('\nCommands: GO  STATS  INVENTORY  HEAL  QUIT');
+          } else {
+            var edm = currentMonster.atk + Math.floor(Math.random()*4) - 1;
+            hp -= edm;
+            log('The '+currentMonster.name+' hits you for '+edm+'! [Monster HP:'+currentMonster.hp+']');
+            if (hp <= 0) { log('\n*** YOU HAVE DIED ***\nPress QUIT to exit.'); inCombat=false; hp=1; }
+          }
+        } else if (cmd==='FLEE' || cmd==='F' || cmd==='RUN') {
+          if (Math.random() < 0.5) { log('You escape!'); inCombat=false; }
+          else { var edm2=currentMonster.atk; hp-=edm2; log('You fail to flee! Hit for '+edm2+'. [HP:'+hp+']'); if(hp<=0){log('*** YOU DIED ***');inCombat=false;hp=1;} }
+        } else if (cmd==='STATS') {
+          log(stats() + ' [Monster HP:'+currentMonster.hp+']');
+        } else {
+          log('In combat! Commands: ATTACK  FLEE  STATS');
+        }
+      }
+    }
+  };
+}
+
+function gameSubmit() {
+  var input = document.getElementById('game-input');
+  var val = input.value;
+  input.value = '';
+  if (rpgState && val.trim()) rpgState.handle(val);
+}
+
+document.getElementById('game-input') && document.getElementById('game-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') gameSubmit();
+  e.stopPropagation();
+});
 
 function openDoor(key) {
   var data = doorData[key];
   if (!data) return;
-  document.getElementById('door-modal-title').textContent = data.title;
-  document.getElementById('door-modal-body').innerHTML =
-    '<p>' + data.desc.replace(/\n/g,'<br>') + '</p>' +
-    '<div class="modal-offline">[ OFFLINE \u2014 UNDER MAINTENANCE ]</div>';
-  document.getElementById('door-modal').classList.add('vis');
+  document.getElementById('game-title').textContent = data.title;
+  document.getElementById('game-modal').classList.add('vis');
+  stopSnake();
+  rpgState = null;
+  document.getElementById('game-canvas').style.display = 'none';
+  document.getElementById('game-text').style.display = 'none';
+  document.getElementById('game-input-row').style.display = 'none';
+  document.getElementById('game-text').textContent = '';
+
+  if (data.game === 'snake') {
+    initSnake();
+  } else if (data.game === 'rpg') {
+    initRPG(data.title);
+  } else if (data.game === 'chess') {
+    document.getElementById('game-canvas').style.display = 'none';
+    document.getElementById('game-text').style.display = 'block';
+    document.getElementById('game-input-row').style.display = 'none';
+    document.getElementById('game-text').textContent = 'DOOR CHESS\n\nCorrespondence chess coming soon.\n\nChallenge the sysop via GitHub Issues:\ngithub.com/sinXne0/sinXne0.github.io/issues\n\nTitle your issue: CHESS CHALLENGE\nDescribe your opening move in algebraic notation.\n\ne.g. "1. e4" to open with King\'s Pawn.';
+  }
+}
+
+function closeGame() {
+  stopSnake();
+  rpgState = null;
+  document.getElementById('game-modal').classList.remove('vis');
 }
 
 function closeDoorModal() {
@@ -2153,9 +2612,72 @@ function closeDoorModal() {
 }
 
 function openDoorsMenu() {
-  showToast('DOOR GAMES: Choose a game from the sidebar');
+  showToast('DOOR GAMES: Choose a game from the sidebar \u2014 Snake \u0026 RPG now live!');
   setStatus('DOOR MENU \u2014 SELECT A GAME FROM THE SIDEBAR');
 }
+
+// ══════════════════════════════════════════════════════════
+// KONAMI CODE — MATRIX RAIN
+// ══════════════════════════════════════════════════════════
+(function konamiSetup() {
+  var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  var buf = [];
+  var matrixRunning = false;
+  var matrixRAF = null;
+
+  document.addEventListener('keydown', function(e) {
+    buf.push(e.key);
+    if (buf.length > seq.length) buf.shift();
+    if (buf.join(',') === seq.join(',')) {
+      buf = [];
+      if (!matrixRunning) startMatrix();
+    }
+  });
+
+  window.startMatrix = function() {
+    var canvas = document.getElementById('matrix-canvas');
+    var btn = document.getElementById('matrix-close-btn');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.classList.add('vis');
+    btn.classList.add('vis');
+    matrixRunning = true;
+    showToast('\u2605 KONAMI CODE ACTIVATED \u2014 INITIATING MATRIX PROTOCOL \u2605');
+
+    var ctx = canvas.getContext('2d');
+    var cols = Math.floor(canvas.width / 16);
+    var drops = Array(cols).fill(1);
+    var chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF<>{}[]!@#$%^&*sinXne0';
+
+    function frame() {
+      ctx.fillStyle = 'rgba(0,0,12,0.05)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.font = '15px VT323, monospace';
+      for (var i = 0; i < drops.length; i++) {
+        var ch = chars[Math.floor(Math.random()*chars.length)];
+        ctx.fillStyle = i % 7 === 0 ? '#ffffff' : (Math.random() > 0.9 ? '#00ff41' : '#00cc33');
+        ctx.shadowColor = '#00ff41';
+        ctx.shadowBlur = 4;
+        ctx.fillText(ch, i*16, drops[i]*16);
+        if (drops[i]*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      matrixRAF = requestAnimationFrame(frame);
+    }
+    matrixRAF = requestAnimationFrame(frame);
+  };
+
+  window.stopMatrix = function() {
+    if (matrixRAF) cancelAnimationFrame(matrixRAF);
+    matrixRunning = false;
+    var canvas = document.getElementById('matrix-canvas');
+    var btn = document.getElementById('matrix-close-btn');
+    canvas.classList.remove('vis');
+    btn.classList.remove('vis');
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  };
+})();
 
 // ══════════════════════════════════════════════════════════
 // STATUS BAR
@@ -2212,6 +2734,10 @@ function execCommand(cmd) {
     case 'D': case 'DOORS':
       setCmdFeedback('OPENING DOOR MENU...');
       setTimeout(openDoorsMenu, 200);
+      break;
+    case 'G': case 'GUESTBOOK':
+      setCmdFeedback('LOADING BOARD: GUESTBOOK');
+      setTimeout(function(){ switchBoard('guestbook'); }, 200);
       break;
     case 'R': case 'READ': {
       var posts = currentBoard === 'all'
@@ -2275,6 +2801,7 @@ document.addEventListener('keydown', function(e) {
     case '5': switchBoard('general'); break;
     case 'n': case 'N': toggleCompose(); break;
     case 'd': case 'D': openDoorsMenu(); break;
+    case 'g': case 'G': switchBoard('guestbook'); break;
     case 'm': case 'M': playModemSound(); break;
     case 'Escape':
       if (document.getElementById('door-modal').classList.contains('vis')) {
