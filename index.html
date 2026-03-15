@@ -750,6 +750,73 @@ body {
 .dot-blink-3 { animation: blink 1.7s step-end infinite; }
 .dot-blink-4 { animation: blink 2.1s step-end infinite; }
 
+/* AD WIDGET */
+#ad-widget {
+  border: 1px solid var(--am);
+  background: rgba(10,6,0,0.92);
+  animation: adPulse 3s ease-in-out infinite;
+}
+@keyframes adPulse {
+  0%,100% { box-shadow: 0 0 4px var(--amd); }
+  50%      { box-shadow: 0 0 14px var(--am), 0 0 28px var(--amd); }
+}
+#ad-widget .widget-hdr {
+  background: rgba(60,30,0,0.7);
+  border-bottom: 1px solid var(--am);
+  color: var(--am);
+  text-shadow: 0 0 8px var(--am);
+  text-align: center;
+  letter-spacing: 2px;
+  animation: blink 1.4s step-end infinite;
+}
+.ad-banner {
+  text-align: center;
+  padding: 4px 0 2px;
+  font-size: 18px;
+  color: var(--am);
+  text-shadow: 0 0 10px var(--am);
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+.ad-pre {
+  font-family: 'VT323', monospace;
+  font-size: 12px;
+  color: var(--cy);
+  text-shadow: 0 0 6px var(--cy);
+  white-space: pre;
+  text-align: center;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+.ad-price {
+  text-align: center;
+  font-size: 22px;
+  color: var(--g);
+  text-shadow: 0 0 12px var(--g), 0 0 24px var(--gd);
+  letter-spacing: 1px;
+  margin: 4px 0;
+}
+.ad-tagline {
+  text-align: center;
+  font-size: 13px;
+  color: var(--gd);
+  line-height: 1.5;
+}
+.ad-cta {
+  display: block;
+  text-align: center;
+  margin-top: 6px;
+  padding: 3px 0;
+  border: 1px solid var(--am);
+  color: var(--am);
+  text-shadow: 0 0 8px var(--am);
+  font-size: 15px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.ad-cta:hover { background: rgba(255,179,0,0.12); }
+
 /* LAST CALLERS */
 .caller-row {
   line-height: 1.6;
@@ -1234,6 +1301,21 @@ body {
 
     <!-- SIDEBAR -->
     <div id="sidebar">
+
+      <!-- AD WIDGET -->
+      <div class="widget" id="ad-widget">
+        <div class="widget-hdr">&#x2554;&#x2550; CLASSIFIED AD &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="ad-pre">&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;  ** WEB DESIGN SVC **   &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;</div>
+          <div class="ad-banner">sinXne0</div>
+          <div class="ad-tagline">BUILDS WEBSITES<br>custom &amp; professional</div>
+          <div class="ad-price">FROM $50 USD</div>
+          <div class="ad-tagline">&#x25BA; static sites &amp; portfolios<br>&#x25BA; retro / hacker themes<br>&#x25BA; fast turnaround</div>
+          <a class="ad-cta" href="https://github.com/sinXne0" target="_blank">[ CONTACT SYSOP &#x2192; ]</a>
+        </div>
+      </div>
 
       <!-- SYSTEM INFO -->
       <div class="widget">
