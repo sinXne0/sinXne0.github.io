@@ -217,23 +217,74 @@ body {
 /* ── HEADER ASCII ART ── */
 #header-art {
   text-align: center;
-  line-height: 1.1;
-  padding: 10px 0 4px;
-  font-size: 13px;
-  letter-spacing: 0px;
+  padding: 14px 8px 10px;
+  border: 1px solid var(--gm);
+  background: rgba(0,4,18,.92);
+  backdrop-filter: blur(5px);
+  margin-bottom: 0;
+  position: relative;
   user-select: none;
-  overflow-x: auto;
 }
 
-#ascii-banner {
-  display: inline-block;
-  text-align: left;
+/* corner decorations */
+#header-art::before {
+  content: '╔══════════════════════════════════════════════════════════════╗';
+  display: block; font-size: 13px; color: var(--gm);
+  white-space: pre; overflow: hidden; margin-bottom: 4px;
+}
+#header-art::after {
+  content: '╚══════════════════════════════════════════════════════════════╝';
+  display: block; font-size: 13px; color: var(--gm);
+  white-space: pre; overflow: hidden; margin-top: 4px;
 }
 
-.ac  { color: var(--cy);  text-shadow: 0 0 8px var(--cy),  0 0 16px #006080; }
-.ag  { color: var(--g);   text-shadow: 0 0 8px var(--g),   0 0 16px #004422; }
-.aa  { color: var(--am);  text-shadow: 0 0 8px var(--am),  0 0 16px var(--amd); }
-.am2 { color: var(--mg);  text-shadow: 0 0 8px var(--mg),  0 0 16px #660044; }
+/* The big "sinXne0" name */
+#hdr-name {
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1;
+  letter-spacing: 6px;
+  margin-bottom: 4px;
+}
+#hdr-name .hs { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
+#hdr-name .hi { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
+#hdr-name .hn { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
+#hdr-name .hX { color: var(--am);  text-shadow: 0 0 22px var(--am), 0 0 50px var(--amd); font-size: 1.1em; }
+#hdr-name .hn2{ color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
+#hdr-name .he { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
+#hdr-name .h0 { color: var(--mg);  text-shadow: 0 0 22px var(--mg), 0 0 50px #440033; }
+
+/* BBS label below */
+#hdr-bbs {
+  font-size: clamp(18px, 3vw, 28px);
+  letter-spacing: 10px;
+  color: var(--am);
+  text-shadow: 0 0 12px var(--am), 0 0 30px var(--amd);
+  margin-bottom: 6px;
+}
+
+/* Decorative separator lines */
+#hdr-sep {
+  font-size: 14px;
+  color: var(--gm);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+/* Sub-info line */
+#hdr-info {
+  font-size: 16px;
+  color: var(--gd);
+  letter-spacing: 2px;
+}
+#hdr-info .hv { color: var(--cy); }
+
+/* Blinking cursor */
+.cur::after {
+  content: '█';
+  animation: curBlink .85s step-end infinite;
+  color: var(--g);
+}
+@keyframes curBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 
 /* ── SYSBAR ── */
 #sysbar {
@@ -1062,7 +1113,18 @@ body {
 
   <!-- HEADER ASCII ART -->
   <div id="header-art">
-    <pre id="ascii-banner"></pre>
+    <div id="hdr-name">
+      <span class="hs">s</span><span class="hi">i</span><span class="hn">n</span><span class="hX">X</span><span class="hn2">n</span><span class="he">e</span><span class="h0">0</span>
+    </div>
+    <div id="hdr-bbs">B &nbsp; B &nbsp; S</div>
+    <div id="hdr-sep">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</div>
+    <div id="hdr-info">
+      NODE <span class="hv">01/01</span>
+      &nbsp;·&nbsp; 2400 BAUD
+      &nbsp;·&nbsp; SYSOP: <span class="hv">sinXne0</span>
+      &nbsp;·&nbsp; EST. <span class="hv">2024</span>
+      <span class="cur"></span>
+    </div>
   </div>
 
   <!-- SYSBAR -->
@@ -1477,19 +1539,7 @@ body {
 // ══════════════════════════════════════════════════════════
 // ASCII HEADER  (three-colour block letters)
 // ══════════════════════════════════════════════════════════
-(function buildHeader() {
-  // cyan rows, green rows, amber rows for the BBS block letters
-  var lines = [
-    '<span class="ac">  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557     \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557</span>',
-    '<span class="ac">  \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d</span>',
-    '<span class="ag">  \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551  \u2588\u2588\u2588\u2557     \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557</span>',
-    '<span class="ag">  \u2588\u2588\u2554\u2550\u2550\u255d \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551 \u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551</span>',
-    '<span class="aa">  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u255d \u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d     \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551</span>',
-    '<span class="aa">  \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d     \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d</span>',
-    '<span class="am2">  \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 [ NODE 01 // ONLINE // 2400 BAUD ] \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550</span>',
-  ];
-  document.getElementById('ascii-banner').innerHTML = lines.join('\n');
-})();
+// header is now static HTML — no JS needed
 
 // ══════════════════════════════════════════════════════════
 // SYS ART
