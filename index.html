@@ -226,29 +226,32 @@ body {
   user-select: none;
 }
 
-/* corner decorations */
-#header-art::before {
-  content: '╔══════════════════════════════════════════════════════════════╗';
-  display: block; font-size: 13px; color: var(--gm);
-  white-space: pre; overflow: hidden; margin-bottom: 4px;
-}
-#header-art::after {
-  content: '╚══════════════════════════════════════════════════════════════╝';
-  display: block; font-size: 13px; color: var(--gm);
-  white-space: pre; overflow: hidden; margin-top: 4px;
+/* ASCII art header name */
+#hdr-ascii {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  line-height: 1.15;
+  letter-spacing: 1px;
+  white-space: pre;
+  text-align: center;
+  color: var(--g);
+  text-shadow: 0 0 8px var(--g);
+  margin-bottom: 4px;
+  overflow: visible;
 }
 
 /* The big "sinXne0" name */
 #hdr-name {
-  font-size: clamp(40px, 7vw, 72px);
+  font-size: 72px;
   line-height: 1;
-  letter-spacing: 6px;
-  margin-bottom: 4px;
+  letter-spacing: 8px;
+  margin-bottom: 2px;
+  font-family: 'VT323', monospace;
 }
 #hdr-name .hs { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
 #hdr-name .hi { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
 #hdr-name .hn { color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
-#hdr-name .hX { color: var(--am);  text-shadow: 0 0 22px var(--am), 0 0 50px var(--amd); font-size: 1.1em; }
+#hdr-name .hX { color: var(--am);  text-shadow: 0 0 22px var(--am), 0 0 50px var(--amd); }
 #hdr-name .hn2{ color: var(--cy);  text-shadow: 0 0 18px var(--cy), 0 0 40px #003550; }
 #hdr-name .he { color: var(--g);   text-shadow: 0 0 18px var(--g),  0 0 40px #003510; }
 #hdr-name .h0 { color: var(--mg);  text-shadow: 0 0 22px var(--mg), 0 0 50px #440033; }
@@ -1065,7 +1068,8 @@ body {
   #grid { grid-template-columns: 1fr; }
   #sidebar { display: none; }
   .post-row { grid-template-columns: 32px 16px 1fr 60px; }
-  #header-art { font-size: 8px; }
+  #hdr-name { font-size: 48px; letter-spacing: 4px; }
+  #hdr-ascii { font-size: 9px; }
 }
 </style>
 </head>
@@ -1113,10 +1117,15 @@ body {
 
   <!-- HEADER ASCII ART -->
   <div id="header-art">
+    <pre id="hdr-ascii">╔══════════════════════════════════════════════════════════════╗
+║  ___  _  _ _  _ __ __  _ _   ___   ___                      ║
+║ / __|| || \| | \ \/ /| \| | | __| / _ \                     ║
+║ \__ \| || .  |  >  < | .  | | _| | (_) |                    ║
+║ |___/|_||_|\_| /_/\_\|_|\_| |___| \___/  B  B  S            ║
+╚══════════════════════════════════════════════════════════════╝</pre>
     <div id="hdr-name">
       <span class="hs">s</span><span class="hi">i</span><span class="hn">n</span><span class="hX">X</span><span class="hn2">n</span><span class="he">e</span><span class="h0">0</span>
     </div>
-    <div id="hdr-bbs">B &nbsp; B &nbsp; S</div>
     <div id="hdr-sep">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</div>
     <div id="hdr-info">
       NODE <span class="hv">01/01</span>
