@@ -3,1042 +3,2142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sinXne0 BBS ▓ NODE 01 ▓ ONLINE</title>
+<title>sinXne0 BBS — Node 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
 :root {
-  --g:    #00ff41;   /* phosphor green */
-  --gd:   #00cc33;   /* dim green */
-  --gm:   #007722;   /* mid green */
-  --gdk:  #001a08;   /* dark green */
-  --am:   #ffb300;   /* amber */
-  --amd:  #cc8800;   /* dim amber */
-  --cy:   #00e8ff;   /* cyan */
-  --rd:   #ff3355;   /* red */
-  --mg:   #ff44cc;   /* magenta */
-  --wh:   #dfffea;   /* off-white */
-  --bg:   #00000c;
-  --bdr:  #009922;
+  --g:   #00ff41;
+  --gd:  #00cc33;
+  --gm:  #007722;
+  --am:  #ffb300;
+  --amd: #cc8800;
+  --cy:  #00e8ff;
+  --rd:  #ff3355;
+  --mg:  #ff44cc;
+  --wh:  #dfffea;
+  --bg:  #00000c;
+  --bdr: #009922;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ─── CANVAS ─── */
-#bg { position:fixed; inset:0; z-index:0; pointer-events:none; }
-
-/* ─── CRT ─── */
-#crt {
-  position:fixed; inset:0; z-index:9500; pointer-events:none;
-  background: repeating-linear-gradient(
-    0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px,
-    transparent 1px, transparent 3px
-  );
-  animation: flk 9s infinite;
-}
-#crt::before {
-  content:''; position:absolute; inset:0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.8) 100%);
-}
-#crt::after {
-  content:''; position:absolute; inset:0;
-  background: linear-gradient(transparent 50%, rgba(0,0,0,0.04) 50%);
-  background-size: 100% 4px;
-  animation: roll 8s linear infinite;
-}
-@keyframes flk  { 0%,93%,95%,100%{opacity:1} 94%{opacity:.82} }
-@keyframes roll { from{background-position:0 0} to{background-position:0 100%} }
-
-/* ─── BODY ─── */
-body {
+html, body {
+  height: 100%;
   background: var(--bg);
   color: var(--g);
-  font-family: 'VT323', 'Courier New', monospace;
+  font-family: 'VT323', monospace;
   font-size: 18px;
-  line-height: 1.35;
-  min-height: 100vh;
   overflow-x: hidden;
-  padding-bottom: 32px;
-  text-shadow: 0 0 6px rgba(0,255,65,0.35);
 }
 
-/* ─── BOOT ─── */
-#boot {
-  position:fixed; inset:0; background:#000; z-index:8000;
-  padding: 8vw 10vw;
-  font-size: 19px;
+/* SPACE CANVAS */
+#space-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* CRT OVERLAY */
+#crt-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 9500;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+}
+
+/* ROLLING SCANLINE */
+#crt-overlay::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to bottom, transparent, rgba(0,255,65,0.08), transparent);
+  animation: rollScan 8s linear infinite;
+  top: -4px;
+}
+
+@keyframes rollScan {
+  0%   { top: -4px; }
+  100% { top: 100vh; }
+}
+
+/* VIGNETTE */
+#crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+    transparent 40%,
+    rgba(0,0,0,0.35) 75%,
+    rgba(0,0,0,0.75) 100%
+  );
+}
+
+/* SCREEN BREATHING */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.94; }
+}
+
+/* FULL SCREEN FLICKER */
+@keyframes flicker {
+  0%   { opacity: 1; }
+  3%   { opacity: 0.7; }
+  5%   { opacity: 1; }
+  7%   { opacity: 0.85; }
+  9%   { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+#wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 8px 80px;
+  animation: breathe 6s ease-in-out infinite, flicker 12s ease-in-out infinite;
+}
+
+/* ── TICKER ── */
+#ticker-wrap {
+  width: 100%;
+  background: rgba(0,0,0,0.7);
+  border-bottom: 1px solid var(--amd);
+  overflow: hidden;
+  height: 24px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+#ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: tickerScroll 40s linear infinite;
+  color: var(--am);
+  font-size: 16px;
+  line-height: 24px;
+  text-shadow: 0 0 8px var(--am), 0 0 16px var(--amd);
+  padding-left: 100%;
+}
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── HEADER ASCII ART ── */
+#header-art {
+  text-align: center;
+  line-height: 1.1;
+  padding: 10px 0 4px;
+  font-size: 13px;
+  letter-spacing: 0px;
+  user-select: none;
+  overflow-x: auto;
+}
+
+#ascii-banner {
+  display: inline-block;
+  text-align: left;
+}
+
+.ac  { color: var(--cy);  text-shadow: 0 0 8px var(--cy),  0 0 16px #006080; }
+.ag  { color: var(--g);   text-shadow: 0 0 8px var(--g),   0 0 16px #004422; }
+.aa  { color: var(--am);  text-shadow: 0 0 8px var(--am),  0 0 16px var(--amd); }
+.am2 { color: var(--mg);  text-shadow: 0 0 8px var(--mg),  0 0 16px #660044; }
+
+/* ── SYSBAR ── */
+#sysbar {
+  background: rgba(0,20,0,0.85);
+  border-top: 1px solid var(--bdr);
+  border-bottom: 1px solid var(--bdr);
+  padding: 2px 8px;
+  font-size: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  color: var(--gd);
+  text-shadow: 0 0 6px var(--gd);
+}
+
+#sysbar span { color: var(--g); text-shadow: 0 0 8px var(--g); }
+#sysbar .lbl { color: var(--gd); text-shadow: none; }
+
+#online-dot {
+  color: var(--g);
+  text-shadow: 0 0 10px var(--g), 0 0 20px var(--g);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ── NAV ── */
+#nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--bdr);
+  background: rgba(0,0,0,0.5);
+}
+
+.nav-tab {
+  padding: 3px 10px;
+  cursor: pointer;
+  color: var(--am);
+  text-shadow: 0 0 8px var(--amd);
+  font-size: 16px;
+  border: 1px solid transparent;
+  background: rgba(0,20,0,0.3);
+  transition: all 0.1s;
+  user-select: none;
+}
+
+.nav-tab:hover {
+  background: rgba(0,60,0,0.4);
+  border-color: var(--gm);
+  color: var(--am);
+  text-shadow: 0 0 10px var(--am), 0 0 20px var(--amd);
+}
+
+.nav-tab.active {
+  border-bottom: 2px solid var(--g);
+  background: rgba(0,40,0,0.5);
+  color: var(--g);
+  text-shadow: 0 0 10px var(--g), 0 0 20px var(--gd);
+}
+
+/* ── MAIN GRID ── */
+#grid {
+  display: grid;
+  grid-template-columns: 1fr 228px;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ── BOARD SECTIONS ── */
+.board-section {
+  display: none;
+}
+
+.board-section.vis {
+  display: block;
+  animation: slIn 0.15s ease-out;
+}
+
+@keyframes slIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── POST LIST ── */
+.board-header {
+  border: 1px solid var(--bdr);
+  border-bottom: none;
+  padding: 4px 8px;
+  background: rgba(0,20,0,0.6);
+  font-size: 16px;
+  color: var(--cy);
+  text-shadow: 0 0 8px var(--cy);
+}
+
+.post-list {
+  border: 1px solid var(--bdr);
+}
+
+.post-row {
+  display: grid;
+  grid-template-columns: 36px 20px 1fr 80px;
+  gap: 4px;
+  align-items: start;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(0,80,20,0.3);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.post-row:hover {
+  background: rgba(0,60,0,0.25);
+}
+
+.post-num {
+  color: var(--am);
+  text-shadow: 0 0 6px var(--amd);
+  font-size: 15px;
+}
+
+.post-new-dot {
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.new-dot {
+  color: var(--cy);
+  text-shadow: 0 0 10px var(--cy);
+  animation: blink 1.4s step-end infinite;
+}
+
+.read-dot {
+  color: var(--gm);
+}
+
+.post-title-wrap { min-width: 0; }
+
+.post-title {
+  color: var(--wh);
+  text-shadow: 0 0 5px rgba(0,255,65,0.3);
+  font-size: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-title.pinned::before {
+  content: '★ ';
+  color: var(--am);
+  text-shadow: 0 0 8px var(--am);
+}
+
+.post-sub {
+  font-size: 14px;
+  color: var(--gm);
+  text-shadow: 0 0 4px var(--gm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-sub .frm { color: var(--gd); }
+
+.post-date {
+  color: var(--gm);
+  text-shadow: 0 0 4px var(--gm);
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── POST VIEW ── */
+#post-view {
+  display: none;
+  border: 1px solid var(--bdr);
+}
+
+#post-view.vis {
+  display: block;
+  animation: slIn 0.15s ease-out;
+}
+
+.pv-titlebar {
+  background: rgba(0,40,0,0.7);
+  border-bottom: 2px double var(--bdr);
+  padding: 4px 8px;
+  font-size: 16px;
+  color: var(--cy);
+  text-shadow: 0 0 10px var(--cy), 0 0 20px #005060;
+}
+
+.pv-meta {
+  padding: 6px 8px;
+  font-size: 15px;
+  color: var(--gd);
+  text-shadow: 0 0 6px var(--gd);
+  border-bottom: 1px solid rgba(0,80,20,0.4);
+  background: rgba(0,15,0,0.5);
+}
+
+.pv-body {
+  padding: 10px 8px;
+  font-size: 16px;
+  color: var(--wh);
+  text-shadow: 0 0 4px rgba(0,255,65,0.25);
+  white-space: pre-wrap;
+  line-height: 1.4;
+  background: rgba(0,10,0,0.3);
+  min-height: 200px;
+}
+
+.pv-actions {
+  padding: 6px 8px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--bdr);
+  background: rgba(0,20,0,0.5);
+}
+
+.btn {
+  padding: 3px 10px;
+  border: 1px solid var(--bdr);
+  background: rgba(0,30,0,0.6);
+  color: var(--g);
+  text-shadow: 0 0 8px var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.btn:hover {
+  background: rgba(0,80,0,0.5);
+  border-color: var(--g);
+  text-shadow: 0 0 12px var(--g), 0 0 24px var(--gd);
+}
+
+.btn-am {
+  border-color: var(--amd);
+  color: var(--am);
+  text-shadow: 0 0 8px var(--am);
+}
+
+.btn-am:hover {
+  background: rgba(60,30,0,0.5);
+  border-color: var(--am);
+}
+
+.btn-rd {
+  border-color: #882233;
+  color: var(--rd);
+  text-shadow: 0 0 8px var(--rd);
+}
+
+.btn-rd:hover {
+  background: rgba(60,0,15,0.5);
+  border-color: var(--rd);
+}
+
+/* ── COMPOSE FORM ── */
+#compose-wrap {
+  display: none;
+  border: 1px solid var(--am);
+  margin-top: 8px;
+  background: rgba(0,10,0,0.8);
+}
+
+#compose-wrap.vis {
+  display: block;
+  animation: slIn 0.15s ease-out;
+}
+
+.compose-hdr {
+  padding: 4px 8px;
+  background: rgba(60,30,0,0.4);
+  border-bottom: 1px solid var(--amd);
+  color: var(--am);
+  text-shadow: 0 0 8px var(--am);
+  font-size: 17px;
+}
+
+.compose-form {
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.field-lbl {
+  color: var(--am);
+  text-shadow: 0 0 6px var(--amd);
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.field-inp, .field-sel, .field-ta {
+  width: 100%;
+  background: rgba(0,30,0,0.6);
+  border: 1px solid var(--bdr);
+  color: var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  padding: 3px 6px;
+  text-shadow: 0 0 6px var(--g);
+  outline: none;
+}
+
+.field-inp:focus, .field-sel:focus, .field-ta:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 6px rgba(0,255,65,0.3);
+}
+
+.field-ta {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.field-sel option {
+  background: #001a00;
+  color: var(--g);
+}
+
+.compose-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ── COMMAND LINE ── */
+#cmd-wrap {
+  margin-top: 8px;
+  border: 1px solid var(--bdr);
+  background: rgba(0,10,0,0.8);
+  padding: 4px 8px;
+}
+
+#cmd-prompt {
+  color: var(--g);
+  text-shadow: 0 0 8px var(--g);
+  font-size: 17px;
+}
+
+#cmd-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--g);
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  width: calc(100% - 160px);
+  text-shadow: 0 0 8px var(--g);
+  caret-color: var(--g);
+}
+
+#cmd-feedback {
+  font-size: 15px;
+  color: var(--am);
+  text-shadow: 0 0 6px var(--amd);
+  height: 18px;
+  margin-top: 2px;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.widget {
+  border: 1px solid var(--bdr);
+  background: rgba(0,8,0,0.8);
+}
+
+.widget-hdr {
+  background: rgba(0,30,0,0.7);
+  border-bottom: 1px solid var(--bdr);
+  padding: 2px 6px;
+  font-size: 15px;
+  color: var(--cy);
+  text-shadow: 0 0 8px var(--cy), 0 0 16px #004455;
+}
+
+.widget-body {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.sys-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--gd);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.sys-row .val {
+  color: var(--g);
+  text-shadow: 0 0 6px var(--g);
+}
+
+/* PROGRESS BARS */
+.prog-wrap {
+  margin-top: 4px;
+}
+
+.prog-lbl {
+  color: var(--gd);
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.prog-bar {
+  height: 12px;
+  background: rgba(0,40,0,0.5);
+  border: 1px solid var(--gm);
+  margin: 2px 0 4px;
+  font-size: 12px;
+  line-height: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.prog-fill {
+  background: var(--g);
+  height: 100%;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 6px var(--g);
+}
+
+/* ONLINE NOW */
+.online-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.8;
+}
+
+.online-user .dot {
+  color: var(--g);
+  text-shadow: 0 0 10px var(--g), 0 0 20px var(--gd);
+  font-size: 10px;
+}
+
+.online-user .handle {
+  color: var(--cy);
+  text-shadow: 0 0 6px var(--cy);
+}
+
+.online-user .board {
+  color: var(--gm);
+  font-size: 13px;
+}
+
+.dot-blink-1 { animation: blink 1.0s step-end infinite; }
+.dot-blink-2 { animation: blink 1.3s step-end infinite; }
+.dot-blink-3 { animation: blink 1.7s step-end infinite; }
+.dot-blink-4 { animation: blink 2.1s step-end infinite; }
+
+/* LAST CALLERS */
+.caller-row {
+  line-height: 1.6;
+  border-bottom: 1px solid rgba(0,60,20,0.2);
+  font-size: 13px;
+  padding: 1px 0;
+}
+
+.caller-row .ch { color: var(--cy); text-shadow: 0 0 4px var(--cy); }
+.caller-row .cb { color: var(--gm); }
+.caller-row .cd { color: #004418; font-size: 12px; }
+
+/* MOTD */
+#motd-text {
+  color: var(--am);
+  text-shadow: 0 0 6px var(--amd);
+  font-size: 15px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ACTIVITY FEED */
+.act-item {
+  font-size: 13px;
+  color: var(--gd);
+  line-height: 1.7;
+  border-bottom: 1px solid rgba(0,60,20,0.2);
+}
+
+.act-item .ach { color: var(--g); text-shadow: 0 0 4px var(--g); }
+
+/* FILE AREAS */
+.file-area-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,60,20,0.2);
+  font-size: 14px;
+  color: var(--gd);
+  transition: color 0.1s;
+}
+
+.file-area-row:hover { color: var(--g); text-shadow: 0 0 6px var(--g); }
+.file-area-row .fa-name { color: var(--am); text-shadow: 0 0 4px var(--amd); }
+.file-area-row .fa-count { color: var(--cy); font-size: 12px; }
+
+/* DOOR GAMES */
+.door-row {
+  padding: 3px 0;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,60,20,0.2);
+  font-size: 14px;
+  color: var(--am);
+  text-shadow: 0 0 4px var(--amd);
+  transition: all 0.1s;
+}
+
+.door-row:hover {
+  color: var(--g);
+  text-shadow: 0 0 8px var(--g);
+}
+
+/* REPOS */
+.repo-link {
+  display: block;
+  color: var(--cy);
+  text-shadow: 0 0 4px var(--cy);
+  font-size: 13px;
+  text-decoration: none;
+  line-height: 1.7;
+  border-bottom: 1px solid rgba(0,60,20,0.2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repo-link:hover {
+  text-shadow: 0 0 10px var(--cy), 0 0 20px #004455;
+}
+
+/* TAGS */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  padding: 1px 6px;
+  border: 1px solid var(--gm);
+  color: var(--gd);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.tag:hover {
+  border-color: var(--g);
+  color: var(--g);
+  text-shadow: 0 0 6px var(--g);
+}
+
+/* SYS ART */
+#sys-art {
+  font-size: 11px;
+  line-height: 1.15;
+  overflow: hidden;
+  letter-spacing: 0;
+}
+
+/* ── TOAST ── */
+#toast-container {
+  position: fixed;
+  top: 40px;
+  right: 12px;
+  z-index: 7000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toast {
+  background: rgba(0,10,0,0.95);
+  border: 1px solid var(--am);
+  padding: 6px 12px;
+  font-size: 15px;
+  color: var(--am);
+  text-shadow: 0 0 8px var(--amd);
+  min-width: 240px;
+  max-width: 320px;
+  animation: toastIn 0.3s ease-out;
+  box-shadow: 0 0 12px rgba(255,179,0,0.15);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast.out {
+  animation: toastOut 0.4s ease-in forwards;
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(30px); }
+}
+
+/* ── DOOR MODAL ── */
+#door-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 7500;
+  background: rgba(0,0,0,0.85);
+  align-items: center;
+  justify-content: center;
+}
+
+#door-modal.vis {
+  display: flex;
+}
+
+.modal-box {
+  background: rgba(0,12,0,0.97);
+  border: 2px solid var(--am);
+  padding: 0;
+  min-width: 380px;
+  max-width: 520px;
+  box-shadow: 0 0 30px rgba(255,179,0,0.2);
+}
+
+.modal-hdr {
+  background: rgba(60,30,0,0.5);
+  border-bottom: 1px solid var(--amd);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--am);
+  text-shadow: 0 0 10px var(--am);
+  font-size: 18px;
+}
+
+.modal-body {
+  padding: 14px;
+  color: var(--wh);
+  font-size: 16px;
+  line-height: 1.5;
+  text-shadow: 0 0 4px rgba(0,255,65,0.2);
+}
+
+.modal-offline {
+  color: var(--rd);
+  text-shadow: 0 0 8px var(--rd);
+  font-size: 17px;
+  margin-top: 10px;
+  border: 1px solid #880033;
+  padding: 4px 8px;
+  display: inline-block;
+}
+
+.modal-close {
+  cursor: pointer;
+  color: var(--rd);
+  text-shadow: 0 0 8px var(--rd);
+  font-size: 20px;
+  line-height: 1;
+  border: 1px solid #882233;
+  padding: 0 5px;
+  background: rgba(60,0,15,0.4);
+  font-family: 'VT323', monospace;
+}
+
+.modal-close:hover {
+  background: rgba(120,0,30,0.5);
+}
+
+/* ── BOOT SCREEN ── */
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: #000005;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 40px;
+  cursor: pointer;
   overflow: hidden;
 }
-#boot.out { animation: bFade .7s forwards; }
-@keyframes bFade { to { opacity:0; pointer-events:none; } }
-#boot-log { white-space:pre; line-height:1.55; }
-#boot-log .ok  { color:var(--g); }
-#boot-log .w   { color:var(--am); }
-#boot-log .e   { color:var(--rd); }
-#boot-log .d   { color:#005510; }
-#boot-log .h   { color:var(--cy); text-shadow:0 0 8px var(--cy); }
-#boot-log .m   { color:var(--mg); }
-.boot-bar      { color:var(--g); }
 
-/* ─── TICKER ─── */
-#ticker-wrap {
-  background: rgba(0,10,30,.92); border:1px solid var(--bdr);
-  border-bottom:none; overflow:hidden; height:22px;
-  backdrop-filter:blur(2px);
-}
-#ticker {
-  display:inline-block; white-space:nowrap;
-  animation: tick 40s linear infinite;
-  font-size:15px; color:var(--am); padding-left:100%;
-  text-shadow:0 0 5px var(--am);
-}
-@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-100%)} }
-
-/* ─── WRAPPER ─── */
-#wrap { max-width:980px; margin:0 auto; padding:8px 12px; position:relative; z-index:1; }
-
-/* ─── HEADER ─── */
-#hdr {
-  margin-bottom:8px;
-  border:1px solid var(--gm);
-  background:rgba(0,4,20,.90);
-  backdrop-filter:blur(6px);
-  padding:10px 8px 8px;
-  text-align:center;
-  position:relative;
-}
-#hdr-art {
-  font-size: clamp(7px,1.4vw,13px);
-  line-height:1.15; white-space:pre;
-  display:inline-block; text-align:left;
-  text-shadow: 0 0 12px var(--g), 0 0 24px rgba(0,255,65,.25);
-}
-/* coloured ANSI-style header chars */
-#hdr-art .c1 { color:var(--g);  }
-#hdr-art .c2 { color:var(--cy); text-shadow:0 0 10px var(--cy); }
-#hdr-art .c3 { color:var(--am); text-shadow:0 0 8px var(--am); }
-.hdr-sub {
-  font-size:23px; color:var(--am); letter-spacing:3px;
-  text-shadow:0 0 10px var(--am); margin-top:6px;
-}
-.hdr-info {
-  font-size:17px; color:var(--gd); letter-spacing:2px; margin-top:2px;
-}
-.hdr-corner { position:absolute; font-size:14px; color:var(--gm); }
-.hdr-corner.tl{top:4px;left:8px} .hdr-corner.tr{top:4px;right:8px}
-.hdr-corner.bl{bottom:4px;left:8px} .hdr-corner.br{bottom:4px;right:8px}
-
-/* ─── SYSBAR ─── */
-#sysbar {
-  display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;
-  border:1px solid var(--bdr); border-bottom:none;
-  background:rgba(0,8,28,.90); backdrop-filter:blur(2px);
-  padding:3px 10px; font-size:17px; color:var(--gd);
-}
-#sysbar .seg { display:flex; gap:8px; align-items:center; }
-#sysbar .v   { color:var(--cy); }
-#sysbar .sep { color:var(--gm); }
-#sysbar .on  { color:var(--g); animation:blk 1s step-end infinite; }
-
-/* ─── NAV ─── */
-#nav {
-  display:flex; flex-wrap:wrap;
-  border:1px solid var(--bdr); border-bottom:none;
-  background:rgba(0,5,22,.90); backdrop-filter:blur(3px);
-  overflow:hidden;
-}
-.ni {
-  cursor:pointer; padding:5px 13px;
-  color:var(--gd); font-size:19px; letter-spacing:.5px;
-  border-right:1px solid var(--gm);
-  transition:all .07s; user-select:none;
-}
-.ni:last-child { border-right:none; }
-.ni .k { color:var(--am); text-shadow:0 0 5px var(--am); }
-.ni:hover { background:rgba(0,255,65,.10); color:var(--g); }
-.ni.act { background:rgba(0,255,65,.16); color:var(--g); border-bottom:2px solid var(--g); }
-.ni.act .k { color:var(--g); }
-
-/* ─── GRID ─── */
-#grid {
-  display:grid; grid-template-columns:1fr 228px; gap:9px; align-items:start;
-}
-@media(max-width:680px){#grid{grid-template-columns:1fr}#sb{display:none}}
-
-/* ─── BOARDS ─── */
-.bsec { display:none; }
-.bsec.vis { display:block; }
-.bsec.slide { animation:slIn .12s ease-out; }
-@keyframes slIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:none} }
-
-.bcard {
-  border:1px solid var(--bdr);
-  background:rgba(0,4,18,.85);
-  backdrop-filter:blur(3px);
-  margin-bottom:9px;
-  overflow:hidden;
-}
-.bcard-hdr {
-  background:rgba(0,12,38,.95);
-  border-bottom:1px solid var(--bdr);
-  padding:4px 10px;
-  display:flex; justify-content:space-between; align-items:center;
-  font-size:19px; color:var(--am);
-  text-shadow:0 0 6px var(--am);
-}
-.bcard-hdr .bdg {
-  font-size:14px; color:var(--gd);
-  border:1px solid var(--gm); padding:0 5px;
+#boot-lines {
+  flex: 1;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
-/* ─── POST ROWS ─── */
-.pr {
-  display:grid; grid-template-columns:40px 20px 1fr auto;
-  gap:0 8px; align-items:start;
-  padding:5px 10px; font-size:18px;
-  border-bottom:1px solid rgba(0,120,40,.2);
-  cursor:pointer; transition:background .07s;
+.bl-bios  { color: #007722; text-shadow: 0 0 4px #005511; }
+.bl-ok    { color: var(--g); text-shadow: 0 0 8px var(--g); }
+.bl-warn  { color: var(--am); text-shadow: 0 0 8px var(--amd); }
+.bl-cyan  { color: var(--cy); text-shadow: 0 0 10px var(--cy), 0 0 20px #003344; font-size: 15px; }
+.bl-prog  { color: var(--g); text-shadow: 0 0 6px var(--g); font-size: 15px; }
+.bl-mg    { color: var(--mg); text-shadow: 0 0 10px var(--mg); }
+.bl-blink {
+  color: var(--g);
+  text-shadow: 0 0 12px var(--g);
+  font-size: 18px;
+  animation: blink 0.7s step-end infinite;
 }
-.pr:hover { background:rgba(0,255,65,.07); }
-.pr:last-child { border-bottom:none; }
-.pnum   { color:var(--am); font-size:15px; text-align:right; padding-top:2px; }
-.pico   { color:var(--gm); font-size:16px; }
-.pico.nw{ color:var(--cy); animation:blk 1.1s step-end infinite; }
-.ptxt   { color:var(--wh); }
-.ptxt.pin::before { content:'★ '; color:var(--am); }
-.psub   { font-size:15px; color:var(--gm); margin-top:1px; }
-.pdate  { font-size:14px; color:var(--gm); white-space:nowrap; }
 
-/* ─── POST VIEW ─── */
-#pview {
-  display:none; border:1px solid var(--bdr);
-  background:rgba(0,4,20,.92); backdrop-filter:blur(5px);
-  margin-bottom:9px;
+/* ── FIXED STATUS BAR ── */
+#status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 500;
+  background: rgba(0,12,0,0.95);
+  border-top: 1px solid var(--bdr);
+  padding: 2px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
-#pview.vis { display:block; animation:slIn .12s ease-out; }
-.pv-hdr {
-  background:rgba(0,12,40,.95); border-bottom:1px solid var(--bdr);
-  padding:4px 10px; display:flex; justify-content:space-between;
-  font-size:19px; color:var(--am);
-}
-.pv-inner { padding:10px 12px; }
-.pv-title { color:var(--cy); font-size:23px; text-shadow:0 0 8px var(--cy); margin-bottom:5px; }
-.pv-meta  { font-size:16px; color:var(--gm); border-bottom:1px solid rgba(0,120,40,.35); padding-bottom:8px; margin-bottom:10px; }
-.pv-meta span { color:var(--g); }
-.pv-body  { color:var(--wh); font-size:18px; line-height:1.65; white-space:pre-wrap; word-break:break-word; margin-bottom:12px; }
-.pv-acts  { display:flex; gap:8px; }
 
-/* ─── BUTTONS ─── */
-.btn {
-  cursor:pointer; border:1px solid var(--gm); padding:3px 12px;
-  background:transparent; color:var(--gd);
-  font-family:'VT323',monospace; font-size:18px;
-  transition:all .07s; text-decoration:none; display:inline-block;
+#status-bar .keys {
+  color: var(--am);
+  text-shadow: 0 0 6px var(--amd);
 }
-.btn:hover { background:rgba(0,255,65,.13); color:var(--g); border-color:var(--g); }
-.btn.am { border-color:var(--amd); color:var(--am); }
-.btn.am:hover { background:rgba(255,179,0,.12); }
-.btn.rd { border-color:var(--rd); color:var(--rd); }
-.btn.rd:hover { background:rgba(255,51,85,.12); }
 
-/* ─── COMPOSE ─── */
-#cpbtn {
-  cursor:pointer; border:1px solid var(--amd); padding:5px 16px;
-  background:rgba(255,179,0,.07); color:var(--am);
-  font-family:'VT323',monospace; font-size:20px; letter-spacing:1px;
-  margin-bottom:9px; transition:all .07s;
+#status-bar .keys b {
+  color: var(--g);
+  text-shadow: 0 0 8px var(--g);
 }
-#cpbtn:hover { background:rgba(255,179,0,.16); text-shadow:0 0 8px var(--am); }
-#cpform {
-  display:none; border:1px solid var(--amd);
-  background:rgba(0,5,22,.92); backdrop-filter:blur(4px); margin-bottom:9px;
+
+#status-msg {
+  color: var(--gd);
+  text-shadow: 0 0 4px var(--gd);
+  font-size: 13px;
 }
-#cpform.vis { display:block; }
-.fi { padding:10px 12px; }
-.fi-t { color:var(--am); font-size:20px; letter-spacing:2px; margin-bottom:8px; }
-.ghn {
-  border:1px solid var(--gm); padding:4px 9px;
-  background:rgba(0,25,10,.5); font-size:15px; color:var(--gd); margin-bottom:9px;
+
+/* ── FOOTER ── */
+#footer {
+  margin-top: 12px;
+  border-top: 1px solid var(--bdr);
+  padding: 6px 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--gm);
+  text-shadow: 0 0 4px var(--gm);
 }
-.ghn a { color:var(--g); }
-.fr { margin-bottom:7px; }
-.fr label { display:block; font-size:15px; color:var(--gm); margin-bottom:2px; letter-spacing:1px; }
-.fr input,.fr textarea,.fr select {
-  width:100%; background:rgba(0,8,3,.9); border:1px solid var(--gm);
-  color:var(--g); font-family:'VT323',monospace; font-size:18px; padding:3px 7px; outline:none;
+
+#footer a {
+  color: var(--cy);
+  text-shadow: 0 0 6px var(--cy);
+  text-decoration: none;
+  margin: 0 6px;
 }
-.fr input:focus,.fr textarea:focus { border-color:var(--g); box-shadow:0 0 6px rgba(0,255,65,.22); }
-.fr textarea { height:100px; resize:vertical; }
-.fr select option { background:#000d03; }
-.fa { display:flex; gap:7px; margin-top:9px; }
 
-/* ─── SIDEBAR ─── */
-#sb { font-size:17px; }
-.sb-box {
-  border:1px solid var(--bdr); background:rgba(0,4,20,.87);
-  backdrop-filter:blur(2px); margin-bottom:9px; overflow:hidden;
+#footer a:hover {
+  text-shadow: 0 0 12px var(--cy), 0 0 24px #004455;
 }
-.sb-t {
-  background:rgba(0,12,38,.97); border-bottom:1px solid var(--bdr);
-  padding:3px 8px; color:var(--am); font-size:18px; letter-spacing:1px;
-  text-shadow:0 0 6px var(--am);
+
+/* ── NEW POST BTN ── */
+#compose-btn-wrap {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 8px;
 }
-.sb-b { padding:5px 8px; }
-.sbr {
-  display:flex; justify-content:space-between; padding:2px 0;
-  border-bottom:1px solid rgba(0,80,20,.2); color:var(--gd); font-size:16px;
+
+/* ── RESPONSIVE ── */
+@media (max-width: 680px) {
+  #grid { grid-template-columns: 1fr; }
+  #sidebar { display: none; }
+  .post-row { grid-template-columns: 32px 16px 1fr 60px; }
+  #header-art { font-size: 8px; }
 }
-.sbr:last-child { border-bottom:none; }
-.sbr .v { color:var(--g); }
-.sbr a  { color:var(--g); text-decoration:none; }
-.sbr a:hover { color:var(--cy); }
-
-/* ASCII progress bar */
-.pbar { color:var(--gm); font-size:15px; margin-top:2px; }
-.pbar .fill { color:var(--g); }
-.pbar .empty { color:#003310; }
-
-/* caller rows */
-.cr { padding:3px 0; border-bottom:1px solid rgba(0,80,20,.2); font-size:16px; }
-.cr:last-child { border-bottom:none; }
-.cr .handle { color:var(--cy); }
-.cr .info   { font-size:13px; color:var(--gm); }
-.cr .loc    { font-size:12px; color:#005515; }
-
-/* online user row */
-.ur { display:flex; gap:6px; align-items:center; padding:2px 0; font-size:16px; }
-.ur .dot { color:var(--g); animation:blk 1.5s step-end infinite; font-size:10px; }
-.ur .name { color:var(--cy); }
-.ur .act  { color:var(--gm); font-size:13px; }
-
-/* tags */
-.tag {
-  display:inline-block; border:1px solid var(--gm); padding:0 5px;
-  margin:2px 2px 2px 0; font-size:15px; color:var(--gd); cursor:pointer;
-}
-.tag:hover { border-color:var(--g); color:var(--g); }
-
-/* door game row */
-.dr { padding:3px 0; border-bottom:1px solid rgba(0,80,20,.18); font-size:16px; cursor:pointer; }
-.dr:last-child { border-bottom:none; }
-.dr .dn { color:var(--am); }
-.dr .dd { font-size:13px; color:var(--gm); }
-.dr:hover .dn { color:var(--g); }
-
-/* ─── TICKER2 (activity feed) ─── */
-#feed { font-size:15px; color:var(--gd); padding:3px 8px; }
-.feed-item { padding:2px 0; border-bottom:1px solid rgba(0,80,20,.15); font-size:15px; }
-.feed-item:last-child { border-bottom:none; }
-.feed-item .fh { color:var(--cy); }
-.feed-item .fa2 { color:var(--gm); }
-.feed-item .ft { color:var(--am); }
-
-/* ─── FOOTER ─── */
-#ftr {
-  border-top:1px solid var(--gm); margin-top:14px; padding:6px 0;
-  text-align:center; font-size:17px; color:var(--gm);
-}
-#ftr a { color:var(--gd); text-decoration:none; }
-#ftr a:hover { color:var(--g); }
-
-/* ─── BOTTOM STATUS BAR ─── */
-#stbar {
-  position:fixed; bottom:0; left:0; right:0; z-index:600;
-  background:rgba(0,6,24,.97); border-top:1px solid var(--bdr);
-  padding:2px 10px; font-size:16px;
-  display:flex; justify-content:space-between; align-items:center;
-  color:var(--gd);
-}
-#stbar .sk { color:var(--am); margin-right:1px; }
-#stbar .sv { color:var(--cy); }
-#stbar .smsg { max-width:260px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-
-/* ─── ANIMS ─── */
-@keyframes blk { 0%,100%{opacity:1} 50%{opacity:0} }
-.blink { animation:blk 1s step-end infinite; }
-.cursor::after { content:'█'; animation:blk .85s step-end infinite; color:var(--g); }
-
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar { width:5px; }
-::-webkit-scrollbar-track { background:#000; }
-::-webkit-scrollbar-thumb { background:var(--gm); }
-::-webkit-scrollbar-thumb:hover { background:var(--g); }
-
-/* ─── MODAL (door games) ─── */
-#modal {
-  display:none; position:fixed; inset:0; z-index:7000;
-  background:rgba(0,0,0,.88); align-items:center; justify-content:center;
-}
-#modal.vis { display:flex; }
-#modal-box {
-  border:1px solid var(--am); background:#00040f;
-  backdrop-filter:blur(8px); padding:20px 28px; max-width:460px; width:90%;
-  text-align:center;
-}
-#modal-box h2 { color:var(--am); font-size:24px; margin-bottom:10px; }
-#modal-box p  { color:var(--gd); font-size:17px; margin-bottom:14px; }
 </style>
 </head>
 <body>
 
-<canvas id="bg"></canvas>
-<div id="crt"></div>
+<!-- SPACE CANVAS -->
+<canvas id="space-canvas"></canvas>
 
-<!-- ═══════════════════════════════════════════
-     BOOT SCREEN
-═══════════════════════════════════════════ -->
-<div id="boot">
-  <div id="boot-log"></div>
+<!-- CRT OVERLAY -->
+<div id="crt-overlay"></div>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div id="boot-lines"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     MAIN
-═══════════════════════════════════════════ -->
-<!-- Ticker -->
-<div id="ticker-wrap">
-  <span id="ticker">⚡ sinXne0 BBS v2.0 — ONLINE 24/7 ··· [ NEW: HackRF splash screens posted in HACKRF/SDR ] ··· [ NEW: MK-Ultra pentest suite v1.0 released ] ··· [ pager-tools monorepo now live on GitHub ] ··· [ SYSOP: sinXne0 ] ··· [ 2400 BAUD ··· NODE 01 ··· CONNECTING... ] ··· [ HACK THE PLANET ··· STAY CURIOUS ··· QUESTION EVERYTHING ] ··· [ sinxne0.github.io ] ···</span>
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- DOOR MODAL -->
+<div id="door-modal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span id="door-modal-title">DOOR GAME</span>
+      <button class="modal-close" onclick="closeDoorModal()">&#x2715; CLOSE</button>
+    </div>
+    <div class="modal-body" id="door-modal-body"></div>
+  </div>
 </div>
 
-<div id="wrap">
+<!-- MAIN WRAPPER -->
+<div id="wrapper">
 
-  <!-- HEADER -->
-  <div id="hdr">
-    <div class="hdr-corner tl">╔══════</div>
-    <div class="hdr-corner tr">══════╗</div>
-    <div class="hdr-corner bl">╚══════</div>
-    <div class="hdr-corner br">══════╝</div>
-    <div id="hdr-art"><span class="c1"> ░</span><span class="c2">██████</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">╗</span><span class="c2">███</span><span class="c1">╗  </span><span class="c2">██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">╗  </span><span class="c2">██</span><span class="c1">╗</span><span class="c2">███</span><span class="c1">╗  </span><span class="c2">██</span><span class="c1">╗</span><span class="c2">███████</span><span class="c1">╗ </span><span class="c2">██████</span><span class="c1">╗</span><span class="c3">     ██████</span><span class="c1">╗ </span><span class="c3">██████</span><span class="c1">╗ </span><span class="c3">███████</span><span class="c1">╗</span><br>
-<span class="c1"> </span><span class="c2">██</span><span class="c1">╔════╝</span><span class="c2">██</span><span class="c1">║</span><span class="c2">████</span><span class="c1">╗ </span><span class="c2">██</span><span class="c1">║</span><span class="c2">╚██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">╔╝</span><span class="c2">████</span><span class="c1">╗ </span><span class="c2">██</span><span class="c1">║</span><span class="c2">██</span><span class="c1">╔════╝</span><span class="c2">██</span><span class="c1">╔═</span><span class="c2">████</span><span class="c1">╗</span><span class="c3">    ██</span><span class="c1">╔══</span><span class="c3">██</span><span class="c1">╗</span><span class="c3">██</span><span class="c1">╔══</span><span class="c3">██</span><span class="c1">╗</span><span class="c3">██</span><span class="c1">╔════╝</span><br>
-<span class="c1"> ╚</span><span class="c2">█████</span><span class="c1">╗ </span><span class="c2">██</span><span class="c1">║</span><span class="c2">██</span><span class="c1">╔</span><span class="c2">██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">║ ╚</span><span class="c2">███</span><span class="c1">╔╝ </span><span class="c2">██</span><span class="c1">╔</span><span class="c2">██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">║</span><span class="c2">█████</span><span class="c1">╗  </span><span class="c2">██</span><span class="c1">║</span><span class="c2">██</span><span class="c1">╔</span><span class="c2">██</span><span class="c1">║</span><span class="c3">    ██████</span><span class="c1">╔╝</span><span class="c3">██████</span><span class="c1">╔╝</span><span class="c3">███████</span><span class="c1">╗</span><br>
-<span class="c1">  ╚═══</span><span class="c2">██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">║</span><span class="c2">██</span><span class="c1">║╚</span><span class="c2">████</span><span class="c1">║ </span><span class="c2">██</span><span class="c1">╔</span><span class="c2">██</span><span class="c1">╗ </span><span class="c2">██</span><span class="c1">║╚</span><span class="c2">████</span><span class="c1">║</span><span class="c2">██</span><span class="c1">╔══╝  </span><span class="c2">████</span><span class="c1">╔╝</span><span class="c2">██</span><span class="c1">║</span><span class="c3">    ██</span><span class="c1">╔══</span><span class="c3">██</span><span class="c1">╗</span><span class="c3">██</span><span class="c1">╔══</span><span class="c3">██</span><span class="c1">╗╚════</span><span class="c3">██</span><span class="c1">║</span><br>
-<span class="c1"> </span><span class="c2">██████</span><span class="c1">╔╝</span><span class="c2">██</span><span class="c1">║</span><span class="c2">██</span><span class="c1">║ ╚</span><span class="c2">███</span><span class="c1">║</span><span class="c2">██</span><span class="c1">╔╝╚</span><span class="c2">██</span><span class="c1">╗</span><span class="c2">██</span><span class="c1">║ ╚</span><span class="c2">███</span><span class="c1">║</span><span class="c2">███████</span><span class="c1">╗╚</span><span class="c2">██████</span><span class="c1">╔╝</span><span class="c3">    ██████</span><span class="c1">╔╝</span><span class="c3">██████</span><span class="c1">╔╝</span><span class="c3">███████</span><span class="c1">║</span><br>
-<span class="c1"> ╚═════╝ ╚═╝╚═╝  ╚══╝╚═╝  ╚═╝╚═╝  ╚══╝╚══════╝ ╚═════╝     ╚═════╝ ╚═════╝ ╚══════╝</span></div>
-    <div class="hdr-sub">▓ BULLETIN BOARD SYSTEM v2.0 ▓</div>
-    <div class="hdr-info">══ NODE 01/01 ══ 2400 BAUD ══ EST. 2024 ══ SYSOP: sinXne0 ══<span class="cursor"></span></div>
+  <!-- TICKER -->
+  <div id="ticker-wrap">
+    <span id="ticker-track"></span>
+  </div>
+
+  <!-- HEADER ASCII ART -->
+  <div id="header-art">
+    <pre id="ascii-banner"></pre>
   </div>
 
   <!-- SYSBAR -->
   <div id="sysbar">
-    <div class="seg">
-      <span>SYS:</span><span class="v">sinXne0-BBS</span>
-      <span class="sep">│</span>
-      <span>NODE:</span><span class="v">01/01</span>
-      <span class="sep">│</span>
-      <span>ONLINE:</span><span class="v" id="uc">...</span>
-      <span class="sep">│</span>
-      <span>MSGS:</span><span class="v" id="pc">...</span>
-    </div>
-    <div class="seg">
-      <span>DATE:</span><span class="v" id="datedisp">--</span>
-      <span class="sep">│</span>
-      <span>TIME:</span><span class="v" id="clk">--:--:--</span>
-      <span class="sep">│</span>
-      <span class="on">● ONLINE</span>
-    </div>
+    <span class="lbl">SYS:</span><span>sinXne0-BBS</span>
+    <span class="lbl">&nbsp;|&nbsp;NODE:</span><span>01/01</span>
+    <span class="lbl">&nbsp;|&nbsp;ONLINE:</span><span id="sb-online">7</span>
+    <span class="lbl">&nbsp;|&nbsp;MSGS:</span><span id="sb-msgs">0</span>
+    <span class="lbl">&nbsp;|&nbsp;DATE:</span><span id="sb-date">--/--/----</span>
+    <span class="lbl">&nbsp;|&nbsp;TIME:</span><span id="sb-time">--:--:--</span>
+    <span>&nbsp;&nbsp;<span id="online-dot">&#x25CF;</span> ONLINE</span>
   </div>
 
   <!-- NAV -->
   <div id="nav">
-    <div class="ni act" onclick="showB('all')"    id="nv-all">    <span class="k">[0]</span> ALL BOARDS</div>
-    <div class="ni"     onclick="showB('linux')"  id="nv-linux">  <span class="k">[1]</span> LINUX/SEC</div>
-    <div class="ni"     onclick="showB('pager')"  id="nv-pager">  <span class="k">[2]</span> WIFI PAGER</div>
-    <div class="ni"     onclick="showB('hackrf')" id="nv-hackrf"> <span class="k">[3]</span> HACKRF/SDR</div>
-    <div class="ni"     onclick="showB('osint')"  id="nv-osint">  <span class="k">[4]</span> OSINT</div>
-    <div class="ni"     onclick="showB('general')"id="nv-general"><span class="k">[5]</span> GENERAL</div>
-    <div class="ni"     onclick="openDoors()"                    ><span class="k">[D]</span> DOORS</div>
+    <div class="nav-tab active" data-board="all"     onclick="switchBoard('all')"    ><b class="aa">[0]</b> ALL</div>
+    <div class="nav-tab"        data-board="linux"   onclick="switchBoard('linux')"  ><b class="aa">[1]</b> LINUX/SEC</div>
+    <div class="nav-tab"        data-board="pager"   onclick="switchBoard('pager')"  ><b class="aa">[2]</b> WIFI PAGER</div>
+    <div class="nav-tab"        data-board="hackrf"  onclick="switchBoard('hackrf')" ><b class="aa">[3]</b> HACKRF/SDR</div>
+    <div class="nav-tab"        data-board="osint"   onclick="switchBoard('osint')"  ><b class="aa">[4]</b> OSINT</div>
+    <div class="nav-tab"        data-board="general" onclick="switchBoard('general')"><b class="aa">[5]</b> GENERAL</div>
+    <div class="nav-tab"        data-board="doors"   onclick="openDoorsMenu()"       ><b class="aa">[D]</b> DOORS</div>
   </div>
 
-  <!-- GRID -->
+  <!-- MAIN GRID -->
   <div id="grid">
 
-    <!-- ── MAIN COL ── -->
-    <div>
+    <!-- MAIN CONTENT -->
+    <div id="main-content">
 
-      <!-- Post view -->
-      <div id="pview">
-        <div class="pv-hdr">
-          <span>╔══ MESSAGE READER ══╗</span>
-          <span id="pv-bdg" style="font-size:15px;color:var(--gd);border:1px solid var(--gm);padding:0 5px;">BOARD</span>
-        </div>
-        <div class="pv-inner">
-          <div class="pv-title" id="pv-t"></div>
-          <div class="pv-meta"  id="pv-m"></div>
-          <div class="pv-body"  id="pv-b"></div>
-          <div class="pv-acts">
-            <button class="btn"    onclick="closePV()">[ ◄ BACK ]</button>
-            <a      class="btn am" id="pv-gh" href="#" target="_blank">[ VIEW ON GITHUB ]</a>
-          </div>
-        </div>
+      <!-- COMPOSE BUTTON -->
+      <div id="compose-btn-wrap">
+        <button class="btn btn-am" onclick="toggleCompose()">[N] NEW MESSAGE</button>
+        <button class="btn" onclick="loadPosts()">[R] REFRESH</button>
       </div>
 
-      <!-- Compose -->
-      <button id="cpbtn" onclick="togCp()">[ ✎ COMPOSE MESSAGE ]</button>
-      <div id="cpform">
-        <div class="bcard-hdr"><span>╔══ COMPOSE MESSAGE ══╗</span></div>
-        <div class="fi">
-          <div class="ghn">▶ Redirects to GitHub Issues with labels pre-filled ·
-            <a href="https://github.com/sinXne0/sinXne0.github.io/issues" target="_blank">sinXne0.github.io/issues</a>
-          </div>
-          <div class="fr"><label>▸ BOARD:</label>
-            <select id="f-board">
-              <option value="linux">  [1] LINUX / SECURITY</option>
-              <option value="pager">  [2] WIFI PAGER</option>
-              <option value="hackrf"> [3] HACKRF / SDR</option>
-              <option value="osint">  [4] OSINT / RECON</option>
-              <option value="general">[5] GENERAL</option>
+      <!-- COMPOSE FORM -->
+      <div id="compose-wrap">
+        <div class="compose-hdr">&#x2554;&#x2550;&#x2550; COMPOSE NEW MESSAGE &#x2550;&#x2550;&#x2557;</div>
+        <div class="compose-form">
+          <div>
+            <div class="field-lbl">BOARD:</div>
+            <select class="field-sel" id="cf-board">
+              <option value="board:linux">LINUX/SEC</option>
+              <option value="board:pager">WIFI PAGER</option>
+              <option value="board:hackrf">HACKRF/SDR</option>
+              <option value="board:osint">OSINT</option>
+              <option value="board:general">GENERAL</option>
             </select>
           </div>
-          <div class="fr"><label>▸ SUBJECT:</label>
-            <input id="f-title" type="text" placeholder="Message subject..." maxlength="120">
+          <div>
+            <div class="field-lbl">SUBJECT:</div>
+            <input class="field-inp" id="cf-subject" type="text" placeholder="Enter subject...">
           </div>
-          <div class="fr"><label>▸ HANDLE / ALIAS:</label>
-            <input id="f-handle" type="text" placeholder="e.g. d4rk_ph4nt0m" maxlength="40">
+          <div>
+            <div class="field-lbl">HANDLE:</div>
+            <input class="field-inp" id="cf-handle" type="text" placeholder="Your handle...">
           </div>
-          <div class="fr"><label>▸ MESSAGE BODY:</label>
-            <textarea id="f-body" placeholder="Type your message here..."></textarea>
+          <div>
+            <div class="field-lbl">MESSAGE:</div>
+            <textarea class="field-ta" id="cf-body" placeholder="Type your message...&#10;&#10;Handle: YourHandle&#10;"></textarea>
           </div>
-          <div class="fa">
-            <button class="btn am" onclick="doPost()">[ ► SEND ]</button>
-            <button class="btn rd" onclick="togCp()"> [ ✕ ABORT ]</button>
+          <div class="compose-btns">
+            <button class="btn btn-am" onclick="submitCompose()">[ &#x25BA; SEND ]</button>
+            <button class="btn btn-rd" onclick="toggleCompose()">[ &#x2715; ABORT ]</button>
           </div>
         </div>
       </div>
 
-      <!-- Board sections -->
-      <div id="b-all" class="bsec vis">
-        <div class="bcard">
-          <div class="bcard-hdr"><span>╔══ ALL MESSAGE BASES ══╗</span><span class="bdg" id="cnt-all">…</span></div>
-          <div id="l-all"><div style="padding:10px;color:var(--gm)">[ FETCHING MESSAGES… ]</div></div>
-        </div>
-      </div>
-      <div id="b-linux"   class="bsec"><div class="bcard"><div class="bcard-hdr"><span>╔══ LINUX / SECURITY ══╗</span><span class="bdg" id="cnt-linux">0</span></div><div id="l-linux"></div></div></div>
-      <div id="b-pager"   class="bsec"><div class="bcard"><div class="bcard-hdr"><span>╔══ WIFI PAGER ══╗</span><span class="bdg" id="cnt-pager">0</span></div><div id="l-pager"></div></div></div>
-      <div id="b-hackrf"  class="bsec"><div class="bcard"><div class="bcard-hdr"><span>╔══ HACKRF / SDR ══╗</span><span class="bdg" id="cnt-hackrf">0</span></div><div id="l-hackrf"></div></div></div>
-      <div id="b-osint"   class="bsec"><div class="bcard"><div class="bcard-hdr"><span>╔══ OSINT / RECON ══╗</span><span class="bdg" id="cnt-osint">0</span></div><div id="l-osint"></div></div></div>
-      <div id="b-general" class="bsec"><div class="bcard"><div class="bcard-hdr"><span>╔══ GENERAL ══╗</span><span class="bdg" id="cnt-general">0</span></div><div id="l-general"></div></div></div>
+      <!-- BOARD SECTIONS (dynamically populated) -->
+      <div id="board-all"     class="board-section vis"></div>
+      <div id="board-linux"   class="board-section"></div>
+      <div id="board-pager"   class="board-section"></div>
+      <div id="board-hackrf"  class="board-section"></div>
+      <div id="board-osint"   class="board-section"></div>
+      <div id="board-general" class="board-section"></div>
 
-    </div>
-
-    <!-- ── SIDEBAR ── -->
-    <div id="sb">
-
-      <!-- System info -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ SYSTEM ═╗</div>
-        <div class="sb-b">
-          <div class="sbr">SYSOP   <span class="v">sinXne0</span></div>
-          <div class="sbr">VERSION <span class="v">2.0</span></div>
-          <div class="sbr">NODES   <span class="v">01/01</span></div>
-          <div class="sbr">BAUD    <span class="v blink">2400</span></div>
-          <div class="sbr">UPTIME  <span class="v" id="upt">00:00:00</span></div>
-          <div class="sbr">MSGS    <span class="v" id="sb-pc">...</span></div>
-          <div class="sbr">BOARDS  <span class="v">5</span></div>
-          <div style="padding:4px 0 2px;font-size:13px;color:var(--gm)">CPU LOAD</div>
-          <div class="pbar" id="cpu-bar">▓▓▓▓▓▓░░░░ 60%</div>
-          <div style="padding:4px 0 2px;font-size:13px;color:var(--gm)">DISK USE</div>
-          <div class="pbar" id="dsk-bar">▓▓▓▓▓▓▓▓░░ 78%</div>
+      <!-- POST VIEW -->
+      <div id="post-view">
+        <div class="pv-titlebar" id="pv-titlebar">&#x2554;&#x2550;&#x2550; MESSAGE VIEWER &#x2550;&#x2550;&#x2557;</div>
+        <div class="pv-meta" id="pv-meta"></div>
+        <div class="pv-body" id="pv-body"></div>
+        <div class="pv-actions">
+          <button class="btn" onclick="closePostView()">[ &#x25C4; BACK ]</button>
+          <button class="btn btn-am" id="pv-github-btn" onclick="openPostGithub()">[ VIEW ON GITHUB ]</button>
         </div>
       </div>
 
-      <!-- Online now -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ ONLINE NOW ═╗</div>
-        <div class="sb-b" id="online-box">
-          <div class="ur"><span class="dot">●</span><span class="name">sinXne0</span><span class="act">SYSOP</span></div>
-          <div class="ur"><span class="dot" style="animation-delay:.3s">●</span><span class="name">d4rk_ph4nt0m</span><span class="act">LINUX</span></div>
-          <div class="ur"><span class="dot" style="animation-delay:.6s">●</span><span class="name">r4d10_gh0st</span><span class="act">HACKRF</span></div>
-          <div class="ur"><span class="dot" style="animation-delay:.9s">●</span><span class="name">0x_wh1sp3r</span><span class="act">OSINT</span></div>
+      <!-- COMMAND LINE -->
+      <div id="cmd-wrap">
+        <div>
+          <span id="cmd-prompt">sinXne0-BBS&gt;&nbsp;</span><input id="cmd-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="64">
+        </div>
+        <div id="cmd-feedback">&nbsp;</div>
+      </div>
+
+    </div><!-- /main-content -->
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+
+      <!-- SYSTEM INFO -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; SYSTEM INFO &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="sys-row"><span>SYSOP:</span><span class="val">sinXne0</span></div>
+          <div class="sys-row"><span>VER:</span><span class="val">v2.0</span></div>
+          <div class="sys-row"><span>NODES:</span><span class="val">1/1 ACTIVE</span></div>
+          <div class="sys-row"><span>BAUD:</span><span class="val">2400/ARQ</span></div>
+          <div class="sys-row"><span>UPTIME:</span><span class="val" id="sb-uptime">00:00:00</span></div>
+          <div class="sys-row"><span>MSGS:</span><span class="val" id="sb-msgs2">0</span></div>
+          <div class="sys-row"><span>BOARDS:</span><span class="val">5</span></div>
+          <div class="prog-wrap">
+            <div class="prog-lbl"><span>CPU</span><span id="cpu-pct">0%</span></div>
+            <div class="prog-bar"><div class="prog-fill" id="cpu-bar" style="width:0%"></div></div>
+            <div class="prog-lbl"><span>DISK</span><span id="disk-pct">0%</span></div>
+            <div class="prog-bar"><div class="prog-fill" id="disk-bar" style="width:0%"></div></div>
+          </div>
         </div>
       </div>
 
-      <!-- Last callers -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ LAST CALLERS ═╗</div>
-        <div class="sb-b">
-          <div class="cr"><span class="handle">d4rk_ph4nt0m</span><div class="info">LINUX/SEC</div><div class="loc">14 Mar · 2400bd</div></div>
-          <div class="cr"><span class="handle">r4d10_gh0st</span><div class="info">HACKRF/SDR</div><div class="loc">14 Mar · 9600bd</div></div>
-          <div class="cr"><span class="handle">0x_wh1sp3r</span><div class="info">OSINT</div><div class="loc">13 Mar · 2400bd</div></div>
-          <div class="cr"><span class="handle">n3tw0rk_wr4ith</span><div class="info">GENERAL</div><div class="loc">13 Mar · 14400bd</div></div>
-          <div class="cr"><span class="handle">ph4nt0m_p4g3r</span><div class="info">WIFI PAGER</div><div class="loc">12 Mar · 2400bd</div></div>
-          <div class="cr"><span class="handle">sp3ctr3_h4x</span><div class="info">LINUX/SEC</div><div class="loc">12 Mar · 9600bd</div></div>
+      <!-- ONLINE NOW -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; ONLINE NOW &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="online-user"><span class="dot dot-blink-1">&#x25CF;</span><span class="handle">d4rk_ph4nt0m</span><span class="board">&nbsp;[HACKRF]</span></div>
+          <div class="online-user"><span class="dot dot-blink-2">&#x25CF;</span><span class="handle">r4d10_gh0st</span><span class="board">&nbsp;[LINUX]</span></div>
+          <div class="online-user"><span class="dot dot-blink-3">&#x25CF;</span><span class="handle">0x_wh1sp3r</span><span class="board">&nbsp;[OSINT]</span></div>
+          <div class="online-user"><span class="dot dot-blink-4">&#x25CF;</span><span class="handle">cyb3r_5hakl</span><span class="board">&nbsp;[GENERAL]</span></div>
         </div>
       </div>
 
-      <!-- Activity feed -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ ACTIVITY ═╗</div>
-        <div class="sb-b" id="feed">
-          <div class="feed-item"><span class="fh">sinXne0</span> <span class="fa2">posted in</span> <span class="ft">[HACKRF]</span></div>
-          <div class="feed-item"><span class="fh">d4rk_ph4nt0m</span> <span class="fa2">read</span> <span class="ft">[LINUX]</span></div>
-          <div class="feed-item"><span class="fh">r4d10_gh0st</span> <span class="fa2">joined</span> <span class="ft">NODE 01</span></div>
-          <div class="feed-item"><span class="fh">sinXne0</span> <span class="fa2">posted in</span> <span class="ft">[GENERAL]</span></div>
-          <div class="feed-item"><span class="fh">0x_wh1sp3r</span> <span class="fa2">read</span> <span class="ft">[OSINT]</span></div>
+      <!-- LAST CALLERS -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; LAST CALLERS &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="caller-row"><span class="ch">n3ur0_hack</span> <span class="cb">[PAGER]</span><br><span class="cd">03/15/26 &nbsp;2400bps</span></div>
+          <div class="caller-row"><span class="ch">ph4nt0m_0p</span> <span class="cb">[HACKRF]</span><br><span class="cd">03/14/26 &nbsp;9600bps</span></div>
+          <div class="caller-row"><span class="ch">w1r3_wr4ith</span> <span class="cb">[LINUX]</span><br><span class="cd">03/14/26 &nbsp;2400bps</span></div>
+          <div class="caller-row"><span class="ch">z3r0_d4y</span> <span class="cb">[OSINT]</span><br><span class="cd">03/13/26 &nbsp;14400bps</span></div>
+          <div class="caller-row"><span class="ch">5igm4_7</span> <span class="cb">[GENERAL]</span><br><span class="cd">03/13/26 &nbsp;2400bps</span></div>
+          <div class="caller-row"><span class="ch">r3d_phr34k</span> <span class="cb">[PAGER]</span><br><span class="cd">03/12/26 &nbsp;9600bps</span></div>
         </div>
       </div>
 
-      <!-- Door games -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ DOOR GAMES ═╗</div>
-        <div class="sb-b">
-          <div class="dr" onclick="openDoors('tradewars')"><div class="dn">► Trade Wars 2002</div><div class="dd">Space trading sim</div></div>
-          <div class="dr" onclick="openDoors('lord')">     <div class="dn">► Legend of the Red Dragon</div><div class="dd">RPG classic</div></div>
-          <div class="dr" onclick="openDoors('ninja')">    <div class="dn">► Usurper</div><div class="dd">Dungeon RPG</div></div>
-          <div class="dr" onclick="openDoors('chess')">    <div class="dn">► Door Chess</div><div class="dd">Correspondence chess</div></div>
+      <!-- MOTD -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; MSG OF THE DAY &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div id="motd-text">"..."</div>
         </div>
       </div>
 
-      <!-- Repos -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ REPOS ═╗</div>
-        <div class="sb-b">
-          <div class="sbr">Linux Tools <a href="https://github.com/sinXne0/linux-security-tools" target="_blank">[git]</a></div>
-          <div class="sbr">OSINT Tools <a href="https://github.com/sinXne0/osint-tools" target="_blank">[git]</a></div>
-          <div class="sbr">Pager Tools <a href="https://github.com/sinXne0/pager-tools" target="_blank">[git]</a></div>
-          <div class="sbr">HackRF      <a href="https://github.com/sinXne0/Hackrf-Themes" target="_blank">[git]</a></div>
+      <!-- ACTIVITY FEED -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; ACTIVITY FEED &#x2550;&#x2557;</div>
+        <div class="widget-body" id="activity-feed">
+          <div class="act-item"><span class="ach">d4rk_ph4nt0m</span> posted in [HACKRF]</div>
+          <div class="act-item"><span class="ach">r4d10_gh0st</span> read [LINUX]</div>
+          <div class="act-item"><span class="ach">0x_wh1sp3r</span> joined NODE 01</div>
+          <div class="act-item"><span class="ach">n3ur0_hack</span> posted in [PAGER]</div>
+          <div class="act-item"><span class="ach">5igm4_7</span> read [GENERAL]</div>
         </div>
       </div>
 
-      <!-- Tags -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ TAGS ═╗</div>
-        <div class="sb-b">
-          <span class="tag" onclick="fTag('hackrf')">#hackrf</span>
-          <span class="tag" onclick="fTag('sdr')">#sdr</span>
-          <span class="tag" onclick="fTag('pager')">#pager</span>
-          <span class="tag" onclick="fTag('linux')">#linux</span>
-          <span class="tag" onclick="fTag('osint')">#osint</span>
-          <span class="tag" onclick="fTag('wifi')">#wifi</span>
-          <span class="tag" onclick="fTag('pentest')">#pentest</span>
-          <span class="tag" onclick="fTag('ctf')">#ctf</span>
-          <span class="tag" onclick="fTag('radio')">#radio</span>
-          <span class="tag" onclick="fTag('exploit')">#exploit</span>
-          <span class="tag" onclick="fTag('recon')">#recon</span>
-          <span class="tag" onclick="fTag('crack')">#crack</span>
+      <!-- FILE AREAS -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; FILE AREAS &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
+            <span class="fa-name">[UTILS]</span><span class="fa-count">42 files</span>
+          </div>
+          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
+            <span class="fa-name">[ANSI ART]</span><span class="fa-count">18 files</span>
+          </div>
+          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
+            <span class="fa-name">[DOCS]</span><span class="fa-count">31 files</span>
+          </div>
+          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
+            <span class="fa-name">[TOOLS]</span><span class="fa-count">67 files</span>
+          </div>
+          <div class="file-area-row" onclick="showToast('FILE AREA: Coming soon \u2014 stay tuned!')">
+            <span class="fa-name">[MISC]</span><span class="fa-count">24 files</span>
+          </div>
         </div>
       </div>
 
-      <!-- ANSI art -->
-      <div class="sb-box">
-        <div class="sb-t">╔═ SYS ART ═╗</div>
-        <div class="sb-b">
-<pre style="font-size:13px;line-height:1.2;white-space:pre;font-family:'VT323',monospace">
-<span style="color:#00cc33">╔═══════════════╗</span>
-<span style="color:#00cc33">║</span> <span style="color:#00ff41">s</span><span style="color:#00e8ff">i</span><span style="color:#00ff41">n</span><span style="color:#ffb300">X</span><span style="color:#00ff41">n</span><span style="color:#00e8ff">e</span><span style="color:#00ff41">0</span> <span style="color:#ff44cc">BBS</span>  <span style="color:#00cc33">║</span>
-<span style="color:#00cc33">║</span>  <span style="color:#ffb300">▓▓▓▓▓▓▓▓▓▓▓</span>  <span style="color:#00cc33">║</span>
-<span style="color:#00cc33">║</span>  <span style="color:#00ff41">NODE 01/01</span>  <span style="color:#00cc33">║</span>
-<span style="color:#00cc33">║</span>  <span style="color:#00e8ff">2400 BAUD</span>   <span style="color:#00cc33">║</span>
-<span style="color:#00cc33">╚═══════════════╝</span>
-<span style="color:#007722">HACK THE PLANET</span>
-<span style="color:#007722">STAY CURIOUS</span>
-<span style="color:#007722">════════════════</span>
-<span style="color:#ff44cc">▓</span><span style="color:#ffb300">▓</span><span style="color:#00e8ff">▓</span><span style="color:#00ff41">▓</span><span style="color:#ff44cc">▓</span><span style="color:#ffb300">▓</span><span style="color:#00e8ff">▓</span><span style="color:#00ff41">▓</span><span style="color:#ff44cc">▓</span><span style="color:#ffb300">▓</span><span style="color:#00e8ff">▓</span><span style="color:#00ff41">▓</span><span style="color:#ff44cc">▓</span><span style="color:#ffb300">▓</span><span style="color:#00e8ff">▓</span><span style="color:#00ff41">▓</span></pre>
+      <!-- DOOR GAMES -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; DOOR GAMES &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="door-row" onclick="openDoor('tw2002')">&#x25BA; Trade Wars 2002</div>
+          <div class="door-row" onclick="openDoor('lord')">&#x25BA; Legend of the Red Dragon</div>
+          <div class="door-row" onclick="openDoor('usurper')">&#x25BA; Usurper</div>
+          <div class="door-row" onclick="openDoor('chess')">&#x25BA; Door Chess</div>
         </div>
       </div>
 
-    </div><!-- /sb -->
+      <!-- REPOS -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; REPOS &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <a class="repo-link" href="https://github.com/sinXne0/sinXne0.github.io" target="_blank">sinXne0.github.io</a>
+          <a class="repo-link" href="https://github.com/sinXne0/pager-tools" target="_blank">pager-tools</a>
+          <a class="repo-link" href="https://github.com/sinXne0/osint-tools" target="_blank">osint-tools</a>
+          <a class="repo-link" href="https://github.com/sinXne0/hackrf-tools" target="_blank">hackrf-tools</a>
+          <a class="repo-link" href="https://github.com/sinXne0" target="_blank">[ ALL REPOS &#x2192; ]</a>
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; TAGS &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div class="tag-cloud">
+            <span class="tag" onclick="switchBoard('hackrf')">#hackrf</span>
+            <span class="tag" onclick="switchBoard('linux')">#linux</span>
+            <span class="tag" onclick="switchBoard('pager')">#pager</span>
+            <span class="tag" onclick="switchBoard('osint')">#osint</span>
+            <span class="tag" onclick="showToast('TAG: #sdr \u2014 searching...')">#sdr</span>
+            <span class="tag" onclick="showToast('TAG: #ansi \u2014 searching...')">#ansi</span>
+            <span class="tag" onclick="showToast('TAG: #security \u2014 searching...')">#security</span>
+            <span class="tag" onclick="showToast('TAG: #bbs \u2014 searching...')">#bbs</span>
+            <span class="tag" onclick="showToast('TAG: #rf \u2014 searching...')">#rf</span>
+            <span class="tag" onclick="showToast('TAG: #wifi \u2014 searching...')">#wifi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYS ART -->
+      <div class="widget">
+        <div class="widget-hdr">&#x2554;&#x2550; SYS ART &#x2550;&#x2557;</div>
+        <div class="widget-body">
+          <div id="sys-art"></div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+
   </div><!-- /grid -->
 
-  <div id="ftr">
-    <div>sinXne0 BBS v2.0 ══ Powered by GitHub Issues ══ &copy; 2024 sinXne0</div>
-    <div style="margin-top:3px">
-      <a href="https://github.com/sinXne0" target="_blank">[GITHUB]</a> ··
-      <a href="https://github.com/sinXne0/sinXne0.github.io/issues/new" target="_blank">[NEW POST]</a> ··
-      <a href="https://github.com/sinXne0/sinXne0.github.io/issues" target="_blank">[ALL POSTS]</a> ··
-      <a href="#" onclick="playModem()">[(▶) MODEM SFX]</a>
-    </div>
+  <!-- FOOTER -->
+  <div id="footer">
+    sinXne0 BBS v2.0 &#x2550;&#x2550; Powered by GitHub Issues &#x2550;&#x2550; &copy; 2024<br>
+    <a href="https://github.com/sinXne0" target="_blank">[GITHUB]</a>
+    <a href="https://github.com/sinXne0/sinXne0.github.io/issues/new" target="_blank">[NEW POST]</a>
+    <a href="https://github.com/sinXne0/sinXne0.github.io/issues?q=label%3Abbs" target="_blank">[ALL POSTS]</a>
+    <a href="#" onclick="playModemSound();return false;">[(&#x25BA;) MODEM SFX]</a>
   </div>
-</div><!-- /wrap -->
 
-<!-- Status bar -->
-<div id="stbar">
-  <div>
-    <span class="sk">0</span>ALL&nbsp;
-    <span class="sk">1</span>LINUX&nbsp;
-    <span class="sk">2</span>PAGER&nbsp;
-    <span class="sk">3</span>HACKRF&nbsp;
-    <span class="sk">4</span>OSINT&nbsp;
-    <span class="sk">5</span>GENERAL&nbsp;
-    <span class="sk">N</span>NEW&nbsp;
-    <span class="sk">ESC</span>BACK
-  </div>
-  <div class="smsg sv" id="smsg">READY.</div>
-</div>
+</div><!-- /wrapper -->
 
-<!-- Door games modal -->
-<div id="modal">
-  <div id="modal-box">
-    <h2 id="modal-title">DOOR GAME</h2>
-    <p id="modal-body">This door game is offline for maintenance. Check back later, traveller.</p>
-    <button class="btn am" onclick="closeModal()" style="font-size:18px">[ CLOSE ]</button>
+<!-- FIXED STATUS BAR -->
+<div id="status-bar">
+  <div class="keys">
+    <b>[0]</b>ALL <b>[1]</b>LINUX <b>[2]</b>PAGER <b>[3]</b>HACKRF <b>[4]</b>OSINT <b>[5]</b>GENERAL <b>[N]</b>NEW <b>[D]</b>DOORS <b>[ESC]</b>BACK
   </div>
+  <div id="status-msg">CONNECTED // 2400 BAUD</div>
 </div>
 
 <script>
-// ════════════════════════════════════
-//  SPACE BACKGROUND
-// ════════════════════════════════════
-(function(){
-  const cv=document.getElementById('bg'), cx=cv.getContext('2d');
-  let W,H,stars=[],shooters=[],nebulaC,shootTmr=180,t=0;
+'use strict';
 
-  function mkStar(){
-    const r=Math.random();
-    return {
-      x:Math.random()*(W||innerWidth), y:Math.random()*(H||innerHeight),
-      sz: r<.72?.4+Math.random()*.9 : r<.92?1.1+Math.random()*1.3 : 2+Math.random()*2,
-      hue:[200,220,240,250,35,50,300][Math.floor(Math.random()*7)],
-      sat:Math.floor(Math.random()*60),
-      ba:.35+Math.random()*.65, a:.5,
-      ts:.007+Math.random()*.022, to:Math.random()*Math.PI*2
-    };
+// ══════════════════════════════════════════════════════════
+// SPACE CANVAS
+// ══════════════════════════════════════════════════════════
+(function initSpace() {
+  const canvas = document.getElementById('space-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  const STAR_COUNT = 480;
+  const NEBULA_COUNT = 5;
+  const stars = [];
+  const nebulae = [];
+  const shootingStars = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
   }
-  function mkShooter(){
-    const a=(10+Math.random()*35)*Math.PI/180, s=7+Math.random()*9;
-    return {x:Math.random()*W,y:Math.random()*H*.5,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-      len:80+Math.random()*130,life:1,decay:.013+Math.random()*.018};
+
+  const STAR_COLORS = ['#ffffff','#aadaff','#cce8ff','#ffe8aa','#aaffee','#ffaacc','#d0d0ff'];
+
+  function initStars() {
+    stars.length = 0;
+    for (var i = 0; i < STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.8 + 0.3,
+        color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.003 + Math.random() * 0.008,
+        brightness: 0.4 + Math.random() * 0.6,
+        twinkleAmp: 0.3 + Math.random() * 0.5
+      });
+    }
   }
-  function mkNebula(){
-    nebulaC=document.createElement('canvas');
-    nebulaC.width=W; nebulaC.height=H;
-    const nc=nebulaC.getContext('2d');
-    [{x:.12,y:.2,rx:.30,ry:.25,h:255,s:65,l:12,a:.21},
-     {x:.78,y:.65,rx:.35,ry:.30,h:285,s:55,l:10,a:.18},
-     {x:.50,y:.42,rx:.45,ry:.38,h:215,s:45,l:8,a:.12},
-     {x:.88,y:.18,rx:.22,ry:.20,h:335,s:60,l:10,a:.16},
-     {x:.28,y:.78,rx:.28,ry:.22,h:180,s:40,l:9,a:.13}].forEach(b=>{
-      const R=Math.max(b.rx*W,b.ry*H);
-      nc.save(); nc.scale(b.rx*W/R,b.ry*H/R);
-      const g=nc.createRadialGradient(b.x*R/(b.rx),b.y*R/(b.ry),0,b.x*R/(b.rx),b.y*R/(b.ry),R);
-      g.addColorStop(0,`hsla(${b.h},${b.s}%,${b.l+10}%,${b.a})`);
-      g.addColorStop(.5,`hsla(${b.h},${b.s}%,${b.l+3}%,${b.a*.4})`);
-      g.addColorStop(1,`hsla(${b.h},${b.s}%,${b.l}%,0)`);
-      nc.fillStyle=g; nc.beginPath(); nc.arc(b.x*R/(b.rx),b.y*R/(b.ry),R,0,Math.PI*2); nc.fill();
-      nc.restore();
+
+  var NEBULA_DEFS = [
+    {cr:'rgba(80,0,120,0.15)',   ce:'rgba(0,0,60,0)'},
+    {cr:'rgba(0,40,120,0.12)',   ce:'rgba(0,0,40,0)'},
+    {cr:'rgba(120,0,80,0.1)',    ce:'rgba(40,0,40,0)'},
+    {cr:'rgba(0,80,100,0.12)',   ce:'rgba(0,20,40,0)'},
+    {cr:'rgba(60,0,100,0.1)',    ce:'rgba(0,0,30,0)'},
+  ];
+
+  function initNebulae() {
+    nebulae.length = 0;
+    for (var i = 0; i < NEBULA_COUNT; i++) {
+      var def = NEBULA_DEFS[i % NEBULA_DEFS.length];
+      nebulae.push({
+        x:  Math.random() * W,
+        y:  Math.random() * H,
+        rx: 120 + Math.random() * 200,
+        ry: 80  + Math.random() * 150,
+        cr: def.cr,
+        ce: def.ce
+      });
+    }
+  }
+
+  var lastShoot = 0;
+  var SHOOT_INTERVAL = 4000;
+
+  function spawnShootingStar() {
+    shootingStars.push({
+      x:     Math.random() * W * 0.8,
+      y:     Math.random() * H * 0.4,
+      len:   80 + Math.random() * 120,
+      angle: Math.PI / 5 + Math.random() * 0.3,
+      speed: 8 + Math.random() * 6,
+      life:  1.0,
+      decay: 0.025 + Math.random() * 0.02
     });
   }
-  function resize(){
-    W=cv.width=innerWidth; H=cv.height=innerHeight;
-    stars=Array.from({length:480},mkStar); mkNebula();
+
+  function drawNebulae() {
+    for (var i = 0; i < nebulae.length; i++) {
+      var n = nebulae[i];
+      var maxR = Math.max(n.rx, n.ry);
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.scale(n.rx / maxR, n.ry / maxR);
+      var grad = ctx.createRadialGradient(0, 0, 0, 0, 0, maxR);
+      grad.addColorStop(0, n.cr);
+      grad.addColorStop(1, n.ce);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, maxR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
   }
-  function frame(){
-    t++;
-    const bg=cx.createLinearGradient(0,0,W*.2,H);
-    bg.addColorStop(0,'#00000e'); bg.addColorStop(.5,'#010009'); bg.addColorStop(1,'#000007');
-    cx.fillStyle=bg; cx.fillRect(0,0,W,H);
-    cx.drawImage(nebulaC,0,0);
-    // stars
-    stars.forEach(s=>{
-      s.a=Math.max(.05,s.ba+Math.sin(t*s.ts+s.to)*.4);
-      if(s.sz>1.8){
-        const g=cx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.sz*4.5);
-        g.addColorStop(0,`hsla(${s.hue},${s.sat}%,97%,${s.a})`);
-        g.addColorStop(.4,`hsla(${s.hue},${s.sat}%,85%,${s.a*.3})`);
-        g.addColorStop(1,`hsla(${s.hue},${s.sat}%,70%,0)`);
-        cx.beginPath(); cx.arc(s.x,s.y,s.sz*4.5,0,Math.PI*2);
-        cx.fillStyle=g; cx.fill();
-      }
-      cx.beginPath(); cx.arc(s.x,s.y,s.sz,0,Math.PI*2);
-      cx.fillStyle=`hsla(${s.hue},${s.sat}%,97%,${s.a})`; cx.fill();
-    });
-    // shooting stars
-    if(--shootTmr<=0&&shooters.length<3){shooters.push(mkShooter());shootTmr=120+Math.random()*260;}
-    shooters=shooters.filter(sh=>{
-      sh.x+=sh.vx; sh.y+=sh.vy; sh.life-=sh.decay;
-      if(sh.life<=0||sh.x>W+80||sh.y>H+80) return false;
-      const tx=sh.x-sh.vx*sh.len*.007, ty=sh.y-sh.vy*sh.len*.007;
-      const g2=cx.createLinearGradient(tx,ty,sh.x,sh.y);
-      g2.addColorStop(0,'rgba(255,255,255,0)');
-      g2.addColorStop(.5,`rgba(200,230,255,${sh.life*.45})`);
-      g2.addColorStop(1,`rgba(255,255,255,${sh.life})`);
-      cx.beginPath(); cx.moveTo(tx,ty); cx.lineTo(sh.x,sh.y);
-      cx.strokeStyle=g2; cx.lineWidth=1.8; cx.stroke();
-      cx.beginPath(); cx.arc(sh.x,sh.y,2,0,Math.PI*2);
-      cx.fillStyle=`rgba(255,255,255,${sh.life})`; cx.fill();
-      return true;
-    });
-    requestAnimationFrame(frame);
+
+  var t = 0;
+  function animate(now) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#00000c';
+    ctx.fillRect(0, 0, W, H);
+
+    drawNebulae();
+
+    t += 0.016;
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var alpha = s.brightness + s.twinkleAmp * Math.sin(t * s.speed * 60 + s.phase);
+      ctx.globalAlpha = Math.max(0.1, Math.min(1, alpha));
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (now - lastShoot > SHOOT_INTERVAL) {
+      spawnShootingStar();
+      lastShoot = now;
+    }
+
+    for (var j = shootingStars.length - 1; j >= 0; j--) {
+      var ss = shootingStars[j];
+      ctx.globalAlpha = ss.life;
+      var ex = ss.x + Math.cos(ss.angle) * ss.len;
+      var ey = ss.y + Math.sin(ss.angle) * ss.len;
+      var grad2 = ctx.createLinearGradient(ss.x, ss.y, ex, ey);
+      grad2.addColorStop(0, '#ffffff');
+      grad2.addColorStop(1, 'rgba(200,240,255,0)');
+      ctx.strokeStyle = grad2;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(ss.x, ss.y);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+      ss.x += Math.cos(ss.angle) * ss.speed;
+      ss.y += Math.sin(ss.angle) * ss.speed;
+      ss.life -= ss.decay;
+      if (ss.life <= 0) shootingStars.splice(j, 1);
+    }
+
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animate);
   }
-  addEventListener('resize',resize); resize(); requestAnimationFrame(frame);
+
+  resize();
+  initStars();
+  initNebulae();
+  requestAnimationFrame(animate);
+  window.addEventListener('resize', function() { resize(); initStars(); initNebulae(); });
 })();
 
-// ════════════════════════════════════
-//  MODEM SOUND (Web Audio API)
-// ════════════════════════════════════
-let audioCtx;
-function playModem(){
-  audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
-  const tones=[
-    [440,.05],[880,.05],[1760,.05],[660,.05],[1320,.05],
-    [440,.03],[1100,.04],[880,.03],[550,.05],[1650,.04],
-    [440,.03],[2200,.02],[880,.04],[1760,.03],[660,.05],
+// ══════════════════════════════════════════════════════════
+// ASCII HEADER  (three-colour block letters)
+// ══════════════════════════════════════════════════════════
+(function buildHeader() {
+  // cyan rows, green rows, amber rows for the BBS block letters
+  var lines = [
+    '<span class="ac">  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557     \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557</span>',
+    '<span class="ac">  \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d</span>',
+    '<span class="ag">  \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551  \u2588\u2588\u2588\u2557     \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557</span>',
+    '<span class="ag">  \u2588\u2588\u2554\u2550\u2550\u255d \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551 \u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551</span>',
+    '<span class="aa">  \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u255d \u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d     \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551</span>',
+    '<span class="aa">  \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d     \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d</span>',
+    '<span class="am2">  \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 [ NODE 01 // ONLINE // 2400 BAUD ] \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550</span>',
   ];
-  let delay=0;
-  tones.forEach(([freq,dur])=>{
-    const osc=audioCtx.createOscillator();
-    const gain=audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.frequency.value=freq; osc.type='sawtooth';
-    gain.gain.setValueAtTime(.06,audioCtx.currentTime+delay);
-    gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+delay+dur);
-    osc.start(audioCtx.currentTime+delay);
-    osc.stop(audioCtx.currentTime+delay+dur+.01);
-    delay+=dur;
+  document.getElementById('ascii-banner').innerHTML = lines.join('\n');
+})();
+
+// ══════════════════════════════════════════════════════════
+// SYS ART
+// ══════════════════════════════════════════════════════════
+(function buildSysArt() {
+  var art = [
+    '<span style="color:#00e8ff">\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#ff44cc">\u2593\u2593\u2593</span><span style="color:#00ff41">\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593</span><span style="color:#ffb300">\u2593\u2593\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#ff44cc">\u2593</span><span style="color:#00e8ff">\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557</span><span style="color:#ff44cc">\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#00ff41">\u2593</span><span style="color:#00e8ff">\u2551</span><span style="color:#ffb300">s1nXne0 BBS</span><span style="color:#00e8ff">\u2551</span><span style="color:#00ff41">\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#ffb300">\u2593</span><span style="color:#00e8ff">\u2551</span><span style="color:#00ff41"> NODE 01/01 </span><span style="color:#00e8ff">\u2551</span><span style="color:#ffb300">\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#ff44cc">\u2593</span><span style="color:#00e8ff">\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d</span><span style="color:#ff44cc">\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u2551</span><span style="color:#00ff41">\u2593\u2593\u2593</span><span style="color:#ffb300">\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593</span><span style="color:#00ff41">\u2593\u2593\u2593</span><span style="color:#00e8ff">\u2551</span>',
+    '<span style="color:#00e8ff">\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d</span>',
+  ];
+  document.getElementById('sys-art').innerHTML = art.join('<br>');
+})();
+
+// ══════════════════════════════════════════════════════════
+// TICKER
+// ══════════════════════════════════════════════════════════
+(function buildTicker() {
+  var msgs = [
+    '\u2605 WELCOME TO sinXne0 BBS v2.0 \u2605',
+    '[ NEW ] HackRF PortaPack Mayhem custom splash screens \u2014 see HACKRF board',
+    '[ NEW ] pager-tools monorepo now live on GitHub',
+    '[ SYS ] MK-Ultra Pentest Suite updated \u2014 Flask+SocketIO web UI',
+    '[ NEW ] osint-tools monorepo \u2014 10 tools consolidated',
+    '[ MSG ] Use keys 0-5 to switch boards \u2014 N to compose \u2014 ESC to go back',
+    '[ SYS ] Board uptime: 99.9% \u2014 No carrier drops in 48h',
+    '[ INFO ] BAUD RATE: 2400/ARQ \u2014 PROTOCOL: ZMODEM \u2014 NODES: 1/1',
+    '\u2605 HACK THE PLANET \u2605 INFORMATION WANTS TO BE FREE \u2605 STAY ANONYMOUS \u2605',
+    '[ FILE ] New uploads in TOOLS area \u2014 67 files available',
+    '[ SYS ] FOSSIL driver v9.1 loaded \u2014 DTR: ON \u2014 RTS: ON',
+    '[ DOOR ] Trade Wars 2002 \u2014 Legend of the Red Dragon \u2014 Usurper \u2014 coming soon',
+  ];
+  var full = msgs.join('   \u00b7   ') + '   \u00b7   ' + msgs.join('   \u00b7   ');
+  document.getElementById('ticker-track').textContent = full;
+})();
+
+// ══════════════════════════════════════════════════════════
+// MOTD
+// ══════════════════════════════════════════════════════════
+(function setMotd() {
+  var motds = [
+    '"The Matrix is everywhere. It is all around us."',
+    '"Hack the planet!"',
+    '"Information wants to be free."',
+    '"Trust no one. Verify everything."',
+    '"Stay anonymous. Stay curious."',
+    '"The quieter you become, the more you are able to hear."',
+  ];
+  document.getElementById('motd-text').textContent = motds[Math.floor(Math.random() * motds.length)];
+})();
+
+// ══════════════════════════════════════════════════════════
+// CLOCK / SYSBAR
+// ══════════════════════════════════════════════════════════
+var startTime = Date.now();
+
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function updateClock() {
+  var now = new Date();
+  var d = pad2(now.getMonth()+1) + '/' + pad2(now.getDate()) + '/' + now.getFullYear();
+  var t = pad2(now.getHours()) + ':' + pad2(now.getMinutes()) + ':' + pad2(now.getSeconds());
+  document.getElementById('sb-date').textContent = d;
+  document.getElementById('sb-time').textContent = t;
+
+  var elapsed = Math.floor((Date.now() - startTime) / 1000);
+  var eh = pad2(Math.floor(elapsed/3600));
+  var em = pad2(Math.floor((elapsed%3600)/60));
+  var es = pad2(elapsed%60);
+  document.getElementById('sb-uptime').textContent = eh + ':' + em + ':' + es;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// Random online count
+document.getElementById('sb-online').textContent = Math.floor(Math.random() * 10) + 3;
+
+// CPU/DISK simulation
+function randomizeBars() {
+  var cpu  = Math.floor(Math.random() * 60) + 10;
+  var disk = Math.floor(Math.random() * 40) + 30;
+  document.getElementById('cpu-bar').style.width  = cpu + '%';
+  document.getElementById('cpu-pct').textContent  = cpu + '%';
+  document.getElementById('disk-bar').style.width = disk + '%';
+  document.getElementById('disk-pct').textContent = disk + '%';
+}
+randomizeBars();
+setInterval(randomizeBars, 3000);
+
+// ══════════════════════════════════════════════════════════
+// WEB AUDIO (MODEM)
+// ══════════════════════════════════════════════════════════
+var audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playModemSound() {
+  var ctx = getAudioCtx();
+  var seq = [
+    {freq:440,  dur:0.08},
+    {freq:880,  dur:0.08},
+    {freq:1760, dur:0.06},
+    {freq:660,  dur:0.10},
+    {freq:1320, dur:0.06},
+    {freq:2200, dur:0.05},
+    {freq:1100, dur:0.08},
+    {freq:2400, dur:0.12},
+    {freq:1800, dur:0.05},
+    {freq:2200, dur:0.07},
+    {freq:1600, dur:0.10},
+    {freq:2400, dur:0.15},
+  ];
+  var t = ctx.currentTime;
+  seq.forEach(function(s) {
+    var osc  = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(s.freq, t);
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + s.dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + s.dur + 0.01);
+    t += s.dur + 0.01;
   });
 }
 
-// ════════════════════════════════════
-//  BOOT SEQUENCE
-// ════════════════════════════════════
-(function(){
-  const log=document.getElementById('boot-log');
-  const scr=document.getElementById('boot');
-  function bar(n){ return '<span class="fill">'+'▓'.repeat(n)+'</span><span class="empty">'+'░'.repeat(20-n)+'</span>'; }
-  const lines=[
-    {t:0,   cls:'d', txt:'SinTech BIOS v4.2.1  (C) 1993 SinTech Corporation'},
-    {t:80,  cls:'d', txt:'CPU: Intel 486DX2/66 ... OK'},
-    {t:160, cls:'d', txt:'Testing memory: '},
-    {t:200, cls:'ok',txt:'[OK] 16384 KB RAM detected'},
-    {t:300, cls:'d', txt:'HDD: Seagate ST3290A 270MB ... '},
-    {t:360, cls:'ok',txt:'[OK] Drive ready'},
-    {t:440, cls:'w', txt:'[!!] FOSSIL v9.00 driver loaded — COM2: 2400 BAUD 8N1'},
-    {t:520, cls:'d', txt:''},
-    {t:540, cls:'h', txt:'████████████████████████████████████████████'},
-    {t:560, cls:'h', txt:'  sinXne0 BBS v2.0 — Multi-Node System        '},
-    {t:580, cls:'h', txt:'  Powered by GH Issues · EST. 2024             '},
-    {t:600, cls:'h', txt:'████████████████████████████████████████████'},
-    {t:660, cls:'d', txt:''},
-    {t:680, cls:'d', txt:'Loading message bases...'},
-    {t:760, cls:'ok',txt:'[OK] LINUX/SECURITY  ['+bar(20)+'] ONLINE'},
-    {t:820, cls:'ok',txt:'[OK] WIFI PAGER      ['+bar(18)+'] ONLINE'},
-    {t:880, cls:'ok',txt:'[OK] HACKRF/SDR      ['+bar(16)+'] ONLINE'},
-    {t:940, cls:'ok',txt:'[OK] OSINT/RECON     ['+bar(19)+'] ONLINE'},
-    {t:1000,cls:'ok',txt:'[OK] GENERAL         ['+bar(20)+'] ONLINE'},
-    {t:1080,cls:'d', txt:''},
-    {t:1100,cls:'w', txt:'ATDT 555-0-BBS-0001'},
-    {t:1200,cls:'m', txt:'CONNECT 2400/ARQ/V42BIS/LAPM'},
-    {t:1300,cls:'d', txt:''},
-    {t:1320,cls:'h', txt:'>>> WELCOME TO sinXne0 BBS — NODE 01 <<<'},
-    {t:1400,cls:'d', txt:'>>> PRESS ANY KEY OR CLICK TO ENTER <<<'},
-  ];
+// ══════════════════════════════════════════════════════════
+// TOAST SYSTEM
+// ══════════════════════════════════════════════════════════
+var toastQueue = [];
+var toastBusy = false;
 
-  let dismissed=false;
-  function dismiss(){
-    if(dismissed) return; dismissed=true;
-    playModem();
-    scr.classList.add('out');
-    setTimeout(()=>scr.remove(),800);
+function showToast(msg) {
+  toastQueue.push(msg);
+  if (!toastBusy) processToastQueue();
+}
+
+function processToastQueue() {
+  if (toastQueue.length === 0) { toastBusy = false; return; }
+  toastBusy = true;
+  var msg = toastQueue.shift();
+  var el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(function() {
+    el.classList.add('out');
+    setTimeout(function() { el.remove(); processToastQueue(); }, 450);
+  }, 4000);
+}
+
+var toastMessages = [
+  'NEW MESSAGE in [HACKRF/SDR]',
+  'd4rk_ph4nt0m has joined NODE 01',
+  'r4d10_gh0st posted in [LINUX/SEC]',
+  'SYSTEM: Auto-backup complete',
+  '0x_wh1sp3r is reading [OSINT]',
+  'FILE AREA: 3 new uploads',
+  'n3ur0_hack posted in [PAGER]',
+  'SYSTEM: Sysop check-in complete',
+  'ph4nt0m_0p read [HACKRF/SDR]',
+  'SYSTEM: Node 01 stable \u2014 2400 BAUD',
+];
+
+var toastIdx = 0;
+function scheduleNextToast() {
+  var delay = 15000 + Math.random() * 10000;
+  setTimeout(function() {
+    showToast(toastMessages[toastIdx % toastMessages.length]);
+    toastIdx++;
+    scheduleNextToast();
+  }, delay);
+}
+scheduleNextToast();
+
+// ══════════════════════════════════════════════════════════
+// POST DATA — DEFAULTS
+// ══════════════════════════════════════════════════════════
+var defaultPosts = [
+  {
+    id: 0,
+    board: 'general',
+    handle: 'sinXne0',
+    title: 'Welcome to sinXne0 BBS',
+    date: '2024-01-01T00:00:00Z',
+    pinned: true,
+    url: null,
+    body: 'Welcome to sinXne0 BBS \u2014 a retro bulletin board system built on top of GitHub Issues.\n\nThis board is a place to share knowledge, tools, and ideas across the following areas:\n\n  [1] LINUX/SEC   \u2014 Linux, security research, pentesting\n  [2] WIFI PAGER  \u2014 WiFi paging tools, POCSAG, FLEX\n  [3] HACKRF/SDR  \u2014 HackRF, PortaPack, Mayhem, SDR\n  [4] OSINT       \u2014 Open source intelligence, recon tools\n  [5] GENERAL     \u2014 Everything else\n\nKEYBOARD SHORTCUTS:\n  0-5   Switch board\n  N     Compose new message\n  D     Door games\n  ESC   Back / close\n  M     Play modem sound\n  R     Read top message\n  H     Help\n  Q     Quit (goodbye)\n\nTo post a new message, press [N] or click NEW MESSAGE above.\nAll posts are stored as GitHub Issues \u2014 you will need a GitHub account to post.\n\n73 de sinXne0'
+  },
+  {
+    id: -1,
+    board: 'hackrf',
+    handle: 'sinXne0',
+    title: 'HackRF PortaPack Mayhem \u2014 Custom Splash Screens',
+    date: '2024-02-15T12:00:00Z',
+    pinned: false,
+    url: null,
+    body: 'Custom splash screens for the PortaPack H2 running Mayhem firmware.\n\nThe PortaPack displays a 240x320 pixel BMP file as a splash screen on boot.\nYou can replace the default splash with any image.\n\nREQUIREMENTS:\n  - PortaPack H2 + HackRF One\n  - Mayhem firmware (latest)\n  - ImageMagick (for conversion)\n\nCONVERT ANY IMAGE:\n  $ convert input.png -resize 240x320! -type Palette BMP3:splash.bmp\n\nPlace the resulting splash.bmp in the root of your SD card.\n\nRepo: https://github.com/sinXne0/hackrf-tools\n\nThe repo contains several pre-made splash screens including:\n  - Matrix rain animation (static frame)\n  - sinXne0 BBS logo\n  - Radio frequency spectrum art\n  - Custom glitch art designs\n\nAll images are 240x320, 256-colour BMP format, ready to drop on your SD card.\n\n73 de sinXne0'
+  },
+  {
+    id: -2,
+    board: 'linux',
+    handle: 'sinXne0',
+    title: 'MK-Ultra Pentest Suite \u2014 Flask + SocketIO Web UI',
+    date: '2024-03-01T09:00:00Z',
+    pinned: false,
+    url: null,
+    body: 'MK-Ultra is a local all-in-one penetration testing web UI built with Flask and SocketIO.\n\nLOCATION: /home/sinxneo/tools/pentest_suite/\nLAUNCH:   python3 app.py  OR  ./run.sh\nURL:      http://localhost:5000\n\nMODULES:\n  - Network Scanner    (Nmap integration, host discovery)\n  - Web Vuln Scanner   (XSS, SQLi, directory brute)\n  - Auth Brute Force   (HTTP Basic, Form-based)\n  - SSL/TLS Recon      (cert info, cipher enum)\n  - DNS Recon          (zone transfer, subdomain enum)\n  - WHOIS Lookup       (subprocess fallback)\n  - Stress Testing     (HTTP flood simulation)\n  - Port Scanner       (fast TCP/UDP)\n\nSTACK: Flask + Flask-SocketIO + eventlet\nAll updates stream in real-time via WebSocket.\n\nPRE-INSTALLED DEPS:\n  flask, flask-socketio, eventlet, requests, scapy,\n  paramiko, bs4, dnspython, cryptography\n\nNOTE: python-whois not available \u2014 falls back to CLI whois\n\nUse responsibly. For educational and authorised testing only.\n\n73 de sinXne0'
+  },
+  {
+    id: -3,
+    board: 'pager',
+    handle: 'sinXne0',
+    title: 'pager-tools monorepo now live',
+    date: '2024-03-10T15:00:00Z',
+    pinned: false,
+    url: null,
+    body: 'The pager-tools monorepo consolidates 8 separate repos into one.\n\nRepo: https://github.com/sinXne0/pager-tools\n\nINCLUDED TOOLS:\n  1. pocsag-decoder    \u2014 POCSAG protocol decoder\n  2. flex-decoder      \u2014 FLEX paging protocol decoder\n  3. pager-capture     \u2014 RTL-SDR capture pipeline\n  4. pager-logger      \u2014 Persistent message logging\n  5. pager-filter      \u2014 Keyword/capcode filtering\n  6. pager-alert       \u2014 Notification system (email/webhook)\n  7. pager-web         \u2014 Web UI for live feed\n  8. pager-replay      \u2014 Replay captured IQ files\n\nAll tools share a common config format and can be chained via pipes.\n\nREQUIREMENTS:\n  - RTL-SDR or HackRF (for live capture)\n  - Python 3.8+\n  - rtl_fm or hackrf_transfer\n\nQUICKSTART:\n  $ git clone https://github.com/sinXne0/pager-tools\n  $ cd pager-tools\n  $ pip install -r requirements.txt\n  $ python3 pager-capture/capture.py | python3 pocsag-decoder/decode.py\n\n73 de sinXne0'
+  },
+  {
+    id: -4,
+    board: 'osint',
+    handle: 'sinXne0',
+    title: 'osint-tools monorepo \u2014 10 tools consolidated',
+    date: '2024-03-12T11:00:00Z',
+    pinned: false,
+    url: null,
+    body: 'osint-tools brings 10 standalone OSINT scripts into one unified repo.\n\nRepo: https://github.com/sinXne0/osint-tools\n\nINCLUDED TOOLS:\n  1.  shodan-scan      \u2014 Shodan API wrapper + bulk search\n  2.  cert-recon       \u2014 Certificate transparency log search\n  3.  email-harvest    \u2014 Email address harvester\n  4.  subdomain-enum   \u2014 Passive + active subdomain enumeration\n  5.  whois-bulk       \u2014 Bulk WHOIS lookup with rate limiting\n  6.  social-recon     \u2014 Username search across platforms\n  7.  meta-extractor   \u2014 File metadata extraction (EXIF etc)\n  8.  ip-geolookup     \u2014 IP geolocation + ASN info\n  9.  leak-checker     \u2014 Check emails against breach databases\n  10. dorker           \u2014 Google dork automation\n\nEach tool can run standalone or be imported as a module.\n\nREQUIREMENTS:\n  - Python 3.8+\n  - API keys (Shodan, HaveIBeenPwned optional)\n\nQUICKSTART:\n  $ git clone https://github.com/sinXne0/osint-tools\n  $ cd osint-tools\n  $ pip install -r requirements.txt\n  $ python3 subdomain-enum/enumerate.py -d target.com\n\nUSE RESPONSIBLY. Only investigate targets you have permission to scan.\n\n73 de sinXne0'
   }
-  scr.addEventListener('click',dismiss);
-  document.addEventListener('keydown',dismiss,{once:true});
+];
 
-  lines.forEach(({t,cls,txt})=>{
-    setTimeout(()=>{
-      const el=document.createElement('div');
-      el.className=cls; el.innerHTML=txt; log.appendChild(el);
-      log.scrollTop=log.scrollHeight;
-    },t);
+// ══════════════════════════════════════════════════════════
+// POST MANAGEMENT
+// ══════════════════════════════════════════════════════════
+var allPosts = [];
+var currentPostId = null;
+
+var BOARD_NAMES = {
+  'linux':   'LINUX/SEC',
+  'pager':   'WIFI PAGER',
+  'hackrf':  'HACKRF/SDR',
+  'osint':   'OSINT',
+  'general': 'GENERAL',
+  'all':     'ALL BOARDS',
+};
+
+function parseBoardFromLabels(labels) {
+  for (var i = 0; i < labels.length; i++) {
+    var n = labels[i].name || '';
+    if (n === 'board:linux')   return 'linux';
+    if (n === 'board:pager')   return 'pager';
+    if (n === 'board:hackrf')  return 'hackrf';
+    if (n === 'board:osint')   return 'osint';
+    if (n === 'board:general') return 'general';
+  }
+  return 'general';
+}
+
+function parseHandle(body) {
+  if (!body) return 'anonymous';
+  var m = body.match(/Handle:\s*(\S+)/i);
+  return m ? m[1] : 'anonymous';
+}
+
+async function loadPosts() {
+  setStatus('FETCHING MESSAGES FROM GITHUB...');
+  try {
+    var resp = await fetch('https://api.github.com/repos/sinXne0/sinXne0.github.io/issues?state=open&per_page=100&labels=bbs', {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    if (!data.length) throw new Error('empty');
+
+    allPosts = data.map(function(issue) {
+      return {
+        id:     issue.number,
+        board:  parseBoardFromLabels(issue.labels),
+        handle: parseHandle(issue.body),
+        title:  issue.title,
+        date:   issue.created_at,
+        pinned: issue.labels.some(function(l){ return l.name === 'pinned'; }),
+        url:    issue.html_url,
+        body:   issue.body || '',
+      };
+    });
+    setStatus('MESSAGES LOADED \u2014 ' + allPosts.length + ' MSGS');
+  } catch(e) {
+    allPosts = defaultPosts.slice();
+    setStatus('OFFLINE MODE \u2014 SHOWING LOCAL MESSAGES');
+  }
+
+  var cnt = allPosts.length;
+  document.getElementById('sb-msgs').textContent  = cnt;
+  document.getElementById('sb-msgs2').textContent = cnt;
+
+  renderAllBoards();
+}
+
+function formatDate(iso) {
+  var d = new Date(iso);
+  return pad2(d.getMonth()+1) + '/' + pad2(d.getDate()) + '/' + String(d.getFullYear()).slice(-2);
+}
+
+function isNew(iso) {
+  return (Date.now() - new Date(iso).getTime()) < 48 * 3600 * 1000;
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function renderPostList(posts, containerId, boardKey) {
+  var container = document.getElementById(containerId);
+  if (!posts.length) {
+    container.innerHTML = '<div style="padding:12px;color:var(--gm);text-shadow:0 0 4px var(--gm)">\u2500\u2500 NO MESSAGES IN THIS BOARD \u2500\u2500</div>';
+    return;
+  }
+
+  var sorted = posts.slice().sort(function(a, b) {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.date) - new Date(a.date);
   });
-  setTimeout(dismiss,2600);
-})();
 
-// ════════════════════════════════════
-//  BBS LOGIC
-// ════════════════════════════════════
-const OWNER='sinXne0', REPO='sinXne0.github.io';
-const API=`https://api.github.com/repos/${OWNER}/${REPO}/issues`;
-const BL={linux:'board:linux',pager:'board:pager',hackrf:'board:hackrf',osint:'board:osint',general:'board:general'};
-const BN={linux:'LINUX/SEC',pager:'WIFI PAGER',hackrf:'HACKRF/SDR',osint:'OSINT',general:'GENERAL'};
-let posts=[], cpOpen=false;
+  var bName = BOARD_NAMES[boardKey] || boardKey.toUpperCase();
+  var html = '<div class="board-header">\u2554\u2550\u2550 ' + bName + ' \u2550\u2550\u2557</div><div class="post-list">';
 
-// Clock / date
-function tick(){
-  const n=new Date();
-  document.getElementById('clk').textContent=n.toTimeString().slice(0,8);
-  document.getElementById('datedisp').textContent=n.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  sorted.forEach(function(p, i) {
+    var num = String(i+1).padStart(3,'0') + '.';
+    var dot = isNew(p.date)
+      ? '<span class="new-dot">\u25cf</span>'
+      : '<span class="read-dot">\u25cb</span>';
+    var pinCls = p.pinned ? 'post-title pinned' : 'post-title';
+    var boardDisplay = BOARD_NAMES[p.board] || p.board.toUpperCase();
+    var idStr = JSON.stringify(p.id);
+    html += '<div class="post-row" onclick="openPost(' + idStr + ')">' +
+      '<span class="post-num">' + num + '</span>' +
+      '<span class="post-new-dot">' + dot + '</span>' +
+      '<div class="post-title-wrap">' +
+        '<div class="' + pinCls + '">' + escHtml(p.title) + '</div>' +
+        '<div class="post-sub"><span class="frm">FROM:</span> ' + escHtml(p.handle) + ' &nbsp;\u2502&nbsp; [' + boardDisplay + ']</div>' +
+      '</div>' +
+      '<span class="post-date">' + formatDate(p.date) + '</span>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
 }
-setInterval(tick,1000); tick();
 
-// Uptime
-const T0=Date.now();
-function tickUpt(){
-  const s=Math.floor((Date.now()-T0)/1000);
-  const el=document.getElementById('upt');
-  if(el) el.textContent=`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+function renderAllBoards() {
+  var boards = ['linux','pager','hackrf','osint','general'];
+  renderPostList(allPosts, 'board-all', 'all');
+  boards.forEach(function(b) {
+    renderPostList(allPosts.filter(function(p){ return p.board === b; }), 'board-' + b, b);
+  });
 }
-setInterval(tickUpt,1000); tickUpt();
 
-// Animated CPU bar
-function animBars(){
-  const cpu=Math.floor(35+Math.random()*55);
-  const dsk=Math.floor(60+Math.random()*30);
-  const cpuEl=document.getElementById('cpu-bar');
-  const dskEl=document.getElementById('dsk-bar');
-  if(cpuEl) cpuEl.innerHTML=`<span class="fill">${'▓'.repeat(Math.floor(cpu/10))}</span><span class="empty">${'░'.repeat(10-Math.floor(cpu/10))}</span> ${cpu}%`;
-  if(dskEl) dskEl.innerHTML=`<span class="fill">${'▓'.repeat(Math.floor(dsk/10))}</span><span class="empty">${'░'.repeat(10-Math.floor(dsk/10))}</span> ${dsk}%`;
+// ══════════════════════════════════════════════════════════
+// BOARD SWITCHING
+// ══════════════════════════════════════════════════════════
+var currentBoard = 'all';
+
+function switchBoard(board) {
+  closePostView();
+  closeCompose();
+
+  document.querySelectorAll('.nav-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.board === board);
+  });
+
+  document.querySelectorAll('.board-section').forEach(function(s) {
+    s.classList.remove('vis');
+  });
+
+  var target = document.getElementById('board-' + board);
+  if (target) target.classList.add('vis');
+
+  currentBoard = board;
+  var bname = BOARD_NAMES[board] || board.toUpperCase();
+  var count = allPosts.filter(function(p){ return board === 'all' || p.board === board; }).length;
+  setStatus('BOARD: ' + bname + ' \u2014 ' + count + ' MSGS');
+  setCmdFeedback('LOADING BOARD: ' + bname);
+  setTimeout(function(){ setCmdFeedback(''); }, 1200);
 }
-setInterval(animBars,3000); animBars();
 
-// Keyboard shortcuts
-document.addEventListener('keydown',e=>{
-  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-  const map={'0':'all','1':'linux','2':'pager','3':'hackrf','4':'osint','5':'general'};
-  if(map[e.key]) showB(map[e.key]);
-  if(e.key==='n'||e.key==='N') togCp();
-  if(e.key==='Escape'){ closePV(); if(cpOpen) togCp(); closeModal(); }
-  if(e.key==='d'||e.key==='D') openDoors();
+// ══════════════════════════════════════════════════════════
+// POST VIEW
+// ══════════════════════════════════════════════════════════
+function openPost(id) {
+  var post = null;
+  for (var i = 0; i < allPosts.length; i++) {
+    if (allPosts[i].id == id) { post = allPosts[i]; break; }
+  }
+  if (!post) return;
+  currentPostId = id;
+
+  document.querySelectorAll('.board-section').forEach(function(s) { s.classList.remove('vis'); });
+
+  var bname = BOARD_NAMES[post.board] || post.board.toUpperCase();
+  document.getElementById('pv-titlebar').textContent = '\u2554\u2550\u2550 [' + bname + '] \u2550\u2550\u2557';
+  document.getElementById('pv-meta').innerHTML =
+    'FROM: <span style="color:var(--cy);text-shadow:0 0 6px var(--cy)">' + escHtml(post.handle) + '</span>' +
+    ' &nbsp;\u2502&nbsp; BOARD: [' + escHtml(bname) + ']' +
+    ' &nbsp;\u2502&nbsp; DATE: ' + formatDate(post.date);
+  document.getElementById('pv-body').textContent = post.body;
+  document.getElementById('pv-github-btn').style.display = post.url ? '' : 'none';
+
+  var pv = document.getElementById('post-view');
+  pv.classList.add('vis');
+  pv.scrollIntoView({behavior:'smooth', block:'start'});
+
+  setStatus('READING: ' + post.title.substring(0,50));
+}
+
+function closePostView() {
+  document.getElementById('post-view').classList.remove('vis');
+  currentPostId = null;
+  var target = document.getElementById('board-' + currentBoard);
+  if (target) target.classList.add('vis');
+}
+
+function openPostGithub() {
+  for (var i = 0; i < allPosts.length; i++) {
+    if (allPosts[i].id == currentPostId && allPosts[i].url) {
+      window.open(allPosts[i].url, '_blank');
+      return;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMPOSE
+// ══════════════════════════════════════════════════════════
+function toggleCompose() {
+  var wrap = document.getElementById('compose-wrap');
+  if (wrap.classList.contains('vis')) {
+    closeCompose();
+  } else {
+    wrap.classList.add('vis');
+    wrap.scrollIntoView({behavior:'smooth'});
+    setStatus('COMPOSE MODE \u2014 FILL IN FIELDS AND PRESS SEND');
+  }
+}
+
+function closeCompose() {
+  document.getElementById('compose-wrap').classList.remove('vis');
+}
+
+function submitCompose() {
+  var board   = document.getElementById('cf-board').value;
+  var subject = document.getElementById('cf-subject').value.trim();
+  var handle  = document.getElementById('cf-handle').value.trim() || 'anonymous';
+  var body    = document.getElementById('cf-body').value.trim();
+
+  if (!subject) { showToast('ERROR: Subject required'); return; }
+  if (!body)    { showToast('ERROR: Message body required'); return; }
+
+  var fullBody = 'Handle: ' + handle + '\n\n' + body;
+  var labels   = 'bbs,' + board;
+  var url = 'https://github.com/sinXne0/sinXne0.github.io/issues/new'
+    + '?title=' + encodeURIComponent(subject)
+    + '&body='  + encodeURIComponent(fullBody)
+    + '&labels=' + encodeURIComponent(labels);
+  window.open(url, '_blank');
+  showToast('COMPOSE: Opening GitHub Issues...');
+  closeCompose();
+}
+
+// ══════════════════════════════════════════════════════════
+// DOOR GAMES
+// ══════════════════════════════════════════════════════════
+var doorData = {
+  tw2002: {
+    title: 'TRADE WARS 2002',
+    desc: 'Trade Wars 2002 is the classic space trading and combat BBS door game.\nBattle for control of sectors, build trading empires, and crush your enemies.\n\nOriginally developed by Gary Martin and Chris Sherrick.\nA staple of BBS culture since 1986.\n\nThis door connects to an external telnet host.'
+  },
+  lord: {
+    title: 'LEGEND OF THE RED DRAGON',
+    desc: 'Legend of the Red Dragon (L.O.R.D.) is an epic fantasy RPG door game.\nBattle monsters, gain experience, fight other players, and slay the dragon.\n\nCreated by Seth Robinson in 1989.\nOne of the most popular BBS door games ever made.'
+  },
+  usurper: {
+    title: 'USURPER',
+    desc: 'Usurper is a fantasy RPG door game where you fight monsters,\ninteract with townsfolk, and battle other players for dominance.\n\nCreated by Jaakko Peltonen in 1990.\nFeatures real-time player interaction and a rich game world.'
+  },
+  chess: {
+    title: 'DOOR CHESS',
+    desc: 'Classic correspondence chess played through the BBS.\nChallenge other users to a game \u2014 moves are made one per session.\n\nAn old favourite from the golden age of BBS gaming.'
+  }
+};
+
+function openDoor(key) {
+  var data = doorData[key];
+  if (!data) return;
+  document.getElementById('door-modal-title').textContent = data.title;
+  document.getElementById('door-modal-body').innerHTML =
+    '<p>' + data.desc.replace(/\n/g,'<br>') + '</p>' +
+    '<div class="modal-offline">[ OFFLINE \u2014 UNDER MAINTENANCE ]</div>';
+  document.getElementById('door-modal').classList.add('vis');
+}
+
+function closeDoorModal() {
+  document.getElementById('door-modal').classList.remove('vis');
+}
+
+function openDoorsMenu() {
+  showToast('DOOR GAMES: Choose a game from the sidebar');
+  setStatus('DOOR MENU \u2014 SELECT A GAME FROM THE SIDEBAR');
+}
+
+// ══════════════════════════════════════════════════════════
+// STATUS BAR
+// ══════════════════════════════════════════════════════════
+function setStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+}
+
+function setCmdFeedback(msg) {
+  document.getElementById('cmd-feedback').textContent = msg || '\u00a0';
+}
+
+// ══════════════════════════════════════════════════════════
+// COMMAND LINE
+// ══════════════════════════════════════════════════════════
+document.getElementById('cmd-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    var cmd = this.value.trim().toUpperCase();
+    this.value = '';
+    execCommand(cmd);
+  }
 });
 
-// Status msg
-function sm(msg){ const el=document.getElementById('smsg'); if(el) el.textContent=msg; }
-
-// Fetch posts
-async function fetchPosts(){
-  sm('FETCHING MESSAGES…');
-  try{
-    const r=await fetch(`${API}?state=open&per_page=100&labels=bbs`,
-      {headers:{'Accept':'application/vnd.github.v3+json'}});
-    const data=r.ok ? await r.json() : [];
-    posts = data.length ? data.map(parseIssue) : defaults();
-  } catch { posts=defaults(); }
-  renderAll();
-  sm('READY.');
+function execCommand(cmd) {
+  switch(cmd) {
+    case '0': case 'ALL':
+      setCmdFeedback('LOADING BOARD: ALL');
+      setTimeout(function(){ switchBoard('all'); }, 200);
+      break;
+    case '1': case 'LINUX':
+      setCmdFeedback('LOADING BOARD: LINUX/SEC');
+      setTimeout(function(){ switchBoard('linux'); }, 200);
+      break;
+    case '2': case 'PAGER': case 'WIFI':
+      setCmdFeedback('LOADING BOARD: WIFI PAGER');
+      setTimeout(function(){ switchBoard('pager'); }, 200);
+      break;
+    case '3': case 'HACKRF': case 'SDR':
+      setCmdFeedback('LOADING BOARD: HACKRF/SDR');
+      setTimeout(function(){ switchBoard('hackrf'); }, 200);
+      break;
+    case '4': case 'OSINT':
+      setCmdFeedback('LOADING BOARD: OSINT');
+      setTimeout(function(){ switchBoard('osint'); }, 200);
+      break;
+    case '5': case 'GENERAL':
+      setCmdFeedback('LOADING BOARD: GENERAL');
+      setTimeout(function(){ switchBoard('general'); }, 200);
+      break;
+    case 'N': case 'COMPOSE':
+      setCmdFeedback('OPENING COMPOSE FORM...');
+      setTimeout(toggleCompose, 200);
+      break;
+    case 'D': case 'DOORS':
+      setCmdFeedback('OPENING DOOR MENU...');
+      setTimeout(openDoorsMenu, 200);
+      break;
+    case 'R': case 'READ': {
+      var posts = currentBoard === 'all'
+        ? allPosts
+        : allPosts.filter(function(p){ return p.board === currentBoard; });
+      if (posts.length) {
+        setCmdFeedback('READING TOP MESSAGE...');
+        var topId = posts[0].id;
+        setTimeout(function(){ openPost(topId); }, 200);
+      } else {
+        setCmdFeedback('NO MESSAGES TO READ');
+      }
+      break;
+    }
+    case 'Q': case 'QUIT':
+      setCmdFeedback('GOODBYE! CARRIER DROPPED...');
+      showToast('GOODBYE! Thanks for calling sinXne0 BBS!');
+      setStatus('GOODBYE \u2014 CARRIER DROPPED');
+      break;
+    case 'H': case 'HELP':
+      setCmdFeedback('');
+      showToast('HELP: 0-5=Board N=New D=Doors R=Read Q=Quit M=Modem ESC=Back');
+      break;
+    case 'CLEAR':
+      setCmdFeedback('');
+      break;
+    case 'M': case 'MODEM':
+      setCmdFeedback('PLAYING MODEM SFX...');
+      playModemSound();
+      setTimeout(function(){ setCmdFeedback(''); }, 2000);
+      break;
+    case 'ESC': case 'BACK':
+      if (document.getElementById('post-view').classList.contains('vis')) {
+        closePostView();
+        setCmdFeedback('RETURNING TO BOARD LIST...');
+      } else if (document.getElementById('compose-wrap').classList.contains('vis')) {
+        closeCompose();
+        setCmdFeedback('ABORTED COMPOSE');
+      } else {
+        setCmdFeedback('NOTHING TO CLOSE');
+      }
+      break;
+    case '':
+      break;
+    default:
+      setCmdFeedback('UNKNOWN COMMAND: ' + cmd + ' \u2014 TYPE H FOR HELP');
+  }
 }
 
-function parseIssue(i){
-  const lbls=i.labels.map(l=>l.name);
-  let board='general';
-  for(const[b,lbl] of Object.entries(BL)) if(lbls.includes(lbl)){board=b;break;}
-  const hm=i.body&&i.body.match(/^Handle:\s*(.+)$/m);
-  return {
-    id:i.number, title:i.title, board,
-    handle: hm?hm[1].trim():i.user.login,
-    body: i.body?i.body.replace(/^Handle:\s*.+\n?/m,'').trim():'(no content)',
-    date: new Date(i.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}),
-    url:i.html_url,
-    pinned:lbls.includes('pinned'),
-    isNew:(Date.now()-new Date(i.created_at).getTime())<172800000,
-  };
-}
+// ══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  switch(e.key) {
+    case '0': switchBoard('all');     break;
+    case '1': switchBoard('linux');   break;
+    case '2': switchBoard('pager');   break;
+    case '3': switchBoard('hackrf');  break;
+    case '4': switchBoard('osint');   break;
+    case '5': switchBoard('general'); break;
+    case 'n': case 'N': toggleCompose(); break;
+    case 'd': case 'D': openDoorsMenu(); break;
+    case 'm': case 'M': playModemSound(); break;
+    case 'Escape':
+      if (document.getElementById('door-modal').classList.contains('vis')) {
+        closeDoorModal();
+      } else if (document.getElementById('post-view').classList.contains('vis')) {
+        closePostView();
+      } else if (document.getElementById('compose-wrap').classList.contains('vis')) {
+        closeCompose();
+      }
+      break;
+  }
+});
 
-function defaults(){return[
-  {id:0,title:'Welcome to sinXne0 BBS',board:'general',handle:'sinXne0',
-   body:`Welcome to the sinXne0 Bulletin Board System!\n\nThis board runs on GitHub Issues as its backend. All messages are public GitHub Issues tagged with board labels.\n\nTo post: click [ ✎ COMPOSE MESSAGE ]\nYou will be redirected to GitHub Issues with labels pre-filled.\n\nKeyboard shortcuts:\n  0-5    Switch boards\n  N      Compose new message\n  D      Door games\n  ESC    Go back\n\nBoards:\n  [1] LINUX / SECURITY  — tools, exploits, CTF writeups\n  [2] WIFI PAGER        — payloads, themes, firmware\n  [3] HACKRF / SDR      — radio, firmware, splash screens\n  [4] OSINT / RECON     — intelligence gathering\n  [5] GENERAL           — everything else\n\nStay curious. Hack the planet.\n— sinXne0`,
-   date:'14 Mar 26',url:`https://github.com/${OWNER}/${REPO}/issues`,pinned:true,isNew:false},
-  {id:-1,title:'HackRF PortaPack Mayhem — Custom Splash Screens',board:'hackrf',handle:'sinXne0',
-   body:`Custom 240x320px BMP splash screens for PortaPack H2 running Mayhem firmware.\n\nInstall: copy splash.bmp to SD card root.\n\nCreate your own:\n  convert input.png -resize 240x320! -type TrueColor splash.bmp\n\nRepo: https://github.com/sinXne0/Hackrf-Themes`,
-   date:'14 Mar 26',url:'https://github.com/sinXne0/Hackrf-Themes',pinned:false,isNew:true},
-  {id:-2,title:'MK-Ultra Pentest Suite — Flask + SocketIO Web UI',board:'linux',handle:'sinXne0',
-   body:`Local pentest suite — real-time results via WebSocket.\n\nModules: network scan · web vulns (SQLi/XSS/SSRF/IDOR) · hash cracker (MD5/SHA/NTLM) · brute force (SSH/FTP/HTTP) · SSL/DNS recon · stress tester · Discord webhook\n\nRun: python3 app.py → http://localhost:5000`,
-   date:'14 Mar 26',url:'https://github.com/sinXne0',pinned:false,isNew:true},
-  {id:-3,title:'pager-tools monorepo now live',board:'pager',handle:'sinXne0',
-   body:`8 WiFi Pineapple Pager repos consolidated:\npineapple-pager-payloads · wifipineapplepager-payloads · gbc_emulator-pineapple_pager · pager-themes · wifipineapplepager-themes · pwrLVL9000 · pwrlvl9000-pager · pager-bjorn\n\nhttps://github.com/sinXne0/pager-tools`,
-   date:'14 Mar 26',url:'https://github.com/sinXne0/pager-tools',pinned:false,isNew:true},
-  {id:-4,title:'osint-tools monorepo — 10 tools consolidated',board:'osint',handle:'sinXne0',
-   body:`All OSINT and recon tools consolidated:\nosint-international · Recon-Master-Pro · domrecon · sin_finder · proton · scamsleuth · Pulse · phoneSpy · MapIntel · infoSpy\n\nhttps://github.com/sinXne0/osint-tools`,
-   date:'14 Mar 26',url:'https://github.com/sinXne0/osint-tools',pinned:false,isNew:true},
-];}
+// ══════════════════════════════════════════════════════════
+// BOOT SEQUENCE
+// ══════════════════════════════════════════════════════════
+(function runBoot() {
+  var screen  = document.getElementById('boot-screen');
+  var linesEl = document.getElementById('boot-lines');
+  var dismissed = false;
 
-function renderAll(){
-  document.getElementById('pc').textContent = posts.length;
-  document.getElementById('sb-pc').textContent = posts.length;
-  document.getElementById('uc').textContent = 3+Math.floor(Math.random()*9);
-  renderBoard('all',posts);
-  ['linux','pager','hackrf','osint','general'].forEach(b=>{
-    const f=posts.filter(p=>p.board===b);
-    renderBoard(b,f);
-    document.getElementById(`cnt-${b}`).textContent=`${f.length} MSGS`;
+  var bootLines = [
+    { text: 'AMI BIOS v2.07  Copyright (C) 1992 American Megatrends Inc.', cls: 'bl-bios', delay: 0 },
+    { text: 'CPU: Intel 486DX-33 MHz', cls: 'bl-bios', delay: 180 },
+    { text: 'Testing RAM: 0K ...', cls: 'bl-bios', delay: 320 },
+    { text: 'RAM CHECK:            640K OK             [OK]', cls: 'bl-ok',   delay: 560 },
+    { text: 'EXTENDED MEMORY:     7168K OK             [OK]', cls: 'bl-ok',   delay: 700 },
+    { text: 'HDD: Primary Master  WDC 540MB            [OK]', cls: 'bl-ok',   delay: 840 },
+    { text: 'COM1: 16550A UART    COM2: N/A            [OK]', cls: 'bl-ok',   delay: 980 },
+    { text: 'WARNING: FOSSIL driver v9.1 \u2014 DTR delay 100ms', cls: 'bl-warn', delay: 1120 },
+    { text: '', cls: 'bl-bios', delay: 1200 },
+    { text: '   \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557', cls: 'bl-cyan', delay: 1300 },
+    { text: '   \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2557\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d  \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255d', cls: 'bl-cyan', delay: 1375 },
+    { text: '   \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2588\u2554\u255d \u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551  \u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557', cls: 'bl-cyan', delay: 1450 },
+    { text: '   \u2588\u2588\u2554\u2550\u2550\u255d \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551 \u2588\u2588\u2554\u2588\u2588\u2557 \u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u255d  \u2588\u2588\u2551   \u2588\u2588\u2551  \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u255a\u2550\u2550\u2550\u2550\u2588\u2588\u2551', cls: 'bl-cyan', delay: 1525 },
+    { text: '   \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u255d \u2588\u2588\u2557\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d  \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551', cls: 'bl-cyan', delay: 1600 },
+    { text: '   \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d   \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d', cls: 'bl-cyan', delay: 1675 },
+    { text: '', cls: 'bl-bios', delay: 1750 },
+    { text: 'Loading LINUX/SEC board  ..... [\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2591\u2591\u2591\u2591]', cls: 'bl-prog', delay: 1850 },
+    { text: 'Loading HACKRF/SDR board ..... [\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2591\u2591]', cls: 'bl-prog', delay: 1960 },
+    { text: 'Loading OSINT board  ......... [\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2591]', cls: 'bl-prog', delay: 2070 },
+    { text: 'Loading PAGER board  ......... [\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593]', cls: 'bl-prog', delay: 2180 },
+    { text: 'Loading message index  ....... [\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593\u2593]', cls: 'bl-prog', delay: 2290 },
+    { text: '', cls: 'bl-bios', delay: 2380 },
+    { text: 'ATDT 555-0-BBS', cls: 'bl-warn', delay: 2440 },
+    { text: 'CONNECT 2400/ARQ', cls: 'bl-mg', delay: 2600 },
+    { text: '', cls: 'bl-bios', delay: 2660 },
+    { text: '\u25ba  PRESS ANY KEY TO ENTER  \u25c4', cls: 'bl-blink', delay: 2720 },
+  ];
+
+  function addLine(obj) {
+    var div = document.createElement('div');
+    div.className = obj.cls;
+    div.textContent = obj.text;
+    linesEl.appendChild(div);
+    linesEl.scrollTop = linesEl.scrollHeight;
+  }
+
+  bootLines.forEach(function(obj) {
+    setTimeout(function() { if (!dismissed) addLine(obj); }, obj.delay);
   });
-  document.getElementById('cnt-all').textContent=`${posts.length} MSGS`;
-}
 
-function renderBoard(id,list){
-  const el=document.getElementById(`l-${id}`); if(!el) return;
-  const s=[...list].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
-  if(!s.length){el.innerHTML=`<div style="padding:10px 12px;color:var(--gm)">[NO MESSAGES — BE FIRST TO POST]</div>`;return;}
-  el.innerHTML=s.map((p,i)=>`
-    <div class="pr" onclick="openPV(${p.id})">
-      <div class="pnum">${String(i+1).padStart(3,'0')}.</div>
-      <div class="pico${p.isNew?' nw':''}">${p.isNew?'●':'○'}</div>
-      <div>
-        <div class="ptxt${p.pinned?' pin':''}">${esc(p.title)}</div>
-        <div class="psub">FROM: <b>${esc(p.handle)}</b> │ [${BN[p.board]||p.board}]</div>
-      </div>
-      <div class="pdate">${p.date}</div>
-    </div>`).join('');
-}
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+    playModemSound();
+    screen.style.transition = 'opacity 0.4s';
+    screen.style.opacity = '0';
+    setTimeout(function() { screen.style.display = 'none'; }, 450);
+    setStatus('CONNECTED // 2400 BAUD // NODE 01 // sinXne0-BBS v2.0');
+  }
 
-function showB(id){
-  document.querySelectorAll('.bsec').forEach(e=>{e.classList.remove('vis','slide');});
-  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('act'));
-  const sec=document.getElementById(`b-${id}`);
-  sec.classList.add('vis');
-  setTimeout(()=>sec.classList.add('slide'),10);
-  document.getElementById(`nv-${id}`).classList.add('act');
-  closePV(); sm(`READING: ${id.toUpperCase()}`);
-}
+  // Auto-dismiss 2.8s after last line appears
+  setTimeout(dismiss, 2720 + 2800);
 
-function openPV(id){
-  const p=posts.find(x=>x.id===id); if(!p) return;
-  document.getElementById('pv-bdg').textContent=BN[p.board]||p.board;
-  document.getElementById('pv-t').textContent=p.title;
-  document.getElementById('pv-m').innerHTML=`FROM: <span>${esc(p.handle)}</span> │ BOARD: <span>[${BN[p.board]||p.board}]</span> │ DATE: <span>${p.date}</span>`;
-  document.getElementById('pv-b').textContent=p.body;
-  document.getElementById('pv-gh').href=p.url||'#';
-  const pv=document.getElementById('pview');
-  pv.classList.add('vis');
-  pv.scrollIntoView({behavior:'smooth',block:'start'});
-  sm(`READING: ${p.title.slice(0,55)}`);
-}
-function closePV(){ document.getElementById('pview').classList.remove('vis'); sm('READY.'); }
+  screen.addEventListener('click', dismiss);
+  document.addEventListener('keydown', function bootKey() {
+    dismiss();
+    document.removeEventListener('keydown', bootKey);
+  });
+})();
 
-function togCp(){
-  cpOpen=!cpOpen;
-  document.getElementById('cpform').classList.toggle('vis',cpOpen);
-  document.getElementById('cpbtn').textContent=cpOpen?'[ ✕ ABORT ]':'[ ✎ COMPOSE MESSAGE ]';
-}
-
-function doPost(){
-  const title=document.getElementById('f-title').value.trim();
-  const handle=document.getElementById('f-handle').value.trim()||'anonymous';
-  const body=document.getElementById('f-body').value.trim();
-  const board=document.getElementById('f-board').value;
-  if(!title){sm('ERROR: SUBJECT REQUIRED');return;}
-  if(!body){sm('ERROR: MESSAGE BODY REQUIRED');return;}
-  const url=`https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(`Handle: ${handle}\n\n${body}`)}&labels=${encodeURIComponent(`bbs,${BL[board]}`)}`;
-  window.open(url,'_blank');
-  sm('REDIRECTING TO GITHUB…');
-}
-
-function fTag(tag){
-  showB('all');
-  const f=posts.filter(p=>p.title.toLowerCase().includes(tag)||p.body.toLowerCase().includes(tag));
-  document.getElementById('cnt-all').textContent=`${f.length} RESULTS`;
-  renderBoard('all',f.length?f:posts);
-  sm(`TAG: #${tag} → ${f.length} result(s)`);
-}
-
-const DOORS={
-  tradewars:['TRADE WARS 2002','Humanity has spread to the stars. As the captain of a starship you will travel among 1000 sectors of space, buy and sell goods, mine fuel ore, colonize planets, and battle other players for control of the galaxy.\n\n[ GAME OFFLINE — UNDER MAINTENANCE ]'],
-  lord:['LEGEND OF THE RED DRAGON','In a medieval kingdom terrorised by a fearsome dragon, you must train, fight, and quest — gaining experience to ultimately slay the Red Dragon.\n\n[ GAME OFFLINE — UNDER MAINTENANCE ]'],
-  ninja:['USURPER','A dark dungeon RPG where you delve underground, fight monsters, and claim the throne from the evil Usurper.\n\n[ GAME OFFLINE — UNDER MAINTENANCE ]'],
-  chess:['DOOR CHESS','Correspondence chess played against other BBS users, one move at a time. Challenge the SYSOP!\n\n[ GAME OFFLINE — UNDER MAINTENANCE ]'],
-  default:['DOOR GAMES','Welcome to the Door Game lobby! Select a game from the sidebar. All doors are currently offline but will return in a future update.'],
-};
-function openDoors(which){
-  const d=DOORS[which]||DOORS.default;
-  document.getElementById('modal-title').textContent=d[0];
-  document.getElementById('modal-body').textContent=d[1];
-  document.getElementById('modal').classList.add('vis');
-  sm(`LOADING DOOR: ${d[0]}`);
-}
-function closeModal(){ document.getElementById('modal').classList.remove('vis'); sm('READY.'); }
-
-function esc(s){
-  if(!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-fetchPosts();
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+loadPosts();
 </script>
 </body>
 </html>
