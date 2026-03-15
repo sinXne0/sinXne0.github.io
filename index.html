@@ -16,7 +16,7 @@
     --red: #ff2244;
     --cyan: #00ffff;
     --white: #ccffcc;
-    --bg: #000800;
+    --bg: #00000f;
     --border: #00aa22;
   }
 
@@ -108,7 +108,8 @@
     margin-bottom: 12px;
     font-size: 12px;
     color: var(--green-dim);
-    background: rgba(0,30,10,0.4);
+    background: rgba(0,5,15,0.72);
+    backdrop-filter: blur(2px);
   }
 
   #sysinfo span { color: var(--green); }
@@ -116,7 +117,8 @@
   /* ── Nav Menu ── */
   #nav {
     border: 1px solid var(--border);
-    background: rgba(0,20,5,0.6);
+    background: rgba(0,5,18,0.78);
+    backdrop-filter: blur(3px);
     padding: 6px 10px;
     margin-bottom: 12px;
     display: flex;
@@ -234,7 +236,8 @@
   #post-view {
     display: none;
     border: 1px solid var(--border);
-    background: rgba(0,15,5,0.5);
+    background: rgba(0,5,18,0.85);
+    backdrop-filter: blur(4px);
     padding: 10px;
     margin-bottom: 12px;
   }
@@ -303,7 +306,8 @@
   #post-form {
     display: none;
     border: 1px solid var(--border);
-    background: rgba(0,15,5,0.5);
+    background: rgba(0,5,18,0.85);
+    backdrop-filter: blur(4px);
     padding: 10px;
     margin-bottom: 12px;
   }
@@ -377,7 +381,8 @@
 
   .sidebar-box {
     border: 1px solid var(--border);
-    background: rgba(0,15,5,0.4);
+    background: rgba(0,5,18,0.78);
+    backdrop-filter: blur(2px);
     margin-bottom: 10px;
   }
 
@@ -978,172 +983,178 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Retro Hacker Background ──
-(function initBg() {
+// ── Space Background ──
+(function initSpace() {
   const canvas = document.getElementById('bg-canvas');
   const ctx    = canvas.getContext('2d');
+  let W, H;
 
-  // Character pool: hex digits + line-draw + symbols (old BBS / terminal feel)
-  const CHARS = '0123456789ABCDEF│─┼┤├┬┴┐┌└┘+|\\/-=<>!?$%@#^&*~:.;,[]{}';
-  // Burst pool: more dramatic, used when a cell "fires"
-  const BURST = '0123456789ABCDEF';
+  // ── Stars ──
+  const STAR_COUNT = 420;
+  let stars = [];
 
-  const CELL  = 14;   // px per grid cell — matches body font-size
-  let cols, rows;
-  let cells = [];     // flat array of cell objects
+  function mkStar(forceX, forceY) {
+    const r = Math.random();
+    // Size tiers: mostly tiny, some medium, few large
+    const size = r < 0.75 ? 0.5 + Math.random() * 0.8
+               : r < 0.93 ? 1.2 + Math.random() * 1.2
+               :             2.2 + Math.random() * 1.6;
+    // Colour: mostly white/blue-white, some warm
+    const hue  = Math.random() < 0.75
+               ? [200, 220, 240, 260][Math.floor(Math.random()*4)]  // blue-white
+               : [30, 50, 10][Math.floor(Math.random()*3)];          // amber/yellow/green-white
+    const sat  = Math.random() < 0.6 ? Math.floor(Math.random()*30) : Math.floor(40+Math.random()*40);
+    return {
+      x:         forceX !== undefined ? forceX : Math.random() * (W || window.innerWidth),
+      y:         forceY !== undefined ? forceY : Math.random() * (H || window.innerHeight),
+      size,
+      baseAlpha: 0.4 + Math.random() * 0.6,
+      alpha:     0.4 + Math.random() * 0.6,
+      twinkleSpeed: 0.008 + Math.random() * 0.025,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      hue, sat,
+    };
+  }
 
-  // Colour stops: brightness (0=off, 1=full)
-  // Each cell has: char, brightness, timer, burstTimer
+  // ── Shooting Stars ──
+  let shooters = [];
+
+  function spawnShooter() {
+    const angle = (15 + Math.random() * 30) * Math.PI / 180; // shallow diagonal
+    const speed = 6 + Math.random() * 10;
+    return {
+      x:     Math.random() * W,
+      y:     Math.random() * H * 0.6,
+      vx:    Math.cos(angle) * speed,
+      vy:    Math.sin(angle) * speed,
+      len:   60 + Math.random() * 120,
+      alpha: 0.9 + Math.random() * 0.1,
+      life:  1.0,
+      decay: 0.012 + Math.random() * 0.02,
+    };
+  }
+
+  // ── Nebula clouds (pre-rendered once onto offscreen canvas) ──
+  let nebulaCanvas;
+
+  function buildNebula() {
+    nebulaCanvas        = document.createElement('canvas');
+    nebulaCanvas.width  = W;
+    nebulaCanvas.height = H;
+    const nc = nebulaCanvas.getContext('2d');
+
+    // 3-4 large soft blobs of colour
+    const blobs = [
+      { x: W*0.15, y: H*0.25, rx: W*0.28, ry: H*0.22, h: 260, s: 70, l: 12, a: 0.22 }, // blue-purple
+      { x: W*0.75, y: H*0.60, rx: W*0.32, ry: H*0.28, h: 290, s: 60, l: 10, a: 0.18 }, // violet
+      { x: W*0.50, y: H*0.40, rx: W*0.40, ry: H*0.35, h: 220, s: 50, l:  8, a: 0.12 }, // deep blue
+      { x: W*0.85, y: H*0.15, rx: W*0.20, ry: H*0.18, h: 330, s: 55, l: 10, a: 0.14 }, // pink-red
+      { x: W*0.30, y: H*0.75, rx: W*0.25, ry: H*0.20, h: 185, s: 45, l:  9, a: 0.13 }, // teal
+    ];
+
+    for (const b of blobs) {
+      const g = nc.createRadialGradient(b.x, b.y, 0, b.x, b.y, Math.max(b.rx, b.ry));
+      g.addColorStop(0,   `hsla(${b.h},${b.s}%,${b.l+8}%,${b.a})`);
+      g.addColorStop(0.5, `hsla(${b.h},${b.s}%,${b.l+2}%,${b.a*0.5})`);
+      g.addColorStop(1,   `hsla(${b.h},${b.s}%,${b.l}%,0)`);
+      nc.save();
+      nc.scale(b.rx / Math.max(b.rx, b.ry), b.ry / Math.max(b.rx, b.ry));
+      nc.fillStyle = g;
+      nc.beginPath();
+      const scaleX = Math.max(b.rx, b.ry) / b.rx;
+      const scaleY = Math.max(b.rx, b.ry) / b.ry;
+      nc.ellipse(b.x * scaleX, b.y * scaleY, Math.max(b.rx, b.ry), Math.max(b.rx, b.ry), 0, 0, Math.PI*2);
+      nc.fill();
+      nc.restore();
+    }
+  }
+
+  // ── Resize ──
   function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    cols = Math.ceil(canvas.width  / CELL) + 1;
-    rows = Math.ceil(canvas.height / CELL) + 1;
-    cells = [];
-    for (let i = 0; i < cols * rows; i++) {
-      cells.push({
-        ch:        randChar(),
-        bright:    Math.random() * 0.18,   // initial dim noise
-        timer:     Math.random() * 120,    // ticks until next event
-        burst:     0,                      // burst brightness add
-        burstTick: 0,                      // how long burst lasts
-      });
-    }
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    stars = Array.from({ length: STAR_COUNT }, () => mkStar());
+    buildNebula();
   }
 
-  function randChar()      { return CHARS[Math.floor(Math.random() * CHARS.length)]; }
-  function randBurstChar() { return BURST[Math.floor(Math.random() * BURST.length)]; }
+  // ── Shooters timer ──
+  let shooterTimer = 180 + Math.floor(Math.random() * 300);
 
-  // Horizontal "data streak" — a whole row lights up briefly
-  function fireStreak() {
-    const row = Math.floor(Math.random() * rows);
-    const len = 4 + Math.floor(Math.random() * 24);
-    const startCol = Math.floor(Math.random() * (cols - len));
-    for (let c = startCol; c < startCol + len; c++) {
-      const cell = cells[row * cols + c];
-      if (!cell) continue;
-      cell.burst     = 0.55 + Math.random() * 0.45;
-      cell.burstTick = 8 + Math.floor(Math.random() * 20);
-      cell.ch        = randBurstChar();
-    }
-  }
-
-  // Cluster "data dump" — small rectangular block flares up
-  function fireCluster() {
-    const r  = Math.floor(Math.random() * rows);
-    const c  = Math.floor(Math.random() * cols);
-    const rh = 1 + Math.floor(Math.random() * 3);
-    const cw = 3 + Math.floor(Math.random() * 10);
-    for (let dr = 0; dr < rh; dr++) {
-      for (let dc = 0; dc < cw; dc++) {
-        const cell = cells[(r + dr) * cols + (c + dc)];
-        if (!cell) continue;
-        cell.burst     = 0.4 + Math.random() * 0.5;
-        cell.burstTick = 6 + Math.floor(Math.random() * 14);
-        cell.ch        = randBurstChar();
-      }
-    }
-  }
-
-  let streakTimer   = 30;
-  let clusterTimer  = 50;
-  let tick          = 0;
-
+  // ── Main loop ──
+  let t = 0;
   function step() {
-    tick++;
+    t++;
 
-    // Trigger events
-    streakTimer--;
-    if (streakTimer <= 0) {
-      fireStreak();
-      streakTimer = 20 + Math.floor(Math.random() * 60);
-    }
-    clusterTimer--;
-    if (clusterTimer <= 0) {
-      fireCluster();
-      clusterTimer = 30 + Math.floor(Math.random() * 80);
-    }
+    // Background — deep space gradient
+    const bg = ctx.createLinearGradient(0, 0, W*0.3, H);
+    bg.addColorStop(0,   '#00000f');
+    bg.addColorStop(0.4, '#01000a');
+    bg.addColorStop(1,   '#000008');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
 
-    // Update cells
-    for (let i = 0; i < cells.length; i++) {
-      const cell = cells[i];
+    // Nebula
+    ctx.drawImage(nebulaCanvas, 0, 0);
 
-      // Burst decay
-      if (cell.burstTick > 0) {
-        cell.burstTick--;
-        if (cell.burstTick === 0) {
-          cell.burst = 0;
-          cell.ch    = randChar();
-        }
+    // Stars
+    for (const s of stars) {
+      const twinkle = Math.sin(t * s.twinkleSpeed + s.twinkleOffset);
+      s.alpha = Math.max(0.05, s.baseAlpha + twinkle * 0.35);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+
+      if (s.size > 1.8) {
+        // Bigger stars get a soft glow
+        const glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 4);
+        glow.addColorStop(0,   `hsla(${s.hue},${s.sat}%,95%,${s.alpha})`);
+        glow.addColorStop(0.4, `hsla(${s.hue},${s.sat}%,80%,${s.alpha * 0.4})`);
+        glow.addColorStop(1,   `hsla(${s.hue},${s.sat}%,70%,0)`);
+        ctx.fillStyle = glow;
+        ctx.arc(s.x, s.y, s.size * 4, 0, Math.PI * 2);
+      } else {
+        ctx.fillStyle = `hsla(${s.hue},${s.sat}%,95%,${s.alpha})`;
       }
-
-      // Random background flicker — each cell independently
-      cell.timer--;
-      if (cell.timer <= 0) {
-        // Randomly decide: stay quiet, flicker, or mini-burst
-        const r = Math.random();
-        if (r < 0.55) {
-          // Dim background presence — just change char
-          cell.ch     = randChar();
-          cell.bright = Math.random() * 0.14;
-          cell.timer  = 40 + Math.floor(Math.random() * 120);
-        } else if (r < 0.80) {
-          // Small flicker
-          cell.ch     = randChar();
-          cell.bright = 0.18 + Math.random() * 0.3;
-          cell.timer  = 3 + Math.floor(Math.random() * 15);
-        } else {
-          // Go nearly dark
-          cell.bright = 0.02 + Math.random() * 0.05;
-          cell.timer  = 60 + Math.floor(Math.random() * 160);
-        }
-      }
-
-      // Slowly dim background brightness (not burst)
-      if (cell.bright > 0.03) cell.bright *= 0.985;
+      ctx.fill();
     }
 
-    draw();
+    // Shooting stars
+    shooterTimer--;
+    if (shooterTimer <= 0) {
+      if (shooters.length < 3) shooters.push(spawnShooter());
+      shooterTimer = 120 + Math.floor(Math.random() * 360);
+    }
+
+    for (let i = shooters.length - 1; i >= 0; i--) {
+      const sh = shooters[i];
+      sh.x    += sh.vx;
+      sh.y    += sh.vy;
+      sh.life -= sh.decay;
+      if (sh.life <= 0 || sh.x > W + 50 || sh.y > H + 50) {
+        shooters.splice(i, 1);
+        continue;
+      }
+      const tailX = sh.x - sh.vx / sh.decay * sh.len * 0.008;
+      const tailY = sh.y - sh.vy / sh.decay * sh.len * 0.008;
+      const grad  = ctx.createLinearGradient(tailX, tailY, sh.x, sh.y);
+      grad.addColorStop(0, `rgba(255,255,255,0)`);
+      grad.addColorStop(1, `rgba(255,255,255,${sh.alpha * sh.life})`);
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(sh.x, sh.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth   = 1.5;
+      ctx.stroke();
+      // Bright head
+      ctx.beginPath();
+      ctx.arc(sh.x, sh.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${sh.life})`;
+      ctx.fill();
+    }
+
     requestAnimationFrame(step);
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = `${CELL}px "Share Tech Mono", "Courier New", monospace`;
-    ctx.textBaseline = 'top';
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const cell = cells[row * cols + col];
-        const b    = Math.min(1, cell.bright + cell.burst);
-        if (b < 0.02) continue;
-
-        // Map brightness to colour
-        let r, g, bl;
-        if (b > 0.7) {
-          // Hot: near-white green
-          r  = Math.floor(180 * b);
-          g  = 255;
-          bl = Math.floor(180 * b);
-        } else if (b > 0.35) {
-          // Mid: bright green
-          r  = 0;
-          g  = Math.floor(100 + 155 * b);
-          bl = Math.floor(20 * b);
-        } else {
-          // Dim: dark green phosphor
-          r  = 0;
-          g  = Math.floor(30 + 120 * b);
-          bl = 0;
-        }
-
-        ctx.fillStyle = `rgba(${r},${g},${bl},${Math.min(1, b + 0.05)})`;
-        ctx.fillText(cell.ch, col * CELL, row * CELL);
-      }
-    }
-  }
-
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', () => { resize(); });
   resize();
   requestAnimationFrame(step);
 })();
