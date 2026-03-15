@@ -24,13 +24,18 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
+html {
+  background: #030303;
+  min-height: 100%;
+}
+
+body {
+  background: transparent;
   color: var(--g);
   font-family: 'VT323', monospace;
   font-size: 18px;
   overflow-x: hidden;
+  min-height: 100%;
 }
 
 /* SPACE CANVAS */
@@ -104,13 +109,81 @@ html, body {
   100% { opacity: 1; }
 }
 
+/* CRT MONITOR BEZEL */
+#monitor {
+  position: relative;
+  z-index: 1;
+  max-width: 1010px;
+  margin: 0 auto;
+  padding: 14px 16px 14px;
+  background: radial-gradient(ellipse at 50% 40%, #1a1a1a 0%, #0a0a0a 60%, #050505 100%);
+  border-radius: 18px / 22px;
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,0.9),
+    inset 0 2px 0 rgba(255,255,255,0.04),
+    0 0 0 3px #111,
+    0 0 0 5px #1a1a1a,
+    0 8px 60px rgba(0,0,0,0.95),
+    0 0 120px rgba(0,255,65,0.04);
+}
+
+/* Screen area inside bezel */
+#screen {
+  border-radius: 8px / 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 30px rgba(0,0,0,0.7),
+    inset 0 0 60px rgba(0,0,0,0.5),
+    inset 0 0 4px rgba(0,255,65,0.08),
+    0 0 20px rgba(0,255,65,0.03);
+  background: #00000c;
+}
+
+/* Faint green phosphor glow on screen edges */
+#screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px / 10px;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.4);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+/* Monitor brand label at bottom of bezel */
+#monitor::after {
+  content: 'SINTECH SYSTEMS  ·  VGA-2400  ·  GREEN PHOSPHOR';
+  display: block;
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: 12px;
+  color: #333;
+  letter-spacing: 3px;
+  padding: 6px 0 2px;
+  user-select: none;
+}
+
 #wrapper {
   position: relative;
   z-index: 1;
   max-width: 980px;
   margin: 0 auto;
   padding: 0 8px 80px;
-  animation: breathe 6s ease-in-out infinite, flicker 12s ease-in-out infinite;
+  animation: breathe 6s ease-in-out infinite, flicker 14s ease-in-out infinite;
+}
+
+/* phosphor burn — very faint ghost of the header behind it */
+#wrapper::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 980px;
+  height: 120px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,255,65,0.025) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ── TICKER ── */
@@ -972,6 +1045,13 @@ html, body {
   </div>
 </div>
 
+<!-- MONITOR BEZEL -->
+<div id="monitor">
+  <div style="position:absolute;bottom:8px;left:20px;z-index:2;display:flex;align-items:center;gap:6px;">
+    <div style="width:7px;height:7px;border-radius:50%;background:#00ff41;box-shadow:0 0 6px #00ff41,0 0 12px rgba(0,255,65,0.5);animation:breathe 2s ease-in-out infinite;"></div>
+    <span style="font-family:'VT323',monospace;font-size:11px;color:#003310;letter-spacing:2px;">PWR</span>
+  </div>
+<div id="screen">
 <!-- MAIN WRAPPER -->
 <div id="wrapper">
 
@@ -1234,6 +1314,7 @@ html, body {
   </div>
 
 </div><!-- /wrapper -->
+</div></div><!-- /screen /monitor -->
 
 <!-- FIXED STATUS BAR -->
 <div id="status-bar">
@@ -2121,7 +2202,10 @@ document.addEventListener('keydown', function(e) {
     playModemSound();
     screen.style.transition = 'opacity 0.4s';
     screen.style.opacity = '0';
-    setTimeout(function() { screen.style.display = 'none'; }, 450);
+    setTimeout(function() {
+      screen.style.display = 'none';
+      setTimeout(showMOTD, 1500);
+    }, 450);
     setStatus('CONNECTED // 2400 BAUD // NODE 01 // sinXne0-BBS v2.0');
   }
 
@@ -2134,6 +2218,73 @@ document.addEventListener('keydown', function(e) {
     document.removeEventListener('keydown', bootKey);
   });
 })();
+
+// ══════════════════════════════════════════════════════════
+// UI BEEP — short click sound on nav/button presses
+// ══════════════════════════════════════════════════════════
+function uiBeep(freq, dur) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'square';
+    o.frequency.value = freq || 880;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (dur || 0.06));
+    o.start(audioCtx.currentTime);
+    o.stop(audioCtx.currentTime + (dur || 0.06));
+  } catch(e) {}
+}
+
+// Attach beep to all nav items and buttons
+document.querySelectorAll('.nav-item, .btn, #new-msg-btn, .door-row, .file-row').forEach(function(el) {
+  el.addEventListener('click', function() { uiBeep(660, 0.05); });
+});
+
+// ══════════════════════════════════════════════════════════
+// MOTD POPUP — appears 1.5s after boot dismissal
+// ══════════════════════════════════════════════════════════
+var motdShown = false;
+function showMOTD() {
+  if (motdShown) return;
+  motdShown = true;
+  var motds = [
+    { title: 'HACK THE PLANET', body: '"The information superhighway is a tool, and like all tools it can be used for good or ill. Choose wisely."\n\n— The Hacker Manifesto' },
+    { title: 'MESSAGE OF THE DAY', body: '"We explore... and you call us criminals. We seek knowledge... and you call us criminals. We exist without skin color, without nationality, without religious bias... and you call us criminals."\n\n— The Mentor, 1986' },
+    { title: 'WELCOME TO sinXne0 BBS', body: 'Rules:\n1. Stay curious\n2. Share knowledge\n3. Respect the craft\n4. No destructive acts\n5. Have fun\n\nSYSOP: sinXne0 // NODE 01 ONLINE' },
+    { title: 'STAY ANONYMOUS', body: '"Privacy is necessary for an open society in the electronic age. Privacy is not secrecy."\n\n— A Cypherpunk\'s Manifesto, Eric Hughes 1993' },
+    { title: 'DAILY TIP', body: 'Pro tip: Use the command line below to navigate.\n\nType:\n  1-5  → Switch boards\n  N    → New message\n  R    → Read top post\n  D    → Door games\n  H    → Help\n  M    → Modem SFX' },
+  ];
+  var m = motds[Math.floor(Math.random() * motds.length)];
+
+  // Build a toast-style but larger MOTD
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:7200;' +
+    'background:rgba(0,8,0,0.97);border:1px solid #00ff41;padding:0;min-width:340px;max-width:480px;' +
+    'box-shadow:0 0 30px rgba(0,255,65,0.2);font-family:VT323,monospace;animation:toastIn .3s ease-out;';
+  div.innerHTML =
+    '<div style="background:rgba(0,40,0,.8);border-bottom:1px solid #009922;padding:4px 10px;' +
+    'color:#ffb300;font-size:18px;text-shadow:0 0 8px #cc8800;display:flex;justify-content:space-between;align-items:center;">' +
+    '<span>╔══ ' + m.title + ' ══╗</span>' +
+    '<button onclick="this.closest(\'div\').parentNode.remove();uiBeep(440,.06);" ' +
+    'style="background:transparent;border:1px solid #007722;color:#00cc33;font-family:VT323,monospace;' +
+    'font-size:16px;cursor:pointer;padding:0 6px;">✕</button></div>' +
+    '<div style="padding:10px 12px;color:#dfffea;font-size:17px;white-space:pre-wrap;line-height:1.55;' +
+    'text-shadow:0 0 5px rgba(0,255,65,0.2);">' + m.body + '</div>' +
+    '<div style="padding:4px 10px;border-top:1px solid #007722;font-size:15px;color:#007722;">' +
+    '[ PRESS ESC or click ✕ to dismiss ]</div>';
+  document.body.appendChild(div);
+
+  // Close on Escape
+  function motdEsc(e) {
+    if (e.key === 'Escape') { div.remove(); document.removeEventListener('keydown', motdEsc); uiBeep(440,.06); }
+  }
+  document.addEventListener('keydown', motdEsc);
+
+  // Auto-close after 12s
+  setTimeout(function() { if (div.parentNode) div.remove(); }, 12000);
+}
 
 // ══════════════════════════════════════════════════════════
 // INIT
