@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sinXne0 BBS v2.0 :: SYSTEM ONLINE</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --green: #00ff41;
+    --green-dim: #00cc33;
+    --green-dark: #003310;
+    --green-mid: #007722;
+    --amber: #ffb000;
+    --red: #ff2244;
+    --cyan: #00ffff;
+    --white: #ccffcc;
+    --bg: #000800;
+    --border: #00aa22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CRT scanline effect */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* CRT vignette */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  #wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px;
+  }
+
+  /* ── ASCII Header ── */
+  #header {
+    text-align: center;
+    padding: 16px 0 8px;
+    border-bottom: 1px solid var(--green-mid);
+    margin-bottom: 12px;
+    animation: flicker 8s infinite;
+  }
+
+  #header pre {
+    color: var(--green);
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: pre;
+    display: inline-block;
+    text-align: left;
+    text-shadow: 0 0 8px var(--green);
+  }
+
+  #header .tagline {
+    color: var(--green-dim);
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 3px;
+  }
+
+  #sysinfo {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--green-dim);
+    background: rgba(0,30,10,0.4);
+  }
+
+  #sysinfo span { color: var(--green); }
+
+  /* ── Nav Menu ── */
+  #nav {
+    border: 1px solid var(--border);
+    background: rgba(0,20,5,0.6);
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nav-item {
+    cursor: pointer;
+    padding: 2px 6px;
+    color: var(--green-dim);
+    border: 1px solid transparent;
+    transition: all 0.1s;
+    user-select: none;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--bg);
+    background: var(--green);
+    border-color: var(--green);
+    text-shadow: none;
+  }
+
+  .nav-item .num {
+    color: var(--amber);
+  }
+
+  .nav-item.active .num { color: var(--bg); }
+
+  /* ── Layout ── */
+  #content {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 10px;
+  }
+
+  @media (max-width: 640px) {
+    #content { grid-template-columns: 1fr; }
+    #sidebar { display: none; }
+  }
+
+  /* ── Boards ── */
+  .board-section {
+    display: none;
+  }
+
+  .board-section.visible {
+    display: block;
+  }
+
+  .section-title {
+    border: 1px solid var(--border);
+    background: var(--green-dark);
+    padding: 4px 8px;
+    margin-bottom: 8px;
+    color: var(--cyan);
+    text-shadow: 0 0 6px var(--cyan);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .section-title .count {
+    font-size: 11px;
+    color: var(--green-dim);
+  }
+
+  /* ── Post List ── */
+  .post-list { margin-bottom: 12px; }
+
+  .post-row {
+    border-bottom: 1px solid rgba(0,100,30,0.3);
+    padding: 5px 4px;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 4px 8px;
+    align-items: start;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .post-row:hover { background: rgba(0,255,65,0.05); }
+
+  .post-num {
+    color: var(--amber);
+    font-size: 12px;
+    text-align: right;
+    padding-top: 1px;
+  }
+
+  .post-title {
+    color: var(--white);
+    font-size: 13px;
+  }
+
+  .post-title.pinned::before {
+    content: '[*] ';
+    color: var(--amber);
+  }
+
+  .post-meta {
+    font-size: 11px;
+    color: var(--green-dim);
+    margin-top: 2px;
+  }
+
+  .post-date {
+    font-size: 11px;
+    color: var(--green-mid);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* ── Post View ── */
+  #post-view {
+    display: none;
+    border: 1px solid var(--border);
+    background: rgba(0,15,5,0.5);
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  #post-view.visible { display: block; }
+
+  .pv-header {
+    border-bottom: 1px solid var(--green-mid);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .pv-title {
+    color: var(--cyan);
+    font-size: 15px;
+    text-shadow: 0 0 5px var(--cyan);
+    margin-bottom: 4px;
+  }
+
+  .pv-meta {
+    font-size: 11px;
+    color: var(--green-dim);
+  }
+
+  .pv-meta span { color: var(--green); }
+
+  .pv-body {
+    color: var(--white);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .pv-back {
+    cursor: pointer;
+    color: var(--green-dim);
+    border: 1px solid var(--green-mid);
+    padding: 2px 8px;
+    display: inline-block;
+    font-size: 12px;
+  }
+
+  .pv-back:hover { background: var(--green-dark); color: var(--green); }
+
+  /* ── New Post Form ── */
+  #new-post-btn {
+    cursor: pointer;
+    border: 1px solid var(--green-mid);
+    padding: 4px 10px;
+    margin-bottom: 12px;
+    color: var(--green);
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    display: inline-block;
+    transition: all 0.1s;
+  }
+
+  #new-post-btn:hover {
+    background: var(--green);
+    color: var(--bg);
+  }
+
+  #post-form {
+    display: none;
+    border: 1px solid var(--border);
+    background: rgba(0,15,5,0.5);
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  #post-form.visible { display: block; }
+
+  .form-title {
+    color: var(--amber);
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .form-row {
+    margin-bottom: 8px;
+  }
+
+  .form-row label {
+    display: block;
+    font-size: 11px;
+    color: var(--green-dim);
+    margin-bottom: 3px;
+  }
+
+  .form-row input,
+  .form-row textarea,
+  .form-row select {
+    width: 100%;
+    background: #001a05;
+    border: 1px solid var(--green-mid);
+    color: var(--green);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 6px;
+    outline: none;
+  }
+
+  .form-row input:focus,
+  .form-row textarea:focus,
+  .form-row select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 4px rgba(0,255,65,0.3);
+  }
+
+  .form-row textarea { height: 120px; resize: vertical; }
+
+  .form-row select option { background: #001a05; }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    cursor: pointer;
+    border: 1px solid var(--green-mid);
+    padding: 4px 12px;
+    background: transparent;
+    color: var(--green);
+    font-family: inherit;
+    font-size: 12px;
+    transition: all 0.1s;
+  }
+
+  .btn:hover { background: var(--green); color: var(--bg); }
+
+  .btn.cancel { border-color: var(--red); color: var(--red); }
+  .btn.cancel:hover { background: var(--red); color: var(--bg); }
+
+  /* ── Sidebar ── */
+  #sidebar { font-size: 12px; }
+
+  .sidebar-box {
+    border: 1px solid var(--border);
+    background: rgba(0,15,5,0.4);
+    margin-bottom: 10px;
+  }
+
+  .sidebar-box-title {
+    background: var(--green-dark);
+    border-bottom: 1px solid var(--border);
+    padding: 3px 8px;
+    color: var(--amber);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .sidebar-box-body { padding: 6px 8px; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(0,80,20,0.2);
+    color: var(--green-dim);
+  }
+
+  .stat-row span { color: var(--green); }
+
+  .recent-item {
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0,80,20,0.2);
+    cursor: pointer;
+  }
+
+  .recent-item:hover { color: var(--green); }
+
+  .recent-item .ri-title {
+    color: var(--white);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .recent-item .ri-meta {
+    color: var(--green-mid);
+    font-size: 10px;
+  }
+
+  .tag {
+    display: inline-block;
+    border: 1px solid var(--green-mid);
+    padding: 1px 4px;
+    margin: 2px 2px 2px 0;
+    font-size: 10px;
+    color: var(--green-dim);
+    cursor: pointer;
+  }
+
+  .tag:hover { border-color: var(--green); color: var(--green); }
+
+  /* ── Footer ── */
+  #footer {
+    border-top: 1px solid var(--green-mid);
+    margin-top: 16px;
+    padding-top: 6px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--green-mid);
+  }
+
+  #footer a { color: var(--green-dim); text-decoration: none; }
+  #footer a:hover { color: var(--green); }
+
+  /* ── Cursor blink ── */
+  .cursor::after {
+    content: '_';
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes flicker {
+    0%, 95%, 97%, 100% { opacity: 1; }
+    96% { opacity: 0.85; }
+  }
+
+  /* ── GitHub Issue Thread ── */
+  .gh-notice {
+    border: 1px solid var(--green-mid);
+    padding: 6px 10px;
+    background: rgba(0,20,5,0.5);
+    font-size: 11px;
+    color: var(--green-dim);
+    margin-bottom: 8px;
+  }
+
+  .gh-notice a { color: var(--green); }
+
+  /* loading spinner */
+  .loading {
+    color: var(--green-mid);
+    animation: blink 0.8s step-end infinite;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--green-mid); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+<!-- ── HEADER ── -->
+<div id="header">
+<pre>
+ ███████╗██╗███╗   ██╗██╗  ██╗███╗   ██╗███████╗ ██████╗      ██████╗ ██████╗ ███████╗
+ ██╔════╝██║████╗  ██║╚██╗██╔╝████╗  ██║██╔════╝██╔═████╗     ██╔══██╗██╔══██╗██╔════╝
+ ███████╗██║██╔██╗ ██║ ╚███╔╝ ██╔██╗ ██║█████╗  ██║██╔██║     ██████╔╝██████╔╝███████╗
+ ╚════██║██║██║╚██╗██║ ██╔██╗ ██║╚██╗██║██╔══╝  ████╔╝██║     ██╔══██╗██╔══██╗╚════██║
+ ███████║██║██║ ╚████║██╔╝ ██╗██║ ╚████║███████╗╚██████╔╝     ██████╔╝██████╔╝███████║
+ ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝ ╚═════╝      ╚═════╝ ╚═════╝ ╚══════╝
+</pre>
+<div class="tagline">[ BULLETIN BOARD SYSTEM v2.0 :: EST. 2024 :: 2400 BAUD ]<span class="cursor"></span></div>
+</div>
+
+<!-- ── SYSINFO BAR ── -->
+<div id="sysinfo">
+  <div>SYS: <span>sinXne0-BBS</span> | NODE: <span>01</span> | USERS: <span id="user-count">...</span></div>
+  <div>TIME: <span id="clock">--:--:--</span></div>
+  <div>POSTS: <span id="post-count">...</span> | BOARD: <span>ONLINE</span></div>
+</div>
+
+<!-- ── NAV ── -->
+<div id="nav">
+  <div class="nav-item active" onclick="showBoard('all')" id="nav-all"><span class="num">[0]</span> ALL BOARDS</div>
+  <div class="nav-item" onclick="showBoard('linux')" id="nav-linux"><span class="num">[1]</span> LINUX/SECURITY</div>
+  <div class="nav-item" onclick="showBoard('pager')" id="nav-pager"><span class="num">[2]</span> WIFI PAGER</div>
+  <div class="nav-item" onclick="showBoard('hackrf')" id="nav-hackrf"><span class="num">[3]</span> HACKRF/SDR</div>
+  <div class="nav-item" onclick="showBoard('osint')" id="nav-osint"><span class="num">[4]</span> OSINT/RECON</div>
+  <div class="nav-item" onclick="showBoard('general')" id="nav-general"><span class="num">[5]</span> GENERAL</div>
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div id="content">
+  <div id="main-col">
+
+    <!-- Post view (hidden initially) -->
+    <div id="post-view">
+      <div class="pv-header">
+        <div class="pv-title" id="pv-title"></div>
+        <div class="pv-meta" id="pv-meta"></div>
+      </div>
+      <div class="pv-body" id="pv-body"></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="pv-back" onclick="closePost()">[ &lt; BACK TO BOARD ]</div>
+        <a id="pv-gh-link" href="#" target="_blank" style="font-size:11px;color:var(--green-mid);text-decoration:none;">[ View on GitHub ]</a>
+      </div>
+    </div>
+
+    <!-- New post button -->
+    <button id="new-post-btn" onclick="toggleForm()">[ + NEW POST ]</button>
+
+    <!-- Post form -->
+    <div id="post-form">
+      <div class="form-title">:: COMPOSE MESSAGE ::</div>
+      <div class="gh-notice">
+        Posts are stored as GitHub Issues on <a href="https://github.com/sinXne0/sinXne0.github.io/issues" target="_blank">sinXne0/sinXne0.github.io</a>.
+        You will be redirected to GitHub to submit.
+      </div>
+      <div class="form-row">
+        <label>BOARD / CATEGORY:</label>
+        <select id="form-board">
+          <option value="linux">[ 1 ] LINUX / SECURITY</option>
+          <option value="pager">[ 2 ] WIFI PAGER</option>
+          <option value="hackrf">[ 3 ] HACKRF / SDR</option>
+          <option value="osint">[ 4 ] OSINT / RECON</option>
+          <option value="general">[ 5 ] GENERAL</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>SUBJECT LINE:</label>
+        <input type="text" id="form-title" placeholder="Enter message title..." maxlength="120">
+      </div>
+      <div class="form-row">
+        <label>HANDLE / ALIAS:</label>
+        <input type="text" id="form-handle" placeholder="Your handle (e.g. d4rk_h4ck3r)" maxlength="40">
+      </div>
+      <div class="form-row">
+        <label>MESSAGE BODY:</label>
+        <textarea id="form-body" placeholder="Type your message here...&#10;&#10;Tip: use GitHub markdown for formatting."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="submitPost()">[ SEND MESSAGE ]</button>
+        <button class="btn cancel" onclick="toggleForm()">[ CANCEL ]</button>
+      </div>
+    </div>
+
+    <!-- Board sections -->
+    <div id="board-all" class="board-section visible">
+      <div class="section-title">
+        <span>:: ALL BOARDS ::</span>
+        <span class="count" id="count-all">loading...</span>
+      </div>
+      <div class="post-list" id="list-all"><div class="loading">[ FETCHING MESSAGES... ]</div></div>
+    </div>
+
+    <div id="board-linux" class="board-section">
+      <div class="section-title">
+        <span>:: LINUX / SECURITY ::</span>
+        <span class="count" id="count-linux">0 posts</span>
+      </div>
+      <div class="post-list" id="list-linux"></div>
+    </div>
+
+    <div id="board-pager" class="board-section">
+      <div class="section-title">
+        <span>:: WIFI PAGER ::</span>
+        <span class="count" id="count-pager">0 posts</span>
+      </div>
+      <div class="post-list" id="list-pager"></div>
+    </div>
+
+    <div id="board-hackrf" class="board-section">
+      <div class="section-title">
+        <span>:: HACKRF / SDR ::</span>
+        <span class="count" id="count-hackrf">0 posts</span>
+      </div>
+      <div class="post-list" id="list-hackrf"></div>
+    </div>
+
+    <div id="board-osint" class="board-section">
+      <div class="section-title">
+        <span>:: OSINT / RECON ::</span>
+        <span class="count" id="count-osint">0 posts</span>
+      </div>
+      <div class="post-list" id="list-osint"></div>
+    </div>
+
+    <div id="board-general" class="board-section">
+      <div class="section-title">
+        <span>:: GENERAL ::</span>
+        <span class="count" id="count-general">0 posts</span>
+      </div>
+      <div class="post-list" id="list-general"></div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <!-- ── SIDEBAR ── -->
+  <div id="sidebar">
+
+    <div class="sidebar-box">
+      <div class="sidebar-box-title">&gt; SYSTEM STATS</div>
+      <div class="sidebar-box-body">
+        <div class="stat-row">SYSOP <span>sinXne0</span></div>
+        <div class="stat-row">NODES <span>01</span></div>
+        <div class="stat-row">ONLINE <span id="sb-uptime">...</span></div>
+        <div class="stat-row">POSTS <span id="sb-posts">...</span></div>
+        <div class="stat-row">BOARDS <span>5</span></div>
+        <div class="stat-row">ENGINE <span>GH Issues</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sidebar-box-title">&gt; RECENT POSTS</div>
+      <div class="sidebar-box-body" id="recent-list">
+        <div class="loading">loading...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sidebar-box-title">&gt; TOOLS &amp; LINKS</div>
+      <div class="sidebar-box-body">
+        <div class="stat-row">GitHub <a href="https://github.com/sinXne0" target="_blank" style="color:var(--green);text-decoration:none;">sinXne0</a></div>
+        <div class="stat-row">Linux Tools <a href="https://github.com/sinXne0/linux-security-tools" target="_blank" style="color:var(--green);text-decoration:none;">[repo]</a></div>
+        <div class="stat-row">OSINT Tools <a href="https://github.com/sinXne0/osint-tools" target="_blank" style="color:var(--green);text-decoration:none;">[repo]</a></div>
+        <div class="stat-row">Pager Tools <a href="https://github.com/sinXne0/pager-tools" target="_blank" style="color:var(--green);text-decoration:none;">[repo]</a></div>
+        <div class="stat-row">HackRF <a href="https://github.com/sinXne0/Hackrf-Themes" target="_blank" style="color:var(--green);text-decoration:none;">[repo]</a></div>
+        <div class="stat-row">MK-Ultra UI <span style="color:var(--green-mid)">local</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sidebar-box-title">&gt; TAGS</div>
+      <div class="sidebar-box-body" id="tag-cloud">
+        <span class="tag" onclick="filterTag('hackrf')">#hackrf</span>
+        <span class="tag" onclick="filterTag('sdr')">#sdr</span>
+        <span class="tag" onclick="filterTag('pager')">#pager</span>
+        <span class="tag" onclick="filterTag('linux')">#linux</span>
+        <span class="tag" onclick="filterTag('osint')">#osint</span>
+        <span class="tag" onclick="filterTag('wifi')">#wifi</span>
+        <span class="tag" onclick="filterTag('pentest')">#pentest</span>
+        <span class="tag" onclick="filterTag('ctf')">#ctf</span>
+        <span class="tag" onclick="filterTag('radio')">#radio</span>
+        <span class="tag" onclick="filterTag('exploit')">#exploit</span>
+      </div>
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sidebar-box-title">&gt; ANSI LOGO</div>
+      <div class="sidebar-box-body">
+<pre style="font-size:10px;line-height:1.1;color:var(--green-dim);">
+ ____  ____  ____
+/ ___|/ ___||  _ \
+\___ \\___ \| | | |
+ ___) |___) | |_| |
+|____/|____/|____/
+
+[HACK THE PLANET]
+[  NO LIMITS  ]
+[ STAY CURIOUS ]
+</pre>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /content -->
+
+<!-- ── FOOTER ── -->
+<div id="footer">
+  <div>sinXne0 BBS v2.0 :: Powered by GitHub Issues :: &copy; 2024</div>
+  <div style="margin-top:4px;">
+    <a href="https://github.com/sinXne0" target="_blank">GitHub</a> ::
+    <a href="https://github.com/sinXne0/sinXne0.github.io/issues/new" target="_blank">New Post via GitHub</a> ::
+    <a href="https://github.com/sinXne0/sinXne0.github.io/issues" target="_blank">All Posts</a>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ── Config ──
+const REPO_OWNER = 'sinXne0';
+const REPO_NAME  = 'sinXne0.github.io';
+const API_BASE   = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
+
+// Board labels
+const BOARD_LABELS = {
+  linux:   'board:linux',
+  pager:   'board:pager',
+  hackrf:  'board:hackrf',
+  osint:   'board:osint',
+  general: 'board:general',
+};
+
+const BOARD_COLORS = {
+  linux:   '#005500',
+  pager:   '#004455',
+  hackrf:  '#440055',
+  osint:   '#553300',
+  general: '#003322',
+};
+
+let allPosts = [];
+let currentBoard = 'all';
+let formOpen = false;
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  const t = now.toTimeString().slice(0, 8);
+  document.getElementById('clock').textContent = t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Uptime (since page load) ──
+const startTime = Date.now();
+function updateUptime() {
+  const s = Math.floor((Date.now() - startTime) / 1000);
+  const h = Math.floor(s / 3600).toString().padStart(2, '0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  const el = document.getElementById('sb-uptime');
+  if (el) el.textContent = `${h}:${m}:${sec}`;
+}
+setInterval(updateUptime, 1000);
+updateUptime();
+
+// ── Fetch Posts ──
+async function fetchPosts() {
+  try {
+    const res = await fetch(`${API_BASE}?state=open&per_page=100&labels=bbs`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) {
+      // If no issues yet, show welcome message
+      allPosts = getDefaultPosts();
+    } else {
+      const issues = await res.json();
+      if (issues.length === 0) {
+        allPosts = getDefaultPosts();
+      } else {
+        allPosts = issues.map(parseIssue);
+      }
+    }
+  } catch (e) {
+    allPosts = getDefaultPosts();
+  }
+  renderAll();
+}
+
+function parseIssue(issue) {
+  const labels = issue.labels.map(l => l.name);
+  let board = 'general';
+  for (const [b, lbl] of Object.entries(BOARD_LABELS)) {
+    if (labels.includes(lbl)) { board = b; break; }
+  }
+  const handle = issue.body && issue.body.match(/^Handle:\s*(.+)$/m)
+    ? issue.body.match(/^Handle:\s*(.+)$/m)[1].trim()
+    : issue.user.login;
+  const body = issue.body
+    ? issue.body.replace(/^Handle:\s*.+\n?/m, '').trim()
+    : '(no content)';
+
+  return {
+    id: issue.number,
+    title: issue.title,
+    board,
+    handle,
+    body,
+    date: new Date(issue.created_at).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}),
+    url: issue.html_url,
+    pinned: labels.includes('pinned'),
+  };
+}
+
+function getDefaultPosts() {
+  return [
+    {
+      id: 0,
+      title: 'Welcome to sinXne0 BBS',
+      board: 'general',
+      handle: 'sinXne0',
+      body: `Welcome to the sinXne0 Bulletin Board System!\n\nThis board is powered by GitHub Issues. To post a message, click [ + NEW POST ] — you will be redirected to GitHub to submit your issue with the correct labels.\n\nBoards:\n  [1] LINUX / SECURITY  — tools, exploits, CTF writeups\n  [2] WIFI PAGER        — pineapple pager payloads & themes\n  [3] HACKRF / SDR      — radio, firmware, splash screens\n  [4] OSINT / RECON     — intel gathering, OSINT tools\n  [5] GENERAL           — everything else\n\nStay curious. Hack the planet.\n\n- sinXne0`,
+      date: '14 Mar 2026',
+      url: `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues`,
+      pinned: true,
+    },
+    {
+      id: -1,
+      title: 'HackRF PortaPack Mayhem — Custom Splash Screens',
+      board: 'hackrf',
+      handle: 'sinXne0',
+      body: `Just finished a set of custom splash screens for the PortaPack H2 running Mayhem firmware.\n\nSpecs: 240x320px, 24-bit BMP, placed at /splash.bmp on SD card root.\n\nCheck the repo for previews and download links.\nRepo: https://github.com/sinXne0/Hackrf-Themes`,
+      date: '14 Mar 2026',
+      url: `https://github.com/${REPO_OWNER}/Hackrf-Themes`,
+      pinned: false,
+    },
+    {
+      id: -2,
+      title: 'MK-Ultra Web UI — Pentest Suite',
+      board: 'linux',
+      handle: 'sinXne0',
+      body: `Built a local Flask + SocketIO pentest suite with real-time results.\n\nFeatures:\n  - Network scanner (Scapy)\n  - Web vuln scanner (SQLi, XSS, SSRF, IDOR)\n  - Hash cracker (MD5/SHA/NTLM/MySQL)\n  - Brute forcer (SSH/FTP/HTTP)\n  - SSL/TLS & DNS recon\n  - Stress tester\n  - Discord webhook integration\n\nRun with: python3 app.py`,
+      date: '14 Mar 2026',
+      url: `https://github.com/${REPO_OWNER}`,
+      pinned: false,
+    },
+  ];
+}
+
+// ── Render ──
+function renderAll() {
+  const total = allPosts.length;
+  document.getElementById('post-count').textContent = total;
+  document.getElementById('sb-posts').textContent = total;
+  document.getElementById('user-count').textContent = Math.floor(Math.random() * 12) + 3;
+
+  renderBoard('all', allPosts);
+  for (const b of ['linux','pager','hackrf','osint','general']) {
+    const filtered = allPosts.filter(p => p.board === b);
+    renderBoard(b, filtered);
+    document.getElementById(`count-${b}`).textContent = `${filtered.length} post${filtered.length !== 1 ? 's' : ''}`;
+  }
+  document.getElementById('count-all').textContent = `${total} post${total !== 1 ? 's' : ''}`;
+
+  renderRecent();
+}
+
+function renderBoard(boardId, posts) {
+  const el = document.getElementById(`list-${boardId}`);
+  if (!el) return;
+
+  // Pinned first
+  const sorted = [...posts].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+  if (sorted.length === 0) {
+    el.innerHTML = `<div style="color:var(--green-mid);padding:8px 4px;">[ No posts in this board yet. Be the first! ]</div>`;
+    return;
+  }
+
+  el.innerHTML = sorted.map((p, i) => `
+    <div class="post-row" onclick="openPost(${p.id})">
+      <div class="post-num">${(i + 1).toString().padStart(3, '0')}</div>
+      <div>
+        <div class="post-title${p.pinned ? ' pinned' : ''}">${escHtml(p.title)}</div>
+        <div class="post-meta">From: <b>${escHtml(p.handle)}</b> :: Board: [${p.board.toUpperCase()}]</div>
+      </div>
+      <div class="post-date">${p.date}</div>
+    </div>
+  `).join('');
+}
+
+function renderRecent() {
+  const el = document.getElementById('recent-list');
+  const recent = allPosts.slice(0, 5);
+  el.innerHTML = recent.map(p => `
+    <div class="recent-item" onclick="openPost(${p.id})">
+      <div class="ri-title">${escHtml(p.title)}</div>
+      <div class="ri-meta">${p.board.toUpperCase()} :: ${p.date}</div>
+    </div>
+  `).join('');
+}
+
+// ── Board Navigation ──
+function showBoard(boardId) {
+  currentBoard = boardId;
+  document.querySelectorAll('.board-section').forEach(el => el.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`board-${boardId}`).classList.add('visible');
+  document.getElementById(`nav-${boardId}`).classList.add('active');
+  closePost();
+}
+
+// ── Post View ──
+function openPost(id) {
+  const post = allPosts.find(p => p.id === id);
+  if (!post) return;
+
+  document.getElementById('pv-title').textContent = post.title;
+  document.getElementById('pv-meta').innerHTML =
+    `From: <span>${escHtml(post.handle)}</span> :: Board: <span>[${post.board.toUpperCase()}]</span> :: Date: <span>${post.date}</span>`;
+  document.getElementById('pv-body').textContent = post.body;
+  document.getElementById('pv-gh-link').href = post.url || '#';
+
+  document.getElementById('post-view').classList.add('visible');
+  document.getElementById('post-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closePost() {
+  document.getElementById('post-view').classList.remove('visible');
+}
+
+// ── Form ──
+function toggleForm() {
+  formOpen = !formOpen;
+  const form = document.getElementById('post-form');
+  if (formOpen) {
+    form.classList.add('visible');
+    document.getElementById('new-post-btn').textContent = '[ - CANCEL POST ]';
+  } else {
+    form.classList.remove('visible');
+    document.getElementById('new-post-btn').textContent = '[ + NEW POST ]';
+  }
+}
+
+function submitPost() {
+  const title   = document.getElementById('form-title').value.trim();
+  const handle  = document.getElementById('form-handle').value.trim() || 'anonymous';
+  const body    = document.getElementById('form-body').value.trim();
+  const board   = document.getElementById('form-board').value;
+
+  if (!title) { alert('[ ERROR: Subject line required ]'); return; }
+  if (!body)  { alert('[ ERROR: Message body required ]'); return; }
+
+  const label = BOARD_LABELS[board];
+  const issueBody = encodeURIComponent(`Handle: ${handle}\n\n${body}`);
+  const issueTitle = encodeURIComponent(title);
+  const labels = encodeURIComponent(`bbs,${label}`);
+
+  const url = `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new?title=${issueTitle}&body=${issueBody}&labels=${labels}`;
+  window.open(url, '_blank');
+}
+
+// ── Tag filter ──
+function filterTag(tag) {
+  showBoard('all');
+  const filtered = allPosts.filter(p =>
+    p.title.toLowerCase().includes(tag) ||
+    p.body.toLowerCase().includes(tag)
+  );
+  const el = document.getElementById('list-all');
+  document.getElementById('count-all').textContent = `${filtered.length} result(s) for #${tag}`;
+  if (filtered.length === 0) {
+    el.innerHTML = `<div style="color:var(--green-mid);padding:8px;">[No posts tagged #${tag}]</div>`;
+  } else {
+    renderBoard('all', filtered);
+  }
+}
+
+// ── Utils ──
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ──
+fetchPosts();
+
+// Typewriter effect on nav items
+(function typewriterBoot() {
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach((el, i) => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.style.opacity = '1';
+    }, i * 80);
+  });
+})();
+</script>
+</body>
+</html>
