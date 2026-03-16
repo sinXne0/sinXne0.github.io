@@ -14,7 +14,7 @@
 }
 body{
 font-family:'VT323',monospace;background:var(--bg);color:var(--green);
-font-size:16px;overflow:hidden;height:100vh;width:100vw;
+font-size:20px;overflow:hidden;height:100vh;width:100vw;
 }
 /* CRT Effects */
 .crt-overlay{
@@ -55,7 +55,7 @@ border:1px solid var(--green);background:rgba(0,20,0,0.3);
 #input-bar span{color:var(--cyan);margin-right:6px;white-space:nowrap;}
 #cmd-input{
 background:transparent;border:none;color:var(--green);font-family:'VT323',monospace;
-font-size:16px;flex:1;outline:none;caret-color:var(--green);
+font-size:20px;flex:1;outline:none;caret-color:var(--green);
 }
 .panel-border{
 border:1px solid var(--dimgreen);background:rgba(0,10,0,0.25);
@@ -71,7 +71,7 @@ position:relative;
 .c-dim{color:#446644;}.c-bold{font-weight:bold;}
 /* HP/CPU bars */
 .bar-container{
-width:100%;height:14px;background:#111;border:1px solid var(--dimgreen);
+width:100%;height:18px;background:#111;border:1px solid var(--dimgreen);
 margin:2px 0;position:relative;
 }
 .bar-fill{height:100%;transition:width 0.3s;}
@@ -79,13 +79,13 @@ margin:2px 0;position:relative;
 .bar-cpu .bar-fill{background:linear-gradient(90deg,#001133,var(--cyan));}
 .bar-xp .bar-fill{background:linear-gradient(90deg,#332200,var(--amber));}
 .bar-label{
-position:absolute;top:0;left:4px;font-size:12px;line-height:14px;color:var(--white);z-index:1;
+position:absolute;top:0;left:4px;font-size:16px;line-height:18px;color:var(--white);z-index:1;
 }
 /* Buttons */
 .btn{
 display:inline-block;padding:4px 14px;margin:3px;border:1px solid var(--green);
 background:rgba(0,40,0,0.4);color:var(--green);font-family:'VT323',monospace;
-font-size:16px;cursor:pointer;transition:all 0.15s;
+font-size:20px;cursor:pointer;transition:all 0.15s;
 }
 .btn:hover{background:rgba(0,255,65,0.15);text-shadow:0 0 8px var(--green);}
 .btn-cyan{border-color:var(--cyan);color:var(--cyan);}
@@ -98,7 +98,7 @@ font-size:16px;cursor:pointer;transition:all 0.15s;
 .btn-magenta:hover{background:rgba(255,68,204,0.12);text-shadow:0 0 8px var(--magenta);}
 .btn-disabled{opacity:0.35;cursor:default;pointer-events:none;}
 /* Log lines */
-.log-line{font-size:14px;line-height:1.3;white-space:pre-wrap;word-break:break-word;}
+.log-line{font-size:18px;line-height:1.3;white-space:pre-wrap;word-break:break-word;}
 /* Menu items */
 .menu-item{
 padding:2px 8px;cursor:pointer;border:1px solid transparent;
@@ -110,10 +110,10 @@ transition:all 0.1s;
 .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .shop-item{
 border:1px solid var(--dimgreen);padding:4px 6px;cursor:pointer;
-transition:all 0.12s;font-size:14px;
+transition:all 0.12s;font-size:18px;
 }
 .shop-item:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
-.shop-item .tier{font-size:12px;}
+.shop-item .tier{font-size:16px;}
 /* Toast */
 .toast{
 position:fixed;top:20px;left:50%;transform:translateX(-50%);
@@ -131,7 +131,7 @@ transition:all 0.15s;
 .class-card:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
 .class-card.selected{border-color:var(--magenta);background:rgba(255,68,204,0.1);}
 /* ASCII art pre */
-pre.ascii{color:var(--cyan);font-size:14px;line-height:1.1;white-space:pre;}
+pre.ascii{color:var(--cyan);font-size:18px;line-height:1.1;white-space:pre;}
 /* Combatant display */
 .combatant-box{
 border:1px solid var(--dimgreen);padding:6px;margin:4px 0;
@@ -154,11 +154,11 @@ padding-bottom:2px;margin-bottom:4px;font-size:18px;
 /* Equipped slot */
 .equip-slot{
 display:inline-block;border:1px solid var(--amber);padding:2px 6px;margin:2px;
-font-size:13px;min-width:100px;text-align:center;
+font-size:17px;min-width:100px;text-align:center;
 }
 .equip-slot.empty{border-color:#333;color:#444;}
 .hw-tier{display:flex;justify-content:space-between;align-items:center;
-border:1px solid var(--dimgreen);padding:4px 6px;margin:2px 0;font-size:14px;}
+border:1px solid var(--dimgreen);padding:4px 6px;margin:2px 0;font-size:18px;}
 .hw-tier.owned{border-color:var(--green);background:rgba(0,255,65,0.06);}
 .hw-tier.available{cursor:pointer;}
 .hw-tier.available:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
@@ -1474,17 +1474,17 @@ function renderStatsPanel(){
   h += '<div class="c-dim">' + esc(player.playerClass) + ' // LVL ' + player.level + '</div>';
   h += '<div style="margin-top:6px;">';
   // HP bar
-  h += '<div class="c-green" style="font-size:13px;">HP ' + player.hp + '/' + mhp + '</div>';
+  h += '<div class="c-green" style="font-size:17px;">HP ' + player.hp + '/' + mhp + '</div>';
   h += '<div class="bar-container bar-hp"><div class="bar-fill" style="width:'+hpPct+'%"></div></div>';
   // CPU bar
-  h += '<div class="c-cyan" style="font-size:13px;">CPU ' + player.cpu + '/' + mcpu + '</div>';
+  h += '<div class="c-cyan" style="font-size:17px;">CPU ' + player.cpu + '/' + mcpu + '</div>';
   h += '<div class="bar-container bar-cpu"><div class="bar-fill" style="width:'+cpuPct+'%"></div></div>';
   // XP bar
-  h += '<div class="c-amber" style="font-size:13px;">XP ' + player.xp + '/' + player.xpNext + '</div>';
+  h += '<div class="c-amber" style="font-size:17px;">XP ' + player.xp + '/' + player.xpNext + '</div>';
   h += '<div class="bar-container bar-xp"><div class="bar-fill" style="width:'+xpPct+'%"></div></div>';
   h += '</div>';
 
-  h += '<div style="margin-top:8px;font-size:14px;">';
+  h += '<div style="margin-top:8px;font-size:18px;">';
   h += '\u251C\u2500 ATK: <span class="c-red">' + getATK() + '</span><br>';
   h += '\u251C\u2500 DEF: <span class="c-cyan">' + getDEF() + '</span><br>';
   h += '\u251C\u2500 CRIT: <span class="c-magenta">' + Math.floor(getCritChance()*100) + '%</span><br>';
@@ -1492,7 +1492,7 @@ function renderStatsPanel(){
   h += '\u2514\u2500 FLOOR: <span class="c-amber">' + player.floor + '</span>';
   h += '</div>';
 
-  h += '<div style="margin-top:8px;font-size:14px;">';
+  h += '<div style="margin-top:8px;font-size:18px;">';
   h += '\u2554\u2550 FUNDS \u2550\u2557<br>';
   h += '\u2551 CRED: <span class="c-green">' + formatCred(player.cred) + '</span><br>';
   h += '\u2551 DC:   <span class="c-magenta">' + player.darkCred + ' DC</span><br>';
@@ -1500,7 +1500,7 @@ function renderStatsPanel(){
   h += '</div>';
 
   // Equipped
-  h += '<div style="margin-top:8px;font-size:13px;">';
+  h += '<div style="margin-top:8px;font-size:17px;">';
   h += '\u2554\u2550 EQUIPPED \u2550\u2557<br>';
   for(var e=0;e<4;e++){
     var eq = player.equipped[e] || '---';
@@ -1511,7 +1511,7 @@ function renderStatsPanel(){
   h += '</div>';
 
   // Hardware
-  h += '<div style="margin-top:8px;font-size:12px;">';
+  h += '<div style="margin-top:8px;font-size:16px;">';
   h += '\u251C\u2500 DECK: <span class="c-cyan">' + esc(player.hardware.deck.name) + '</span><br>';
   h += '\u251C\u2500 RAM:  <span class="c-cyan">' + esc(player.hardware.ram.name) + '</span><br>';
   h += '\u251C\u2500 RIG:  <span class="c-cyan">' + esc(player.hardware.rig.name) + '</span><br>';
@@ -1519,7 +1519,7 @@ function renderStatsPanel(){
   h += '</div>';
 
   // Rep
-  h += '<div style="margin-top:8px;font-size:12px;">';
+  h += '<div style="margin-top:8px;font-size:16px;">';
   h += '\u2554\u2550 REP \u2550\u2557<br>';
   h += '\u2551 UNDERGROUND: ' + player.reputation.underground + '<br>';
   h += '\u2551 CORPORATE: ' + player.reputation.corporate + '<br>';
@@ -1535,7 +1535,7 @@ function renderStatsPanel(){
     if(playerStatusEffects.overclocked) se += '<span class="c-amber">OVERCLOCK(' + playerStatusEffects.overclocked + ')</span> ';
     if(playerStatusEffects.stealth) se += '<span class="c-cyan">STEALTH(' + playerStatusEffects.stealth + ')</span> ';
     if(se){
-      h += '<div style="margin-top:6px;font-size:12px;">\u2554\u2550 STATUS \u2550\u2557<br>' + se + '</div>';
+      h += '<div style="margin-top:6px;font-size:16px;">\u2554\u2550 STATUS \u2550\u2557<br>' + se + '</div>';
     }
   }
 
@@ -1560,7 +1560,7 @@ var bootLines = [
 ];
 
 function renderBoot(){
-  var h = '<div style="padding:20px;font-size:16px;">';
+  var h = '<div style="padding:20px;font-size:20px;">';
   for(var i=0;i<bootLines.length;i++){
     var c = (i === bootLines.length - 1) ? 'var(--cyan)' : (i === bootLines.length - 2) ? 'var(--green)' : 'var(--green)';
     h += '<div class="boot-line" style="animation-delay:'+bootLines[i].delay+'ms;color:'+c+'">'+esc(bootLines[i].text)+'</div>';
@@ -1584,7 +1584,7 @@ function renderTitle(){
   art += '  ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝\n';
 
   var h = '<div style="text-align:center;padding-top:20px;">';
-  h += '<pre class="ascii" style="font-size:10px;display:inline-block;text-align:left;">' + art + '</pre>';
+  h += '<pre class="ascii" style="font-size:14px;display:inline-block;text-align:left;">' + art + '</pre>';
   h += '<div class="c-magenta" style="font-size:28px;margin-top:6px;">// T H E &nbsp; N E T</div>';
   h += '<div class="c-dim" style="margin:10px 0;">v2.0.77 // BBS DOOR GAME // EST. 2087</div>';
   h += '<div style="margin-top:30px;">';
@@ -1593,9 +1593,9 @@ function renderTitle(){
   }
   h += '<div class="btn" onclick="startNewGame()" style="font-size:22px;padding:8px 40px;margin:6px;">[ JACK IN ]</div><br>';
   h += '<div class="btn btn-amber" onclick="gameState=\'codex\';render()" style="font-size:18px;padding:6px 30px;margin:6px;">[ CODEX ]</div><br>';
-  h += '<div class="btn btn-magenta" onclick="showCredits()" style="font-size:16px;padding:4px 24px;margin:6px;">[ CREDITS ]</div>';
+  h += '<div class="btn btn-magenta" onclick="showCredits()" style="font-size:20px;padding:4px 24px;margin:6px;">[ CREDITS ]</div>';
   h += '</div>';
-  h += '<div class="c-dim" style="margin-top:30px;font-size:13px;">Use mouse or keyboard to navigate. Type commands in the input bar.</div>';
+  h += '<div class="c-dim" style="margin-top:30px;font-size:17px;">Use mouse or keyboard to navigate. Type commands in the input bar.</div>';
   h += '</div>';
   $main.innerHTML = h;
 }
@@ -1648,9 +1648,9 @@ function renderCreate(){
     var sel = selectedClass === ck ? ' selected' : '';
     h += '<div class="class-card' + sel + '" onclick="selectedClass=\'' + ck + '\';render();">';
     h += '<div class="c-cyan" style="font-size:17px;">' + cl.name + '</div>';
-    h += '<div class="c-dim" style="font-size:13px;">' + cl.desc + '</div>';
-    h += '<div style="font-size:13px;">HP:' + cl.hp + ' CPU:' + cl.cpu + ' ATK:' + cl.atk + ' DEF:' + cl.def + '</div>';
-    h += '<div class="c-magenta" style="font-size:13px;">Bonus: ' + cl.bonus + '</div>';
+    h += '<div class="c-dim" style="font-size:17px;">' + cl.desc + '</div>';
+    h += '<div style="font-size:17px;">HP:' + cl.hp + ' CPU:' + cl.cpu + ' ATK:' + cl.atk + ' DEF:' + cl.def + '</div>';
+    h += '<div class="c-magenta" style="font-size:17px;">Bonus: ' + cl.bonus + '</div>';
     h += '</div>';
   }
 
@@ -1718,7 +1718,7 @@ function renderHub(){
 
   // Area description
   var areaObj = AREAS.find(function(a){return a.id === player.area;});
-  if(areaObj) h += '<div class="c-dim" style="font-size:13px;margin-bottom:10px;">' + esc(areaObj.desc) + '</div>';
+  if(areaObj) h += '<div class="c-dim" style="font-size:17px;margin-bottom:10px;">' + esc(areaObj.desc) + '</div>';
 
   h += '<div style="margin:10px 0;">';
   h += '<div class="c-cyan" style="margin-bottom:6px;">\u2550\u2550 NAVIGATION \u2550\u2550</div>';
@@ -1739,7 +1739,7 @@ function renderHub(){
     var current = (player.area === a.id);
     var cls = current ? 'btn btn-magenta' : (unlocked ? 'btn' : 'btn btn-disabled');
     var label = a.name + (current ? ' [CURRENT]' : (!unlocked ? ' [LOCKED]' : ''));
-    h += '<div class="' + cls + '" onclick="changeArea(\'' + a.id + '\')" style="font-size:13px;width:260px;">' + esc(label) + '</div><br>';
+    h += '<div class="' + cls + '" onclick="changeArea(\'' + a.id + '\')" style="font-size:17px;width:260px;">' + esc(label) + '</div><br>';
   }
 
   // Prestige button
@@ -1749,8 +1749,8 @@ function renderHub(){
 
   // Export save
   h += '<div style="margin-top:14px;">';
-  h += '<div class="btn c-dim" onclick="showExport()" style="font-size:12px;">[EXPORT SAVE]</div>';
-  h += '<div class="btn c-dim" onclick="showImport()" style="font-size:12px;">[IMPORT SAVE]</div>';
+  h += '<div class="btn c-dim" onclick="showExport()" style="font-size:16px;">[EXPORT SAVE]</div>';
+  h += '<div class="btn c-dim" onclick="showImport()" style="font-size:16px;">[IMPORT SAVE]</div>';
   h += '</div>';
 
   h += '</div></div>';
@@ -1791,14 +1791,14 @@ function showExport(){
   var code = exportSave();
   $main.innerHTML = '<div style="padding:20px;"><div class="section-hdr">EXPORT SAVE</div>' +
     '<div class="c-dim" style="margin:10px 0;">Copy this code to save your progress:</div>' +
-    '<textarea style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:12px;padding:6px;" readonly>' + code + '</textarea>' +
+    '<textarea style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:16px;padding:6px;" readonly>' + code + '</textarea>' +
     '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[ BACK ]</span></div></div>';
 }
 
 function showImport(){
   $main.innerHTML = '<div style="padding:20px;"><div class="section-hdr">IMPORT SAVE</div>' +
     '<div class="c-dim" style="margin:10px 0;">Paste your save code below:</div>' +
-    '<textarea id="import-input" style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:12px;padding:6px;"></textarea>' +
+    '<textarea id="import-input" style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:16px;padding:6px;"></textarea>' +
     '<div style="margin-top:10px;"><span class="btn btn-cyan" onclick="doImport()">[ IMPORT ]</span> <span class="btn" onclick="gameState=\'hub\';render();">[ BACK ]</span></div></div>';
 }
 
@@ -1826,7 +1826,7 @@ function renderExplore(){
   }
   var h = '<div style="padding:10px;">';
   h += '<div class="section-hdr">\u2554\u2550\u2550 ' + getAreaName(player.area) + ' \u2550\u2550 FLOOR ' + player.floor + ' \u2550\u2550\u2557</div>';
-  h += '<div class="c-dim" style="margin:6px 0;font-size:14px;font-style:italic;">' + esc(currentRoom.desc) + '</div>';
+  h += '<div class="c-dim" style="margin:6px 0;font-size:18px;font-style:italic;">' + esc(currentRoom.desc) + '</div>';
   h += '<div style="margin-top:10px;">';
 
   switch(currentRoom.type){
@@ -1834,8 +1834,8 @@ function renderExplore(){
       h += '<div class="c-red" style="font-size:18px;">\u2550\u2550 HOSTILE DETECTED \u2550\u2550</div>';
       h += '<div class="combatant-box enemy-box">';
       h += '<div class="c-red">' + esc(currentRoom.data.name) + '</div>';
-      h += '<div class="c-dim" style="font-size:13px;">' + esc(currentRoom.data.desc) + '</div>';
-      h += '<div style="font-size:13px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(currentRoom.data.desc) + '</div>';
+      h += '<div style="font-size:17px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
       h += '</div>';
       h += '<div class="btn btn-red" onclick="startCombat(currentRoom.data);currentRoom=null;">[ENGAGE]</div>';
       h += ' <div class="btn" onclick="tryFleeExplore()">[AVOID]</div>';
@@ -1845,15 +1845,15 @@ function renderExplore(){
       h += '<div class="c-magenta" style="font-size:20px;">\u2588\u2588 BOSS ENCOUNTER \u2588\u2588</div>';
       h += '<div class="combatant-box enemy-box" style="border-color:var(--magenta);">';
       h += '<div class="c-magenta" style="font-size:18px;">' + esc(currentRoom.data.name) + '</div>';
-      h += '<div class="c-dim" style="font-size:13px;">' + esc(currentRoom.data.desc) + '</div>';
-      h += '<div style="font-size:13px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
-      h += '<div class="c-magenta" style="font-size:13px;">REWARD: ' + currentRoom.data.dc + ' DARK CRED</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(currentRoom.data.desc) + '</div>';
+      h += '<div style="font-size:17px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
+      h += '<div class="c-magenta" style="font-size:17px;">REWARD: ' + currentRoom.data.dc + ' DARK CRED</div>';
       h += '</div>';
       h += '<div class="btn btn-magenta" onclick="startCombat(currentRoom.data);currentRoom=null;" style="font-size:18px;">[FACE THE BOSS]</div>';
       break;
 
     case 'event':
-      h += '<div class="c-amber" style="font-size:16px;">' + esc(currentRoom.data.text) + '</div>';
+      h += '<div class="c-amber" style="font-size:20px;">' + esc(currentRoom.data.text) + '</div>';
       h += '<div style="margin-top:8px;">';
       for(var ci=0;ci<currentRoom.data.choices.length;ci++){
         h += '<div class="btn btn-amber" onclick="handleEvent('+ci+')">[' + esc(currentRoom.data.choices[ci]) + ']</div> ';
@@ -1863,10 +1863,10 @@ function renderExplore(){
 
     case 'loot':
       var loot = generateLoot();
-      h += '<div class="c-green" style="font-size:16px;">\u2550\u2550 LOOT FOUND \u2550\u2550</div>';
+      h += '<div class="c-green" style="font-size:20px;">\u2550\u2550 LOOT FOUND \u2550\u2550</div>';
       if(loot.type === 'program'){
         h += '<div class="c-cyan" style="margin:6px 0;">Found program: <span class="c-magenta">' + esc(loot.program.name) + '</span></div>';
-        h += '<div class="c-dim" style="font-size:13px;">' + esc(loot.program.desc) + '</div>';
+        h += '<div class="c-dim" style="font-size:17px;">' + esc(loot.program.desc) + '</div>';
         if(player.programs.length < 20){
           h += '<div class="btn btn-cyan" onclick="takeLootProgram(\'' + loot.program.name + '\')">[TAKE]</div>';
         } else {
@@ -1880,7 +1880,7 @@ function renderExplore(){
       break;
 
     case 'safe':
-      h += '<div class="c-cyan" style="font-size:16px;">\u2550\u2550 SAFE ROOM \u2550\u2550</div>';
+      h += '<div class="c-cyan" style="font-size:20px;">\u2550\u2550 SAFE ROOM \u2550\u2550</div>';
       h += '<div class="c-dim">A quiet node. The hum of data traffic is distant here. You can rest.</div>';
       var restHP = 20, restCPU = 10;
       player.hp = Math.min(getMaxHP(), player.hp + restHP);
@@ -1891,7 +1891,7 @@ function renderExplore(){
       break;
 
     case 'hidden':
-      h += '<div class="c-magenta" style="font-size:16px;">\u2550\u2550 HIDDEN CACHE \u2550\u2550</div>';
+      h += '<div class="c-magenta" style="font-size:20px;">\u2550\u2550 HIDDEN CACHE \u2550\u2550</div>';
       var hiddenCred = rand(50, 150) * Math.ceil(player.floor / 2);
       var hiddenLoot = generateLoot();
       h += '<div class="c-green">You found a hidden data cache!</div>';
@@ -1907,7 +1907,7 @@ function renderExplore(){
       break;
 
     default: // empty
-      h += '<div class="c-dim" style="font-size:16px;">The node is quiet. Nothing of interest here.</div>';
+      h += '<div class="c-dim" style="font-size:20px;">The node is quiet. Nothing of interest here.</div>';
       h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
       break;
   }
@@ -1969,18 +1969,18 @@ function renderCombat(){
   h += '<span class="c-red" style="font-size:18px;">' + esc(currentEnemy.name) + (currentEnemy.isBoss ? ' \u2588BOSS\u2588' : '') + '</span>';
   h += '<span class="c-dim">' + esc(currentEnemy.desc) + '</span>';
   h += '</div>';
-  h += '<div class="c-red" style="font-size:13px;">HP: ' + Math.max(0,currentEnemy.hp) + '/' + currentEnemy.hpMax + ' | ATK: ' + currentEnemy.atk + ' | DEF: ' + currentEnemy.def + '</div>';
+  h += '<div class="c-red" style="font-size:17px;">HP: ' + Math.max(0,currentEnemy.hp) + '/' + currentEnemy.hpMax + ' | ATK: ' + currentEnemy.atk + ' | DEF: ' + currentEnemy.def + '</div>';
   h += '<div class="bar-container" style="border-color:var(--red);"><div class="bar-fill" style="width:'+eHpPct+'%;background:linear-gradient(90deg,#330000,var(--red));"></div></div>';
   // Enemy status
   var eSt = '';
   if(enemyStatusEffects.weakened) eSt += '<span class="c-amber">WEAKENED(' + enemyStatusEffects.weakened + ')</span> ';
   if(enemyStatusEffects.scanned) eSt += '<span class="c-cyan">SCANNED(' + enemyStatusEffects.scanned + ')</span> ';
   if(enemyStatusEffects.stunned) eSt += '<span class="c-magenta">STUNNED</span> ';
-  if(eSt) h += '<div style="font-size:12px;">' + eSt + '</div>';
+  if(eSt) h += '<div style="font-size:16px;">' + eSt + '</div>';
   h += '</div>';
 
   // Combat log
-  h += '<div style="border:1px solid var(--dimgreen);padding:4px;height:130px;overflow-y:auto;margin:6px 0;font-size:13px;" id="combat-log-box">';
+  h += '<div style="border:1px solid var(--dimgreen);padding:4px;height:130px;overflow-y:auto;margin:6px 0;font-size:17px;" id="combat-log-box">';
   for(var i=0;i<combatLog.length;i++){
     h += '<div style="color:'+combatLog[i].color+'">'+esc(combatLog[i].msg)+'</div>';
   }
@@ -2028,7 +2028,7 @@ function renderShop(){
   h += '<div class="section-hdr">\u2554\u2550\u2550 BLACK MARKET \u2550\u2550\u2557</div>';
   h += '<div class="c-dim" style="margin:4px 0;">Credits: <span class="c-green">' + formatCred(player.cred) + '</span> | Dark Cred: <span class="c-magenta">' + player.darkCred + ' DC</span></div>';
   if(getShopDiscount() > 0){
-    h += '<div class="c-cyan" style="font-size:13px;">Underground discount: -' + Math.floor(getShopDiscount()*100) + '%</div>';
+    h += '<div class="c-cyan" style="font-size:17px;">Underground discount: -' + Math.floor(getShopDiscount()*100) + '%</div>';
   }
 
   // Tab buttons
@@ -2053,13 +2053,13 @@ function renderShop(){
       var btnStyle = owned ? 'opacity:0.5;' : (!canBuy ? 'opacity:0.35;' : '');
       h += '<div class="shop-item" style="'+btnStyle+'" onclick="buyProgram(\''+p.name+'\')">';
       h += '<div class="c-cyan">' + esc(p.name) + ' <span class="tier c-dim">T' + p.tier + '</span></div>';
-      h += '<div class="c-dim" style="font-size:12px;">' + esc(p.desc) + '</div>';
-      h += '<div style="font-size:12px;">';
+      h += '<div class="c-dim" style="font-size:16px;">' + esc(p.desc) + '</div>';
+      h += '<div style="font-size:16px;">';
       if(p.type==='attack') h += 'PWR:' + p.pwr + ' ';
       if(p.type==='defense') h += 'SHIELD:' + p.pwr + ' ';
       if(p.cpu > 0) h += 'CPU:' + p.cpu + ' ';
       h += '</div>';
-      h += '<div class="c-amber" style="font-size:13px;">' + formatCred(price) + dcText + (owned ? ' [OWNED]' : '') + '</div>';
+      h += '<div class="c-amber" style="font-size:17px;">' + formatCred(price) + dcText + (owned ? ' [OWNED]' : '') + '</div>';
       h += '</div>';
     }
     h += '</div>';
@@ -2075,7 +2075,7 @@ function renderShop(){
       h += '<div class="shop-item" onclick="sellProgram('+j+')">';
       h += '<span class="c-cyan">' + esc(sp.name) + '</span>';
       h += ' <span class="c-amber">' + formatCred(sellPrice) + '</span>';
-      h += ' <span class="c-dim" style="font-size:12px;">' + esc(sp.desc) + '</span>';
+      h += ' <span class="c-dim" style="font-size:16px;">' + esc(sp.desc) + '</span>';
       h += '</div>';
     }
   } else if(shopPage === 'consumables'){
@@ -2088,7 +2088,7 @@ function renderShop(){
       h += '<div class="shop-item" style="' + (!cCanBuy?'opacity:0.35;':'') + '" onclick="buyProgram(\''+cp.name+'\')">';
       h += '<span class="c-cyan">' + esc(cp.name) + '</span>';
       h += ' <span class="c-amber">' + formatCred(cPrice) + '</span>';
-      h += ' <span class="c-dim" style="font-size:12px;">' + esc(cp.desc) + '</span>';
+      h += ' <span class="c-dim" style="font-size:16px;">' + esc(cp.desc) + '</span>';
       h += '</div>';
     }
   }
@@ -2127,7 +2127,7 @@ function renderInventory(){
     var isEquipped = player.equipped.indexOf(pName) >= 0;
     var eqLabel = isEquipped ? ' [EQUIPPED]' : '';
     var borderColor = isEquipped ? 'var(--amber)' : 'var(--dimgreen)';
-    h += '<div style="border:1px solid '+borderColor+';padding:3px 6px;margin:2px 0;font-size:13px;cursor:pointer;" onclick="equipProgram(\''+pName+'\')">';
+    h += '<div style="border:1px solid '+borderColor+';padding:3px 6px;margin:2px 0;font-size:17px;cursor:pointer;" onclick="equipProgram(\''+pName+'\')">';
     h += '<span class="c-cyan">' + esc(pName) + '</span>';
     h += '<span class="c-dim"> [' + pDef.type.toUpperCase() + ' T' + pDef.tier + ']</span>';
     if(pDef.pwr) h += ' <span class="c-green">PWR:' + pDef.pwr + '</span>';
@@ -2181,7 +2181,7 @@ function renderUpgrade(){
 function renderDead(){
   var h = '<div style="padding:30px;text-align:center;">';
   h += '<div class="c-red" style="font-size:28px;">\u2588\u2588\u2588 FLATLINED \u2588\u2588\u2588</div>';
-  h += '<pre class="ascii" style="color:var(--red);font-size:12px;margin:10px auto;">';
+  h += '<pre class="ascii" style="color:var(--red);font-size:16px;margin:10px auto;">';
   h += '  _____ _      _ _____ _     ___ _  _ ___ ___  \n';
   h += ' |  ___| |    /_\\_   _| |   |_ _| \\| | __|   \\ \n';
   h += ' | |_  | |__ / _ \\| | | |__  | || .` | _|| |) |\n';
@@ -2221,12 +2221,12 @@ function renderPrestige(){
   h += '<div class="c-dim">Current Bonus: <span class="c-cyan">+' + player.prestigeBonus + '% all stats</span></div>';
   h += '<div style="margin:16px 0;text-align:left;border:1px solid var(--magenta);padding:10px;">';
   h += '<div class="c-magenta">PRESTIGE WILL:</div>';
-  h += '<div class="c-red" style="font-size:14px;">';
+  h += '<div class="c-red" style="font-size:18px;">';
   h += '\u2022 Reset level to 1<br>';
   h += '\u2022 Reset HP/CPU/ATK/DEF to class base<br>';
   h += '\u2022 Reset floor to 1<br>';
   h += '</div>';
-  h += '<div class="c-green" style="font-size:14px;margin-top:6px;">';
+  h += '<div class="c-green" style="font-size:18px;margin-top:6px;">';
   h += '\u2022 Keep all CRED and DARK CRED<br>';
   h += '\u2022 Keep all programs and hardware<br>';
   h += '\u2022 +5% permanent stat bonus<br>';
@@ -2253,7 +2253,7 @@ function renderCodex(){
     var entry = CODEX[codexOpen];
     h += '<div style="border:1px solid var(--amber);padding:10px;margin:8px 0;">';
     h += '<div class="c-amber" style="font-size:20px;">' + esc(entry.title) + '</div>';
-    h += '<div class="c-green" style="margin-top:8px;font-size:14px;line-height:1.5;">' + esc(entry.text) + '</div>';
+    h += '<div class="c-green" style="margin-top:8px;font-size:18px;line-height:1.5;">' + esc(entry.text) + '</div>';
     h += '</div>';
     h += '<div class="btn" onclick="codexOpen=-1;render();">[BACK TO INDEX]</div>';
   } else {
@@ -2395,7 +2395,7 @@ function renderAchievements(){
     var unlocked = player._achievements.indexOf(a.id) >= 0;
     var color = unlocked ? 'var(--green)' : 'var(--dim)';
     var icon = unlocked ? '\u2605' : '\u2606';
-    h += '<div style="border:1px solid '+(unlocked?'var(--green)':'#222')+';padding:3px 6px;margin:2px 0;font-size:13px;color:'+color+';">';
+    h += '<div style="border:1px solid '+(unlocked?'var(--green)':'#222')+';padding:3px 6px;margin:2px 0;font-size:17px;color:'+color+';">';
     h += icon + ' <span style="color:var(--cyan);">' + esc(a.name) + '</span> - ' + esc(a.desc);
     h += '</div>';
   }
@@ -2412,7 +2412,7 @@ function renderBestiary(){
 
   for(var i=0;i<ENEMY_TYPES.length;i++){
     var e = ENEMY_TYPES[i];
-    h += '<div style="border:1px solid var(--red);padding:4px 6px;margin:3px 0;font-size:13px;">';
+    h += '<div style="border:1px solid var(--red);padding:4px 6px;margin:3px 0;font-size:17px;">';
     h += '<span class="c-red">' + esc(e.name) + '</span>';
     h += (e.isICE ? ' <span class="c-cyan">[ICE]</span>' : '');
     h += '<div class="c-dim">' + esc(e.desc) + '</div>';
@@ -2424,7 +2424,7 @@ function renderBestiary(){
   h += '<div class="c-magenta" style="margin:10px 0 4px 0;">\u2550\u2550 BOSSES \u2550\u2550</div>';
   for(var j=0;j<BOSS_DATA.length;j++){
     var b = BOSS_DATA[j];
-    h += '<div style="border:1px solid var(--magenta);padding:4px 6px;margin:3px 0;font-size:13px;">';
+    h += '<div style="border:1px solid var(--magenta);padding:4px 6px;margin:3px 0;font-size:17px;">';
     h += '<span class="c-magenta">' + esc(b.name) + '</span> <span class="c-dim">(Floor ' + b.floor + '+)</span>';
     h += '<div class="c-dim">' + esc(b.desc) + '</div>';
     h += '<div>HP:' + b.hp + ' ATK:' + b.atk + ' DEF:' + b.def + ' DC:' + b.dc + '</div>';
@@ -2440,7 +2440,7 @@ function renderBestiary(){
 function renderMinimap(){
   var h = '<div style="padding:10px;">';
   h += '<div class="section-hdr">\u2554\u2550\u2550 NODE MAP \u2550\u2550\u2557</div>';
-  h += '<pre class="ascii" style="font-size:12px;color:var(--dimgreen);">';
+  h += '<pre class="ascii" style="font-size:16px;color:var(--dimgreen);">';
 
   // Generate a simple visual map
   var mapW = 40, mapH = 15;
@@ -2498,7 +2498,7 @@ function renderMinimap(){
 
   h += mapStr;
   h += '</pre>';
-  h += '<div style="font-size:12px;margin:4px 0;">';
+  h += '<div style="font-size:16px;margin:4px 0;">';
   h += '<span class="c-green">@ = You</span> ';
   h += '<span class="c-red">! = Hostile</span> ';
   h += '<span class="c-amber">$ = Loot</span> ';
@@ -2516,7 +2516,7 @@ function renderCharDetail(){
   var stars = '';
   for(var i=0;i<player.prestige;i++) stars += '\u2606';
 
-  h += '<pre class="ascii" style="font-size:13px;">';
+  h += '<pre class="ascii" style="font-size:17px;">';
   h += '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n';
   h += '\u2551 HANDLE:   <span class="c-cyan">' + esc(player.handle) + '</span>' + ' '.repeat(Math.max(0,20-player.handle.length)) + '\u2551\n';
   h += '\u2551 CLASS:    <span class="c-magenta">' + esc(player.playerClass) + '</span>' + ' '.repeat(Math.max(0,20-player.playerClass.length)) + '\u2551\n';
@@ -2573,7 +2573,7 @@ function renderGamble(){
   }
 
   if(diceState.result){
-    h += '<div style="margin:12px 0;border:1px solid var(--amber);padding:8px;font-size:16px;">';
+    h += '<div style="margin:12px 0;border:1px solid var(--amber);padding:8px;font-size:20px;">';
     h += diceState.result;
     h += '</div>';
   }
@@ -2897,7 +2897,7 @@ function showTooltip(text, x, y){
   if(existing) existing.remove();
   var tt = document.createElement('div');
   tt.id = 'game-tooltip';
-  tt.style.cssText = 'position:fixed;left:'+x+'px;top:'+y+'px;background:rgba(0,10,0,0.95);border:1px solid var(--cyan);color:var(--cyan);padding:4px 8px;font-family:VT323,monospace;font-size:13px;z-index:9100;pointer-events:none;max-width:250px;';
+  tt.style.cssText = 'position:fixed;left:'+x+'px;top:'+y+'px;background:rgba(0,10,0,0.95);border:1px solid var(--cyan);color:var(--cyan);padding:4px 8px;font-family:VT323,monospace;font-size:17px;z-index:9100;pointer-events:none;max-width:250px;';
   tt.textContent = text;
   document.body.appendChild(tt);
   setTimeout(function(){tt.remove();},3000);
@@ -3116,17 +3116,17 @@ function renderBounties(){
     var borderColor = completed ? '#333' : (active ? 'var(--cyan)' : 'var(--dimgreen)');
     h += '<div style="border:1px solid '+borderColor+';padding:4px 6px;margin:3px 0;'+(completed?'opacity:0.4;':'') +'">';
     h += '<div><span class="c-cyan">' + esc(b.name) + '</span>' + (completed ? ' <span class="c-green">[DONE]</span>' : '') + '</div>';
-    h += '<div class="c-dim" style="font-size:13px;">' + esc(b.desc) + '</div>';
-    h += '<div style="font-size:13px;">Reward: <span class="c-green">' + formatCred(b.reward) + '</span> + <span class="c-amber">' + b.xpReward + ' XP</span></div>';
+    h += '<div class="c-dim" style="font-size:17px;">' + esc(b.desc) + '</div>';
+    h += '<div style="font-size:17px;">Reward: <span class="c-green">' + formatCred(b.reward) + '</span> + <span class="c-amber">' + b.xpReward + ' XP</span></div>';
 
     if(active && !completed){
       h += '<div class="bar-container bar-xp" style="margin:3px 0;"><div class="bar-fill" style="width:'+pct+'%;"></div></div>';
-      h += '<div style="font-size:12px;">' + Math.min(current, b.amount) + '/' + b.amount + '</div>';
+      h += '<div style="font-size:16px;">' + Math.min(current, b.amount) + '/' + b.amount + '</div>';
       if(current >= b.amount){
-        h += '<div class="btn btn-cyan" onclick="claimBounty(\''+b.id+'\')" style="font-size:13px;">[CLAIM REWARD]</div>';
+        h += '<div class="btn btn-cyan" onclick="claimBounty(\''+b.id+'\')" style="font-size:17px;">[CLAIM REWARD]</div>';
       }
     } else if(!active && !completed){
-      h += '<div class="btn" onclick="acceptBounty(\''+b.id+'\')" style="font-size:13px;">[ACCEPT]</div>';
+      h += '<div class="btn" onclick="acceptBounty(\''+b.id+'\')" style="font-size:17px;">[ACCEPT]</div>';
     }
     h += '</div>';
   }
@@ -3200,9 +3200,9 @@ function renderCrafting(){
     h += '<div><span class="'+(hasA?'c-green':'c-red')+'">' + esc(r.input[0]) + '</span>';
     h += ' + <span class="'+(hasB?'c-green':'c-red')+'">' + esc(r.input[1]) + '</span>';
     h += ' \u2192 <span class="c-magenta">' + esc(r.output) + '</span></div>';
-    h += '<div class="c-dim" style="font-size:12px;">' + esc(r.desc) + '</div>';
+    h += '<div class="c-dim" style="font-size:16px;">' + esc(r.desc) + '</div>';
     if(canCraft){
-      h += '<div class="btn btn-cyan" onclick="doCraft('+i+')" style="font-size:13px;">[FORGE]</div>';
+      h += '<div class="btn btn-cyan" onclick="doCraft('+i+')" style="font-size:17px;">[FORGE]</div>';
     }
     h += '</div>';
   }
