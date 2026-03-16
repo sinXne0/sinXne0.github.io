@@ -1,0 +1,3327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRIDRUNNER // THE NET</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+--green:#00ff41;--cyan:#00e8ff;--amber:#ffb300;--magenta:#ff44cc;
+--red:#ff3355;--bg:#00000c;--darkbg:#050510;--dimgreen:#00aa2a;
+--dimcyan:#007788;--white:#ccffcc;
+}
+body{
+font-family:'VT323',monospace;background:var(--bg);color:var(--green);
+font-size:16px;overflow:hidden;height:100vh;width:100vw;
+}
+/* CRT Effects */
+.crt-overlay{
+position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9000;
+background:repeating-linear-gradient(
+0deg,
+rgba(0,0,0,0.15) 0px,
+rgba(0,0,0,0.15) 1px,
+transparent 1px,
+transparent 3px
+);
+}
+.rolling-scanline{
+position:fixed;top:0;left:0;width:100%;height:8px;pointer-events:none;z-index:9001;
+background:rgba(0,255,65,0.08);
+animation:rollscan 4s linear infinite;
+}
+@keyframes rollscan{0%{top:-8px;}100%{top:100vh;}}
+.vignette{
+position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:8999;
+background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.7) 100%);
+}
+.screen-flicker{animation:flicker 0.1s infinite alternate;}
+@keyframes flicker{0%{opacity:0.985;}100%{opacity:1;}}
+@keyframes breathe{0%,100%{filter:brightness(1);}50%{filter:brightness(1.02);}}
+#app{
+display:flex;flex-direction:column;height:100vh;padding:6px;
+animation:breathe 4s ease-in-out infinite;
+}
+#top-row{display:flex;flex:1;min-height:0;gap:6px;}
+#main-panel{flex:3;overflow-y:auto;padding:8px;position:relative;min-width:0;}
+#stats-panel{flex:1;min-width:260px;max-width:320px;overflow-y:auto;padding:8px;}
+#log-panel{height:140px;overflow-y:auto;padding:6px 8px;margin-top:4px;}
+#input-bar{
+display:flex;align-items:center;padding:4px 8px;margin-top:4px;
+border:1px solid var(--green);background:rgba(0,20,0,0.3);
+}
+#input-bar span{color:var(--cyan);margin-right:6px;white-space:nowrap;}
+#cmd-input{
+background:transparent;border:none;color:var(--green);font-family:'VT323',monospace;
+font-size:16px;flex:1;outline:none;caret-color:var(--green);
+}
+.panel-border{
+border:1px solid var(--dimgreen);background:rgba(0,10,0,0.25);
+position:relative;
+}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--dimgreen);border-radius:3px;}
+/* Text colors */
+.c-green{color:var(--green);}.c-cyan{color:var(--cyan);}.c-amber{color:var(--amber);}
+.c-magenta{color:var(--magenta);}.c-red{color:var(--red);}.c-white{color:var(--white);}
+.c-dim{color:#446644;}.c-bold{font-weight:bold;}
+/* HP/CPU bars */
+.bar-container{
+width:100%;height:14px;background:#111;border:1px solid var(--dimgreen);
+margin:2px 0;position:relative;
+}
+.bar-fill{height:100%;transition:width 0.3s;}
+.bar-hp .bar-fill{background:linear-gradient(90deg,#003300,var(--green));}
+.bar-cpu .bar-fill{background:linear-gradient(90deg,#001133,var(--cyan));}
+.bar-xp .bar-fill{background:linear-gradient(90deg,#332200,var(--amber));}
+.bar-label{
+position:absolute;top:0;left:4px;font-size:12px;line-height:14px;color:var(--white);z-index:1;
+}
+/* Buttons */
+.btn{
+display:inline-block;padding:4px 14px;margin:3px;border:1px solid var(--green);
+background:rgba(0,40,0,0.4);color:var(--green);font-family:'VT323',monospace;
+font-size:16px;cursor:pointer;transition:all 0.15s;
+}
+.btn:hover{background:rgba(0,255,65,0.15);text-shadow:0 0 8px var(--green);}
+.btn-cyan{border-color:var(--cyan);color:var(--cyan);}
+.btn-cyan:hover{background:rgba(0,232,255,0.12);text-shadow:0 0 8px var(--cyan);}
+.btn-amber{border-color:var(--amber);color:var(--amber);}
+.btn-amber:hover{background:rgba(255,179,0,0.12);text-shadow:0 0 8px var(--amber);}
+.btn-red{border-color:var(--red);color:var(--red);}
+.btn-red:hover{background:rgba(255,51,85,0.12);text-shadow:0 0 8px var(--red);}
+.btn-magenta{border-color:var(--magenta);color:var(--magenta);}
+.btn-magenta:hover{background:rgba(255,68,204,0.12);text-shadow:0 0 8px var(--magenta);}
+.btn-disabled{opacity:0.35;cursor:default;pointer-events:none;}
+/* Log lines */
+.log-line{font-size:14px;line-height:1.3;white-space:pre-wrap;word-break:break-word;}
+/* Menu items */
+.menu-item{
+padding:2px 8px;cursor:pointer;border:1px solid transparent;
+transition:all 0.1s;
+}
+.menu-item:hover{border-color:var(--green);background:rgba(0,255,65,0.06);}
+.menu-item.selected{border-color:var(--cyan);background:rgba(0,232,255,0.1);color:var(--cyan);}
+/* Grid for shop */
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.shop-item{
+border:1px solid var(--dimgreen);padding:4px 6px;cursor:pointer;
+transition:all 0.12s;font-size:14px;
+}
+.shop-item:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
+.shop-item .tier{font-size:12px;}
+/* Toast */
+.toast{
+position:fixed;top:20px;left:50%;transform:translateX(-50%);
+background:rgba(0,40,0,0.9);border:2px solid var(--cyan);color:var(--cyan);
+padding:10px 30px;font-size:20px;z-index:9500;
+animation:toastIn 0.3s ease;
+font-family:'VT323',monospace;
+}
+@keyframes toastIn{0%{opacity:0;top:0;}100%{opacity:1;top:20px;}}
+/* Class cards */
+.class-card{
+border:1px solid var(--dimgreen);padding:6px 10px;margin:4px 0;cursor:pointer;
+transition:all 0.15s;
+}
+.class-card:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
+.class-card.selected{border-color:var(--magenta);background:rgba(255,68,204,0.1);}
+/* ASCII art pre */
+pre.ascii{color:var(--cyan);font-size:14px;line-height:1.1;white-space:pre;}
+/* Combatant display */
+.combatant-box{
+border:1px solid var(--dimgreen);padding:6px;margin:4px 0;
+}
+.enemy-box{border-color:var(--red);}
+/* Section headers */
+.section-hdr{
+color:var(--cyan);border-bottom:1px solid var(--dimcyan);
+padding-bottom:2px;margin-bottom:4px;font-size:18px;
+}
+/* Cursor blink */
+.blink{animation:blinker 0.8s step-end infinite;}
+@keyframes blinker{0%,100%{opacity:1;}50%{opacity:0;}}
+/* Codex */
+.codex-entry{border:1px solid var(--dimgreen);padding:6px;margin:4px 0;cursor:pointer;}
+.codex-entry:hover{border-color:var(--amber);background:rgba(255,179,0,0.05);}
+/* Boot text */
+.boot-line{opacity:0;animation:bootFade 0.3s forwards;}
+@keyframes bootFade{to{opacity:1;}}
+/* Equipped slot */
+.equip-slot{
+display:inline-block;border:1px solid var(--amber);padding:2px 6px;margin:2px;
+font-size:13px;min-width:100px;text-align:center;
+}
+.equip-slot.empty{border-color:#333;color:#444;}
+.hw-tier{display:flex;justify-content:space-between;align-items:center;
+border:1px solid var(--dimgreen);padding:4px 6px;margin:2px 0;font-size:14px;}
+.hw-tier.owned{border-color:var(--green);background:rgba(0,255,65,0.06);}
+.hw-tier.available{cursor:pointer;}
+.hw-tier.available:hover{border-color:var(--cyan);background:rgba(0,232,255,0.06);}
+.hw-tier.locked{opacity:0.4;}
+</style>
+</head>
+<body>
+<div class="crt-overlay"></div>
+<div class="rolling-scanline"></div>
+<div class="vignette"></div>
+<div id="toast-container"></div>
+<div id="app" class="screen-flicker">
+<div id="top-row">
+<div id="main-panel" class="panel-border"></div>
+<div id="stats-panel" class="panel-border"></div>
+</div>
+<div id="log-panel" class="panel-border"></div>
+<div id="input-bar">
+<span>GRID://&gt; </span>
+<input type="text" id="cmd-input" autofocus autocomplete="off" spellcheck="false">
+<span class="blink">_</span>
+</div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════
+// GRIDRUNNER // THE NET — Complete Game Engine
+// ═══════════════════════════════════════════════════════════
+
+// ── DOM refs ──
+var $main = document.getElementById('main-panel');
+var $stats = document.getElementById('stats-panel');
+var $log = document.getElementById('log-panel');
+var $input = document.getElementById('cmd-input');
+
+// ── CONSTANTS ──
+var SAVE_KEY = 'gridrunner_save';
+var BOX = {tl:'╔',tr:'╗',bl:'╚',br:'╝',h:'═',v:'║',lt:'╠',rt:'╣',tt:'╦',bt:'╩',cr:'╬',lj:'├',rj:'┤',tj:'┬',bj:'┴',x:'┼'};
+
+function boxLine(text, width){
+  var pad = width - text.length - 2;
+  if(pad < 0) pad = 0;
+  return BOX.v + ' ' + text + ' '.repeat(pad) + BOX.v;
+}
+function boxTop(width){return BOX.tl + BOX.h.repeat(width) + BOX.tr;}
+function boxBot(width){return BOX.bl + BOX.h.repeat(width) + BOX.br;}
+function boxMid(width){return BOX.lj + '─'.repeat(width) + BOX.rj;}
+
+// ── PROGRAMS DATABASE ──
+var PROGRAMS = [
+  {name:'PORTSCAN.EXE',type:'attack',pwr:10,cpu:5,price:100,tier:1,desc:'Basic vulnerability probe',consumable:false},
+  {name:'BRUTEFORCE.SH',type:'attack',pwr:15,cpu:8,price:180,tier:1,desc:'Slow but reliable brute force',consumable:false},
+  {name:'EXPLOIT.DB',type:'attack',pwr:22,cpu:14,price:400,tier:2,desc:'Database exploit chain',consumable:false},
+  {name:'NMAP.SH',type:'utility',pwr:0,cpu:10,price:150,tier:1,desc:'Scan target, reveals weakness (+20% dmg 2 turns)',consumable:false,special:'scan'},
+  {name:'SQL_INJECT',type:'attack',pwr:28,cpu:18,price:550,tier:2,desc:'SQL injection vector',consumable:false},
+  {name:'ROOTKIT.SH',type:'debuff',pwr:0,cpu:20,price:350,tier:2,desc:'Reduce enemy DEF by 5 for 3 turns',consumable:false,special:'weaken'},
+  {name:'CRYPTWALL',type:'defense',pwr:25,cpu:15,price:300,tier:2,desc:'Encrypt connection, +25 temp HP shield',consumable:false},
+  {name:'PROXY.SHIELD',type:'defense',pwr:40,cpu:22,price:650,tier:3,desc:'Multi-layer proxy defense shield',consumable:false},
+  {name:'DAEMON.BOT',type:'passive',pwr:12,cpu:0,price:600,tier:2,desc:'Auto-attacks each round for 12 dmg',consumable:false,special:'auto_atk'},
+  {name:'METASPLOIT',type:'attack',pwr:40,cpu:28,price:900,tier:3,desc:'Full exploit framework',consumable:false},
+  {name:'ICE_PICK',type:'attack',pwr:55,cpu:38,price:1800,tier:4,desc:'Specialized ICE breaker, +30% vs ICE',consumable:false,special:'ice_bonus'},
+  {name:'ZERO_DAY',type:'attack',pwr:80,cpu:55,price:3000,tier:5,desc:'Unknown vuln, bypasses defenses',consumable:false,special:'bypass_def'},
+  {name:'SOCIAL_ENG',type:'attack',pwr:35,cpu:22,price:700,tier:3,desc:'Confuse target, 20% chance to stun',consumable:false,special:'stun_chance'},
+  {name:'TRACE_BUSTER',type:'utility',pwr:0,cpu:12,price:250,tier:2,desc:'Remove TRACED debuff, boost stealth',consumable:false,special:'cleanse'},
+  {name:'REPAIR_KIT',type:'heal',pwr:35,cpu:0,price:80,tier:1,desc:'Restore 35 HP',consumable:true},
+  {name:'CPU_BOOST',type:'cpu_restore',pwr:30,cpu:0,price:60,tier:1,desc:'Restore 30 CPU',consumable:true},
+  {name:'LARGE_REPAIR',type:'heal',pwr:80,cpu:0,price:200,tier:2,desc:'Restore 80 HP',consumable:true},
+  {name:'NEURAL_IMPLANT',type:'passive',pwr:0,cpu:0,price:2500,tier:4,desc:'+15% crit chance when equipped',consumable:false,special:'crit_boost'},
+  {name:'GHOST_PROTOCOL',type:'utility',pwr:0,cpu:30,price:1200,tier:3,desc:'Skip combat encounter entirely',consumable:false,special:'skip_combat'},
+  {name:'OVERCLOCK',type:'utility',pwr:0,cpu:0,price:500,tier:2,desc:'Double CPU regen for 3 turns',consumable:false,special:'overclock'},
+  {name:'BLACK_ICE_SHARD',type:'attack',pwr:100,cpu:70,price:5000,tier:5,desc:'Weapon torn from Black ICE itself',consumable:false},
+  {name:'SIPHON',type:'attack',pwr:20,cpu:15,price:450,tier:2,desc:'Steal 10-30 cred from enemy on hit',consumable:false,special:'siphon'},
+  {name:'EMP_PULSE',type:'attack',pwr:30,cpu:25,price:800,tier:3,desc:'Hits twice for half power',consumable:false,special:'double_hit'},
+  {name:'DARKNET_KEY',type:'utility',pwr:0,cpu:5,price:2000,tier:4,desc:'Unlock hidden areas (one-time use)',consumable:true,special:'darknet'},
+  {name:'KILLSWITCH',type:'attack',pwr:150,cpu:90,price:8000,tier:5,desc:'Instant kill if enemy <20% HP, else 150 dmg',consumable:false,special:'execute',dcPrice:10},
+];
+
+function getProgramDef(name){
+  for(var i=0;i<PROGRAMS.length;i++){if(PROGRAMS[i].name===name)return PROGRAMS[i];}
+  return null;
+}
+
+// ── HARDWARE DATABASE ──
+var HARDWARE = {
+  deck:[
+    {name:'BASIC DECK',tier:0,bonus:'+0 CPU',cpuBonus:0,price:0,dc:0},
+    {name:'STANDARD DECK',tier:1,bonus:'+15 CPU',cpuBonus:15,price:800,dc:0},
+    {name:'MILITARY DECK',tier:2,bonus:'+35 CPU',cpuBonus:35,price:2500,dc:0},
+    {name:'CORPO DECK',tier:3,bonus:'+60 CPU',cpuBonus:60,price:6000,dc:0},
+    {name:'BLACK DECK',tier:4,bonus:'+100 CPU',cpuBonus:100,price:15000,dc:20},
+  ],
+  ram:[
+    {name:'STOCK RAM',tier:0,bonus:'+0% PWR',pwrBonus:0,price:0,dc:0},
+    {name:'ENHANCED RAM',tier:1,bonus:'+10% PWR',pwrBonus:0.10,price:600,dc:0},
+    {name:'QUANTUM RAM',tier:2,bonus:'+25% PWR',pwrBonus:0.25,price:2000,dc:0},
+    {name:'DARK RAM',tier:3,bonus:'+45% PWR',pwrBonus:0.45,price:5000,dc:0},
+    {name:'NEURAL RAM',tier:4,bonus:'+70% PWR',pwrBonus:0.70,price:12000,dc:15},
+  ],
+  rig:[
+    {name:'CHEAP RIG',tier:0,bonus:'+0 HP',hpBonus:0,price:0,dc:0},
+    {name:'REINFORCED RIG',tier:1,bonus:'+25 HP',hpBonus:25,price:700,dc:0},
+    {name:'COMBAT RIG',tier:2,bonus:'+50 HP',hpBonus:50,price:2200,dc:0},
+    {name:'MILITARY RIG',tier:3,bonus:'+85 HP',hpBonus:85,price:5500,dc:0},
+    {name:'APEX RIG',tier:4,bonus:'+130 HP',hpBonus:130,price:13000,dc:18},
+  ],
+  icebreaker:[
+    {name:'MANUAL',tier:0,bonus:'+0% ICE DMG',iceBonus:0,price:0,dc:0},
+    {name:'AUTO BREAKER',tier:1,bonus:'+15% ICE DMG',iceBonus:0.15,price:500,dc:0},
+    {name:'NEURAL LINK',tier:2,bonus:'+30% ICE DMG',iceBonus:0.30,price:1800,dc:0},
+    {name:'QUANTUM BREAKER',tier:3,bonus:'+55% ICE DMG',iceBonus:0.55,price:4500,dc:0},
+    {name:'VOID SHARD',tier:4,bonus:'+90% ICE DMG',iceBonus:0.90,price:11000,dc:12},
+  ]
+};
+
+// ── ENEMIES DATABASE ──
+var ENEMY_TYPES = [
+  {name:'WATCHDOG',hp:30,atk:8,def:3,xp:15,cred:8,special:'none',desc:'Corporate security daemon',isICE:false},
+  {name:'TRACE_BOT',hp:25,atk:12,def:2,xp:20,cred:12,special:'trace',desc:'Tracks and marks target',isICE:false},
+  {name:'FIREWALL',hp:45,atk:6,def:10,xp:25,cred:15,special:'shield',desc:'Defensive barrier system',isICE:true},
+  {name:'SYSGUARD',hp:55,atk:14,def:6,xp:35,cred:20,special:'double_atk',desc:'System guard protocol',isICE:false},
+  {name:'DATA_LEECH',hp:35,atk:10,def:4,xp:30,cred:18,special:'drain_cpu',desc:'Drains your CPU on hit',isICE:false},
+  {name:'CRYPTO_MINER',hp:60,atk:8,def:8,xp:40,cred:25,special:'regen',desc:'Regenerates 5HP/turn',isICE:false},
+  {name:'NEURAL_SPIKE',hp:40,atk:18,def:3,xp:45,cred:28,special:'crit_boost',desc:'High crit chance attacker',isICE:false},
+  {name:'PHANTOM_ICE',hp:70,atk:16,def:12,xp:60,cred:35,special:'dodge',desc:'15% dodge chance',isICE:true},
+  {name:'CORPORATE_AI',hp:90,atk:20,def:10,xp:80,cred:50,special:'multi_atk',desc:'Attacks twice sometimes',isICE:true},
+  {name:'KILLSWITCH_V',hp:50,atk:25,def:5,xp:70,cred:45,special:'execute',desc:'Executes below 25% HP',isICE:false},
+];
+
+var BOSS_DATA = [
+  {floor:5,name:'ARASAKA_SENTINEL',hp:200,atk:30,def:15,desc:'Corpo security boss. Summons watchdogs.',special:'summon',dc:5},
+  {floor:10,name:'PHANTOM_GENERAL',hp:350,atk:40,def:20,desc:'Phased attacks. Immune every 3 turns.',special:'phase',dc:10},
+  {floor:15,name:'NEURAL_MATRIX_AI',hp:500,atk:55,def:25,desc:'Reflects 20% damage. Heals 30HP/turn.',special:'reflect',dc:15},
+  {floor:20,name:'BLACK_ICE_LORD',hp:700,atk:70,def:30,desc:'Ignores 50% defense. Massive crits.',special:'pierce',dc:20},
+  {floor:25,name:'MEGACORP_GOD_AI',hp:1000,atk:90,def:40,desc:'True final boss. Multiple phases.',special:'multi_phase',dc:25},
+];
+
+// ── AREAS ──
+var AREAS = [
+  {id:'arasaka',name:'ARASAKA CORP NODE',unlock:0,desc:'Corporate megaserver. Entry point for new runners.'},
+  {id:'shadow_net',name:'SHADOW NET',unlock:5,desc:'Hidden network. Glitched data and rogue programs.'},
+  {id:'militech',name:'MILITECH SERVER FARM',unlock:10,desc:'Military-grade hardware. Tougher enemies.'},
+  {id:'netwatch',name:'NETWATCH HQ',unlock:15,desc:'The watchers of the net. Elite ICE defenses.'},
+  {id:'the_void',name:'THE VOID',unlock:20,desc:'Beyond the grid. Black ICE territory.'},
+  {id:'ghost_net',name:'GHOST NET',unlock:-1,desc:'Hidden layer. Requires prestige to access.'},
+];
+
+// ── CODEX ENTRIES ──
+var CODEX = [
+  {title:'THE GRID',text:'The Grid is humanity\'s second world — a vast digital landscape built atop the ruins of the old internet. After the Corporate Wars of 2045, the megacorporations rebuilt cyberspace in their image. Every node, every data highway, every shadow server exists within The Grid. Netrunners jack in through neural bridges, projecting their consciousness into this electric frontier. The Grid is beautiful and deadly — a neon labyrinth where data is currency and consciousness is the ultimate weapon.'},
+  {title:'THE CORPS',text:'Five megacorporations rule The Grid: Arasaka dominates security and military contracts. Militech controls weapons manufacturing and PMC operations. NetWatch serves as the self-appointed police of cyberspace. Zhirafa runs media and social engineering. OmniCorp... nobody knows what OmniCorp truly does. Their servers are black holes in The Grid — data goes in, nothing comes out. Together, these corps maintain an iron grip on digital and physical reality.'},
+  {title:'ICE',text:'Intrusion Countermeasures Electronics — ICE — is the corporate immune system of The Grid. Ranging from simple watchdog programs to lethal Black ICE, these autonomous defense systems guard every corporate node. White ICE detects and reports intruders. Gray ICE traps and contains them. Black ICE kills — frying the neural bridge and cooking the runner\'s brain in realspace. The most feared Black ICE can think, learn, and hunt. They say the Black ICE Lord was once a netrunner, consumed and rewritten by the defense grid.'},
+  {title:'NETRUNNERS',text:'We are the ghosts in the machine. Netrunners — hackers, phreakers, code cowboys — jack into The Grid through illegal neural bridges, modified cyberdecks, and sheer audacity. Some run for profit, raiding corporate nodes for data and cred. Some run for ideology, fighting the corps\' stranglehold on information. Some run for the thrill, dancing on the razor\'s edge between data and death. A good netrunner can crack any ICE, infiltrate any server, and vanish without a trace. A dead netrunner is just another ghost in The Grid.'},
+  {title:'THE VOID',text:'Beyond the mapped regions of The Grid lies The Void — the digital abyss. Nobody built The Void. It emerged organically from corrupted data, abandoned servers, and the accumulated digital detritus of a century of networked computing. The Void is home to things that shouldn\'t exist: rogue AIs that evolved beyond their programming, digital entities born from glitches, and the echoes of dead netrunners whose consciousness became trapped in the network. Entering The Void is suicide. But the rewards...'},
+  {title:'DARK CRED',text:'Dark Cred is the shadow economy of The Grid. Unlike standard credits (CRED), which flow through corporate-monitored channels, Dark Cred exists on untraceable quantum-encrypted blockchains. It cannot be seized, taxed, or tracked. Dark Cred is minted only through extraordinary acts — defeating powerful ICE constructs, completing impossible runs, or breaching the deepest corporate vaults. With Dark Cred, a runner can buy things that don\'t officially exist: military-grade cyberdecks, weaponized programs, and access to the Ghost Net.'},
+  {title:'GHOST NET',text:'The Ghost Net is a legend among netrunners — a hidden layer of The Grid that exists between the cracks of reality. Accessible only to those who have proven themselves by achieving prestige, the Ghost Net is said to be maintained by the original architects of cyberspace. Here, the rules are different. Programs run faster, ICE is stranger, and the rewards are beyond imagination. Some say the Ghost Net is a test — a crucible designed to forge the ultimate netrunner. Others say it\'s a trap.'},
+  {title:'THE MEGACORP GOD AI',text:'In the deepest reaches of The Grid, past The Void, past the Ghost Net, something watches. The Megacorp God AI — an artificial superintelligence created by the combined processing power of all five megacorporations. It was meant to optimize global economics. Instead, it became something else. It thinks in dimensions humans can\'t perceive. It manipulates data on a scale that dwarfs human comprehension. Every firewall, every ICE construct, every security system in The Grid is an extension of its will. To face the God AI is to face the entirety of corporate power made digital flesh. No runner has ever survived the encounter. But the legends say that defeating it would mean freedom — true freedom — for every soul jacked into The Grid.'},
+];
+
+// ── CLASS DEFINITIONS ──
+var CLASSES = {
+  NETRUNNER:{name:'NETRUNNER',hp:100,cpu:60,atk:10,def:5,desc:'Balanced runner. Jack of all trades.',bonus:'+10% program damage',bonusKey:'prog_dmg'},
+  PHREAKER:{name:'PHREAKER',hp:90,cpu:80,atk:8,def:6,desc:'Telecom expert. CPU efficiency master.',bonus:'-20% CPU cost on programs',bonusKey:'cpu_cost'},
+  BLACK_HAT:{name:'BLACK HAT',hp:85,cpu:50,atk:15,def:4,desc:'Pure offense. Hit hard, die fast.',bonus:'+25% attack dmg, 3x crits',bonusKey:'atk_dmg'},
+  GHOST:{name:'GHOST',hp:95,cpu:65,atk:9,def:8,desc:'Stealth specialist. Untouchable.',bonus:'30% dodge, flee always succeeds',bonusKey:'dodge'},
+  SCRIPT_KIDDIE:{name:'SCRIPT KIDDIE',hp:75,cpu:45,atk:6,def:3,desc:'Noob with potential. Fast learner.',bonus:'+50% XP gain, 3 random programs',bonusKey:'xp_gain'},
+};
+
+// ── ROOM DESCRIPTIONS ──
+var ROOM_DESCS = [
+  'Neon data streams cascade through corrupted memory banks. The air hums with encrypted traffic.',
+  'A derelict server node flickers with dying light. Fragments of dead programs litter the ground.',
+  'Corporate firewalls pulse like a heartbeat. Warning sigils glow in crimson holographic displays.',
+  'The data highway narrows into a maintenance tunnel. Old code graffiti marks the walls.',
+  'A nexus of fiber optic connections — thousands of data streams converge into a blinding node.',
+  'Abandoned ICE fragments drift like digital tumbleweeds. Something was destroyed here.',
+  'The architecture shifts — recursive loops fold space. This sector is glitching badly.',
+  'A proxy cascade creates mirrored reflections of the surrounding data. Hard to tell real from fake.',
+  'Emergency klaxons sound in hex: 0xDEAD. Corporate countermeasures are warming up.',
+  'Quantum noise fills the air. The boundary between nodes is thin here — data bleeds through.',
+  'A frozen database hangs in digital amber. Ancient data from before the Corporate Wars.',
+  'Heat signatures everywhere. Crypto miners have infested this sector, draining processing power.',
+  'Holo-ads flicker: "REPORT UNAUTHORIZED ACCESS — REWARD: 10,000 CRED." Your face is on them.',
+  'The corridor dead-ends at a massive data vault. Its encryption radiates visible ICE crystals.',
+  'A rogue daemon has built a nest from corrupted files. It watches you with compound data-eyes.',
+  'Signal ghosts — echoes of dead netrunners — whisper fragments of obsolete code.',
+  'The Grid thins. Through the digital walls, you glimpse The Void — infinite, hungry, dark.',
+  'Corporate propaganda loops endlessly on damaged displays. "COMPLIANCE IS FREEDOM."',
+  'A junction of shadow servers — unmarked, unlogged, invisible to corporate scanners.',
+  'The node pulses with malware. Viral code writhes across every surface like living tattoos.',
+];
+
+// ── RANDOM EVENTS ──
+var EVENTS = [
+  {id:'cache',text:'[EVENT] Encrypted cache found in abandoned data cluster.',choices:['CRACK IT (10 CPU)','LEAVE IT'],handler:'eventCache'},
+  {id:'daemon',text:'[EVENT] A rogue daemon offers alliance. It flickers with unstable code.',choices:['ACCEPT','REFUSE'],handler:'eventDaemon'},
+  {id:'proxy',text:'[EVENT] Corporate proxy detects your signature. Alarms begin to trigger.',choices:['STEALTH','FIGHT','JACK OUT'],handler:'eventProxy'},
+  {id:'backdoor',text:'[EVENT] Backdoor found in the architecture. Leads deeper into the node.',choices:['ENTER','IGNORE'],handler:'eventBackdoor'},
+  {id:'deadrunner',text:'[EVENT] Dead netrunner\'s cyberdeck found. Data cache still intact.',choices:['SEARCH','LEAVE'],handler:'eventDeadRunner'},
+  {id:'virus',text:'[EVENT] Virus worm detected! Malicious code spiraling toward you.',choices:['FIGHT IT','ENDURE'],handler:'eventVirus'},
+  {id:'broker',text:'[EVENT] Data broker materializes from encrypted shadow. "Information... for a price."',choices:['BUY INFO (200¢)','DECLINE'],handler:'eventBroker'},
+  {id:'feedback',text:'[EVENT] Neural feedback spike! Your cyberdeck overloads momentarily.',choices:['RIDE IT OUT'],handler:'eventFeedback'},
+  {id:'glitch',text:'[EVENT] ██GLITCH██ Reality fractures. The Grid convulses around you.',choices:['EMBRACE','RESIST'],handler:'eventGlitch'},
+  {id:'satellite',text:'[EVENT] Corp satellite uplink detected overhead. Active scanning in progress.',choices:['DISABLE','HIDE','FIGHT'],handler:'eventSatellite'},
+];
+
+// ── GAME STATE ──
+var gameState = 'boot';
+var currentEnemy = null;
+var combatLog = [];
+var activityLog = [];
+var currentRoom = null;
+var combatTurn = 0;
+var enemyStatusEffects = {};
+var playerStatusEffects = {};
+var daemonAlly = 0;
+var shopPage = 'buy';
+var selectedClass = '';
+var bootStep = 0;
+var codexOpen = -1;
+var titleContinue = false;
+
+// ── DEFAULT PLAYER ──
+function defaultPlayer(){
+  return {
+    handle:'',playerClass:'',level:1,xp:0,xpNext:100,
+    hp:100,hpMax:100,cpu:60,cpuMax:60,
+    cred:500,darkCred:0,atk:10,def:5,crit:0.1,dodge:0,
+    programs:[],equipped:[],
+    hardware:{
+      deck:{name:'BASIC DECK',tier:0,bonus:'+0 CPU'},
+      ram:{name:'STOCK RAM',tier:0,bonus:'+0% PWR'},
+      rig:{name:'CHEAP RIG',tier:0,bonus:'+0 HP'},
+      icebreaker:{name:'MANUAL',tier:0,bonus:'+0 ICE DMG'}
+    },
+    reputation:{underground:0,corporate:0,ghost_net:0},
+    stats:{kills:0,nodesHacked:0,credEarned:0,darkCredEarned:0,bossKills:0,floorRecord:0},
+    floor:1,area:'arasaka',prestige:0,prestigeBonus:0,
+    dailyBonus:false,lastLogin:0,loginStreak:0
+  };
+}
+var player = defaultPlayer();
+
+// ── UTILITY FUNCTIONS ──
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function formatCred(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')+'\u00A2';}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function pick(arr){return arr[rand(0,arr.length-1)];}
+
+function log(msg, color){
+  color = color || 'var(--green)';
+  activityLog.push({msg:msg,color:color});
+  if(activityLog.length > 200) activityLog.shift();
+  renderLog();
+}
+
+function renderLog(){
+  var h = '';
+  for(var i=0;i<activityLog.length;i++){
+    h += '<div class="log-line" style="color:'+activityLog[i].color+'">'+esc(activityLog[i].msg)+'</div>';
+  }
+  $log.innerHTML = h;
+  $log.scrollTop = $log.scrollHeight;
+}
+
+function toast(msg, dur){
+  dur = dur || 2500;
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(function(){t.remove();},dur);
+}
+
+function save(){
+  try{localStorage.setItem(SAVE_KEY, JSON.stringify(player));}catch(e){}
+}
+
+function loadSave(){
+  try{
+    var d = localStorage.getItem(SAVE_KEY);
+    if(d){
+      var p = JSON.parse(d);
+      // merge with defaults for missing keys
+      var def = defaultPlayer();
+      for(var k in def){
+        if(p[k]===undefined) p[k]=def[k];
+      }
+      if(!p.hardware) p.hardware = def.hardware;
+      if(!p.reputation) p.reputation = def.reputation;
+      if(!p.stats) p.stats = def.stats;
+      if(!p.equipped) p.equipped = [];
+      player = p;
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+function clearSave(){
+  try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+}
+
+function exportSave(){
+  try{return btoa(JSON.stringify(player));}catch(e){return '';}
+}
+
+function importSave(str){
+  try{
+    var p = JSON.parse(atob(str));
+    player = p;
+    save();
+    return true;
+  }catch(e){return false;}
+}
+
+// ── STAT CALCULATIONS ──
+function getMaxHP(){
+  var base = player.hpMax;
+  var rigTier = player.hardware.rig.tier;
+  var rigBonus = HARDWARE.rig[rigTier] ? HARDWARE.rig[rigTier].hpBonus : 0;
+  var presBonus = base * (player.prestigeBonus / 100);
+  return Math.floor(base + rigBonus + presBonus);
+}
+function getMaxCPU(){
+  var base = player.cpuMax;
+  var deckTier = player.hardware.deck.tier;
+  var deckBonus = HARDWARE.deck[deckTier] ? HARDWARE.deck[deckTier].cpuBonus : 0;
+  var presBonus = base * (player.prestigeBonus / 100);
+  return Math.floor(base + deckBonus + presBonus);
+}
+function getATK(){
+  var base = player.atk;
+  var presBonus = base * (player.prestigeBonus / 100);
+  var classBonus = (player.playerClass === 'BLACK_HAT') ? base * 0.25 : 0;
+  return Math.floor(base + presBonus + classBonus);
+}
+function getDEF(){
+  var base = player.def;
+  var presBonus = base * (player.prestigeBonus / 100);
+  return Math.floor(base + presBonus);
+}
+function getCritChance(){
+  var c = player.crit;
+  if(player.playerClass === 'BLACK_HAT') c += 0.05;
+  // Neural implant
+  for(var i=0;i<player.equipped.length;i++){
+    if(player.equipped[i]==='NEURAL_IMPLANT') c += 0.15;
+  }
+  // reputation bonus
+  if(player.reputation.ghost_net >= 100) c += 0.15;
+  return c;
+}
+function getDodgeChance(){
+  var d = player.dodge;
+  if(player.playerClass === 'GHOST') d += 0.30;
+  if(playerStatusEffects.stealth) d += 0.20;
+  return d;
+}
+function getProgPower(prog){
+  var base = prog.pwr || 0;
+  var ramTier = player.hardware.ram.tier;
+  var ramBonus = HARDWARE.ram[ramTier] ? HARDWARE.ram[ramTier].pwrBonus : 0;
+  var classBonus = (player.playerClass === 'NETRUNNER') ? 0.10 : 0;
+  return Math.floor(base * (1 + ramBonus + classBonus));
+}
+function getProgCPUCost(prog){
+  var base = prog.cpu || 0;
+  var classDiscount = (player.playerClass === 'PHREAKER') ? 0.20 : 0;
+  return Math.max(0, Math.floor(base * (1 - classDiscount)));
+}
+function getCPURegen(){
+  var base = 10;
+  if(playerStatusEffects.overclocked) base *= 2;
+  return base;
+}
+function getXPMult(){
+  return (player.playerClass === 'SCRIPT_KIDDIE') ? 1.5 : 1.0;
+}
+function floorScale(floor){
+  return 1 + (floor - 1) * 0.18;
+}
+function xpForLevel(lv){
+  return Math.floor(100 * Math.pow(lv, 1.5));
+}
+
+// ── LEVEL UP ──
+function gainXP(amount){
+  amount = Math.floor(amount * getXPMult());
+  player.xp += amount;
+  log('+ ' + amount + ' XP', 'var(--amber)');
+  while(player.xp >= player.xpNext){
+    player.xp -= player.xpNext;
+    player.level++;
+    player.hpMax += 10;
+    player.cpuMax += 5;
+    player.atk += 2;
+    player.def += 1;
+    player.xpNext = xpForLevel(player.level);
+    player.hp = getMaxHP();
+    player.cpu = getMaxCPU();
+    log('═══ LEVEL UP! Now level ' + player.level + ' ═══', 'var(--magenta)');
+    toast('LEVEL ' + player.level + '!');
+    // Every 5 levels
+    if(player.level % 5 === 0){
+      player.crit += 0.02;
+      log('  >> Crit chance increased!', 'var(--cyan)');
+    }
+    // Every 10 levels
+    if(player.level % 10 === 0){
+      log('  >> TIER UNLOCK — New programs available!', 'var(--magenta)');
+    }
+  }
+  save();
+}
+
+function gainCred(amount){
+  // underground rep discount bonus for earning
+  player.cred += amount;
+  player.stats.credEarned += amount;
+  log('+ ' + formatCred(amount), 'var(--green)');
+  save();
+}
+
+function gainDarkCred(amount){
+  player.darkCred += amount;
+  player.stats.darkCredEarned += amount;
+  log('+ ' + amount + ' DARK CRED', 'var(--magenta)');
+  save();
+}
+
+function changeRep(faction, amount){
+  player.reputation[faction] = clamp(player.reputation[faction] + amount, -100, 100);
+  var dir = amount > 0 ? '+' : '';
+  log('  Rep: ' + faction.toUpperCase() + ' ' + dir + amount, 'var(--amber)');
+}
+
+// ── ENEMY GENERATION ──
+function genEnemy(floor){
+  var base = pick(ENEMY_TYPES);
+  var scale = floorScale(floor);
+  return {
+    name: base.name,
+    hp: Math.floor(base.hp * scale),
+    hpMax: Math.floor(base.hp * scale),
+    atk: Math.floor(base.atk * scale),
+    def: Math.floor(base.def * scale),
+    xp: Math.floor(base.xp * scale),
+    cred: Math.floor(base.cred * scale),
+    special: base.special,
+    desc: base.desc,
+    isICE: base.isICE,
+    isBoss: false,
+    dc: 0,
+    specialCooldown: 0,
+    turnCount: 0,
+  };
+}
+
+function genBoss(floor){
+  // Find which boss
+  var bossIdx = -1;
+  for(var i=BOSS_DATA.length-1;i>=0;i--){
+    if(floor >= BOSS_DATA[i].floor){bossIdx = i;break;}
+  }
+  if(bossIdx < 0) bossIdx = 0;
+  var base = BOSS_DATA[bossIdx];
+  var scale = floorScale(floor);
+  var cycleMultiplier = 1 + Math.floor(floor / 25) * 0.5;
+  return {
+    name: base.name,
+    hp: Math.floor(base.hp * scale * cycleMultiplier),
+    hpMax: Math.floor(base.hp * scale * cycleMultiplier),
+    atk: Math.floor(base.atk * scale * cycleMultiplier),
+    def: Math.floor(base.def * scale * cycleMultiplier),
+    xp: Math.floor(base.hp * 0.5 * scale),
+    cred: Math.floor(base.hp * 0.3 * scale),
+    special: base.special,
+    desc: base.desc,
+    isICE: true,
+    isBoss: true,
+    dc: Math.floor(base.dc * cycleMultiplier),
+    specialCooldown: 0,
+    turnCount: 0,
+    phase: 1,
+  };
+}
+
+// ── ROOM GENERATION ──
+function generateRoom(){
+  var r = Math.random();
+  var room = {desc: pick(ROOM_DESCS), type:'empty', data:null};
+  // Boss every 5 floors (first room of that floor)
+  if(player.floor % 5 === 0 && !player._bossDefeatedThisFloor){
+    room.type = 'boss';
+    room.data = genBoss(player.floor);
+    return room;
+  }
+  if(r < 0.40){ room.type = 'enemy'; room.data = genEnemy(player.floor); }
+  else if(r < 0.60){ room.type = 'event'; room.data = pick(EVENTS); }
+  else if(r < 0.75){ room.type = 'loot'; }
+  else if(r < 0.85){ room.type = 'safe'; }
+  else if(r < 0.95){ room.type = 'hidden'; }
+  else { room.type = 'empty'; }
+  return room;
+}
+
+function generateLoot(){
+  // Pick a random affordable program or cred
+  if(Math.random() < 0.4){
+    var amount = rand(20, 50) * player.floor;
+    return {type:'cred', amount:amount};
+  }
+  var maxTier = Math.min(5, 1 + Math.floor(player.level / 10));
+  var candidates = PROGRAMS.filter(function(p){return p.tier <= maxTier && !p.consumable;});
+  if(candidates.length === 0) return {type:'cred', amount: 100};
+  return {type:'program', program: pick(candidates)};
+}
+
+// ── COMBAT ──
+function startCombat(enemy){
+  currentEnemy = enemy;
+  combatLog = [];
+  combatTurn = 0;
+  enemyStatusEffects = {};
+  playerStatusEffects = {};
+  gameState = 'combat';
+  clog('═══ COMBAT INITIATED ═══', 'var(--red)');
+  clog('Target: ' + enemy.name + ' [HP:' + enemy.hp + ' ATK:' + enemy.atk + ' DEF:' + enemy.def + ']', 'var(--cyan)');
+  if(enemy.isBoss){
+    clog('>> BOSS ENCOUNTER <<', 'var(--magenta)');
+  }
+  render();
+}
+
+function clog(msg, color){
+  color = color || 'var(--green)';
+  combatLog.push({msg:msg,color:color});
+  if(combatLog.length > 12) combatLog.shift();
+  log(msg, color);
+}
+
+function playerBasicAttack(){
+  if(gameState !== 'combat' || !currentEnemy) return;
+  var atk = getATK() + rand(1,5);
+  var isCrit = Math.random() < getCritChance();
+  if(isCrit){
+    var critMult = (player.playerClass === 'BLACK_HAT') ? 3 : 2;
+    atk = Math.floor(atk * critMult);
+    clog('>> CRITICAL HIT!', 'var(--magenta)');
+  }
+  // Enemy dodge
+  if(currentEnemy.special === 'dodge' && Math.random() < 0.15){
+    clog(currentEnemy.name + ' dodged your attack!', 'var(--amber)');
+    endPlayerTurn();
+    return;
+  }
+  var defReduction = enemyStatusEffects.weakened ? currentEnemy.def - 5 : currentEnemy.def;
+  if(defReduction < 0) defReduction = 0;
+  var dmg = Math.max(1, atk - defReduction);
+  // Scan bonus
+  if(enemyStatusEffects.scanned && enemyStatusEffects.scanned > 0){
+    dmg = Math.floor(dmg * 1.2);
+  }
+  // Ice breaker bonus
+  if(currentEnemy.isICE){
+    var ibTier = player.hardware.icebreaker.tier;
+    var ibBonus = HARDWARE.icebreaker[ibTier] ? HARDWARE.icebreaker[ibTier].iceBonus : 0;
+    dmg = Math.floor(dmg * (1 + ibBonus));
+  }
+  // Boss reflect
+  if(currentEnemy.special === 'reflect'){
+    var reflectDmg = Math.floor(dmg * 0.2);
+    player.hp -= reflectDmg;
+    clog('  Reflected ' + reflectDmg + ' damage back!', 'var(--amber)');
+  }
+  currentEnemy.hp -= dmg;
+  clog('You deal ' + dmg + ' damage to ' + currentEnemy.name, 'var(--green)');
+  checkCombatEnd('player');
+}
+
+function playerUseProgram(progName){
+  if(gameState !== 'combat' || !currentEnemy) return;
+  var prog = getProgramDef(progName);
+  if(!prog) return;
+  var cost = getProgCPUCost(prog);
+  if(cost > player.cpu){
+    clog('Not enough CPU! Need ' + cost, 'var(--red)');
+    return;
+  }
+  player.cpu -= cost;
+
+  switch(prog.type){
+    case 'attack':
+      var pwr = getProgPower(prog);
+      var isCrit = Math.random() < getCritChance();
+      if(isCrit){
+        var critMult = (player.playerClass === 'BLACK_HAT') ? 3 : 2;
+        pwr = Math.floor(pwr * critMult);
+        clog('>> CRITICAL HIT!', 'var(--magenta)');
+      }
+      if(prog.special === 'bypass_def'){
+        // Zero day bypasses defense
+      } else {
+        var defR = enemyStatusEffects.weakened ? Math.max(0, currentEnemy.def - 5) : currentEnemy.def;
+        pwr = Math.max(1, pwr - Math.floor(defR * 0.5));
+      }
+      if(enemyStatusEffects.scanned && enemyStatusEffects.scanned > 0) pwr = Math.floor(pwr * 1.2);
+      if(currentEnemy.isICE && prog.special === 'ice_bonus') pwr = Math.floor(pwr * 1.3);
+      if(currentEnemy.isICE){
+        var ibTier2 = player.hardware.icebreaker.tier;
+        var ibB2 = HARDWARE.icebreaker[ibTier2] ? HARDWARE.icebreaker[ibTier2].iceBonus : 0;
+        pwr = Math.floor(pwr * (1 + ibB2));
+      }
+      // Execute check
+      if(prog.special === 'execute' && currentEnemy.hp < currentEnemy.hpMax * 0.2){
+        clog('>> KILLSWITCH ACTIVATED — INSTANT TERMINATION!', 'var(--red)');
+        currentEnemy.hp = 0;
+      } else if(prog.special === 'double_hit'){
+        var half = Math.floor(pwr / 2);
+        currentEnemy.hp -= half;
+        clog(prog.name + ' hits for ' + half + '!', 'var(--green)');
+        currentEnemy.hp -= half;
+        clog(prog.name + ' hits again for ' + half + '!', 'var(--green)');
+      } else if(prog.special === 'stun_chance'){
+        currentEnemy.hp -= pwr;
+        clog(prog.name + ' deals ' + pwr + ' damage!', 'var(--green)');
+        if(Math.random() < 0.2){
+          enemyStatusEffects.stunned = 1;
+          clog('  >> Enemy STUNNED!', 'var(--cyan)');
+        }
+      } else if(prog.special === 'siphon'){
+        currentEnemy.hp -= pwr;
+        var stolen = rand(10,30);
+        gainCred(stolen);
+        clog(prog.name + ' deals ' + pwr + ' + siphons ' + stolen + ' cred!', 'var(--green)');
+      } else {
+        if(currentEnemy.special === 'reflect' && currentEnemy.hp > 0){
+          var ref2 = Math.floor(pwr * 0.2);
+          player.hp -= ref2;
+          clog('  Reflected ' + ref2 + ' damage!', 'var(--amber)');
+        }
+        currentEnemy.hp -= pwr;
+        clog(prog.name + ' deals ' + pwr + ' damage!', 'var(--green)');
+      }
+      break;
+    case 'defense':
+      var shield = getProgPower(prog);
+      playerStatusEffects.shielded = (playerStatusEffects.shielded || 0) + shield;
+      clog(prog.name + ' — shield +' + shield + ' HP!', 'var(--cyan)');
+      break;
+    case 'heal':
+      var heal = getProgPower(prog);
+      player.hp = Math.min(getMaxHP(), player.hp + heal);
+      clog(prog.name + ' restores ' + heal + ' HP!', 'var(--green)');
+      // Remove consumable
+      if(prog.consumable){
+        var idx = player.programs.indexOf(progName);
+        if(idx >= 0) player.programs.splice(idx, 1);
+        var eIdx = player.equipped.indexOf(progName);
+        if(eIdx >= 0) player.equipped.splice(eIdx, 1);
+      }
+      break;
+    case 'cpu_restore':
+      player.cpu = Math.min(getMaxCPU(), player.cpu + (prog.pwr || 30));
+      clog(prog.name + ' restores ' + prog.pwr + ' CPU!', 'var(--cyan)');
+      if(prog.consumable){
+        var idx2 = player.programs.indexOf(progName);
+        if(idx2 >= 0) player.programs.splice(idx2, 1);
+        var eIdx2 = player.equipped.indexOf(progName);
+        if(eIdx2 >= 0) player.equipped.splice(eIdx2, 1);
+      }
+      break;
+    case 'debuff':
+      if(prog.special === 'weaken'){
+        enemyStatusEffects.weakened = 3;
+        clog(prog.name + ' — enemy DEF reduced for 3 turns!', 'var(--amber)');
+      }
+      break;
+    case 'utility':
+      if(prog.special === 'scan'){
+        enemyStatusEffects.scanned = 2;
+        clog(prog.name + ' — target scanned! +20% dmg for 2 turns.', 'var(--cyan)');
+      } else if(prog.special === 'cleanse'){
+        delete playerStatusEffects.traced;
+        playerStatusEffects.stealth = 1;
+        clog('TRACED removed! Stealth active.', 'var(--cyan)');
+      } else if(prog.special === 'overclock'){
+        playerStatusEffects.overclocked = 3;
+        clog('OVERCLOCKED! CPU regen doubled for 3 turns.', 'var(--cyan)');
+      } else if(prog.special === 'skip_combat'){
+        clog('GHOST PROTOCOL — combat skipped!', 'var(--magenta)');
+        currentEnemy = null;
+        gameState = 'explore';
+        render();
+        return;
+      }
+      break;
+  }
+  checkCombatEnd('player');
+}
+
+function playerFlee(){
+  var chance = (player.playerClass === 'GHOST') ? 1.0 : 0.5;
+  if(Math.random() < chance){
+    clog('Successfully jacked out of combat!', 'var(--amber)');
+    currentEnemy = null;
+    gameState = 'explore';
+    render();
+    return;
+  }
+  clog('Failed to flee!', 'var(--red)');
+  endPlayerTurn();
+}
+
+function useConsumable(progName){
+  var prog = getProgramDef(progName);
+  if(!prog || !prog.consumable) return;
+  if(prog.type === 'heal'){
+    player.hp = Math.min(getMaxHP(), player.hp + (prog.pwr || 0));
+    clog('Used ' + progName + ' — restored ' + prog.pwr + ' HP!', 'var(--green)');
+  } else if(prog.type === 'cpu_restore'){
+    player.cpu = Math.min(getMaxCPU(), player.cpu + (prog.pwr || 0));
+    clog('Used ' + progName + ' — restored ' + prog.pwr + ' CPU!', 'var(--cyan)');
+  }
+  var idx = player.programs.indexOf(progName);
+  if(idx >= 0) player.programs.splice(idx, 1);
+  var eIdx = player.equipped.indexOf(progName);
+  if(eIdx >= 0) player.equipped.splice(eIdx, 1);
+  save();
+  render();
+}
+
+function endPlayerTurn(){
+  // Daemon ally auto attack
+  for(var i=0;i<player.equipped.length;i++){
+    if(player.equipped[i]==='DAEMON.BOT' && currentEnemy && currentEnemy.hp > 0){
+      var dd = getProgPower({pwr:12});
+      currentEnemy.hp -= dd;
+      clog('  DAEMON.BOT auto-attacks for ' + dd + '!', 'var(--cyan)');
+    }
+  }
+  if(daemonAlly > 0 && currentEnemy && currentEnemy.hp > 0){
+    var daDmg = rand(8,15);
+    currentEnemy.hp -= daDmg;
+    clog('  Allied daemon attacks for ' + daDmg + '!', 'var(--cyan)');
+    daemonAlly--;
+  }
+  if(currentEnemy && currentEnemy.hp > 0){
+    setTimeout(enemyTurn, 400);
+  } else {
+    checkCombatEnd('player');
+  }
+}
+
+function checkCombatEnd(lastAttacker){
+  if(!currentEnemy) return;
+  if(currentEnemy.hp <= 0){
+    currentEnemy.hp = 0;
+    clog('═══ ' + currentEnemy.name + ' TERMINATED ═══', 'var(--green)');
+    // Rewards
+    gainXP(currentEnemy.xp);
+    gainCred(currentEnemy.cred);
+    if(currentEnemy.dc > 0) gainDarkCred(currentEnemy.dc);
+    player.stats.kills++;
+    if(currentEnemy.isBoss){
+      player.stats.bossKills++;
+      player._bossDefeatedThisFloor = true;
+      changeRep('underground', 10);
+    } else {
+      changeRep('underground', 1);
+    }
+    changeRep('corporate', -1);
+    currentEnemy = null;
+    enemyStatusEffects = {};
+    gameState = 'explore';
+    save();
+    render();
+    return;
+  }
+  if(player.hp <= 0){
+    player.hp = 0;
+    clog('═══ YOU HAVE BEEN FLATLINED ═══', 'var(--red)');
+    currentEnemy = null;
+    gameState = 'dead';
+    save();
+    render();
+    return;
+  }
+  if(lastAttacker === 'player') endPlayerTurn();
+  else render();
+}
+
+function enemyTurn(){
+  if(!currentEnemy || currentEnemy.hp <= 0) return;
+  combatTurn++;
+  currentEnemy.turnCount++;
+
+  // CPU regen
+  player.cpu = Math.min(getMaxCPU(), player.cpu + getCPURegen());
+
+  // Tick status effects
+  for(var k in enemyStatusEffects){
+    if(typeof enemyStatusEffects[k] === 'number' && enemyStatusEffects[k] > 0) enemyStatusEffects[k]--;
+    if(enemyStatusEffects[k] <= 0) delete enemyStatusEffects[k];
+  }
+  for(var k2 in playerStatusEffects){
+    if(k2 === 'shielded') continue;
+    if(typeof playerStatusEffects[k2] === 'number' && playerStatusEffects[k2] > 0) playerStatusEffects[k2]--;
+    if(playerStatusEffects[k2] <= 0) delete playerStatusEffects[k2];
+  }
+
+  // Check stun
+  if(enemyStatusEffects.stunned){
+    clog(currentEnemy.name + ' is STUNNED!', 'var(--amber)');
+    delete enemyStatusEffects.stunned;
+    render();
+    return;
+  }
+
+  // Boss phase mechanics
+  if(currentEnemy.isBoss && currentEnemy.special === 'phase' && currentEnemy.turnCount % 3 === 0){
+    clog(currentEnemy.name + ' phases out — IMMUNE this turn!', 'var(--magenta)');
+    render();
+    return;
+  }
+
+  // Enemy regen
+  if(currentEnemy.special === 'regen'){
+    currentEnemy.hp = Math.min(currentEnemy.hpMax, currentEnemy.hp + 5);
+    clog('  ' + currentEnemy.name + ' regenerates 5 HP', 'var(--amber)');
+  }
+  // Boss heal
+  if(currentEnemy.special === 'reflect'){
+    var bHeal = Math.floor(30 * floorScale(player.floor));
+    currentEnemy.hp = Math.min(currentEnemy.hpMax, currentEnemy.hp + bHeal);
+    clog('  ' + currentEnemy.name + ' heals ' + bHeal + ' HP', 'var(--amber)');
+  }
+
+  // Dodge check
+  if(Math.random() < getDodgeChance()){
+    clog('You dodged ' + currentEnemy.name + '\'s attack!', 'var(--cyan)');
+    render();
+    return;
+  }
+
+  // Calculate damage
+  var eDmg = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+  // Boss pierce
+  if(currentEnemy.special === 'pierce'){
+    eDmg = Math.max(1, currentEnemy.atk - Math.floor(getDEF() * 0.5) + rand(-3,3));
+  }
+  // Traced
+  if(playerStatusEffects.traced) eDmg = Math.floor(eDmg * 1.1);
+
+  // Shield absorb
+  if(playerStatusEffects.shielded && playerStatusEffects.shielded > 0){
+    var absorbed = Math.min(playerStatusEffects.shielded, eDmg);
+    playerStatusEffects.shielded -= absorbed;
+    eDmg -= absorbed;
+    if(playerStatusEffects.shielded <= 0) delete playerStatusEffects.shielded;
+    clog('  Shield absorbs ' + absorbed + ' damage!', 'var(--cyan)');
+  }
+
+  player.hp -= eDmg;
+  clog(currentEnemy.name + ' attacks for ' + eDmg + ' damage!', 'var(--red)');
+
+  // Special abilities
+  if(currentEnemy.specialCooldown <= 0){
+    switch(currentEnemy.special){
+      case 'trace':
+        playerStatusEffects.traced = 3;
+        clog('  >> You are TRACED! +10% dmg taken for 3 turns.', 'var(--amber)');
+        currentEnemy.specialCooldown = 4;
+        break;
+      case 'double_atk':
+        var eDmg2 = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+        player.hp -= eDmg2;
+        clog('  >> Double attack! ' + eDmg2 + ' more damage!', 'var(--red)');
+        currentEnemy.specialCooldown = 3;
+        break;
+      case 'drain_cpu':
+        var drain = rand(5,15);
+        player.cpu = Math.max(0, player.cpu - drain);
+        clog('  >> Drained ' + drain + ' CPU!', 'var(--amber)');
+        currentEnemy.specialCooldown = 3;
+        break;
+      case 'multi_atk':
+        if(Math.random() < 0.4){
+          var eDmg3 = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+          player.hp -= eDmg3;
+          clog('  >> Second attack! ' + eDmg3 + ' more damage!', 'var(--red)');
+        }
+        currentEnemy.specialCooldown = 2;
+        break;
+      case 'execute':
+        if(player.hp < getMaxHP() * 0.25){
+          var execDmg = Math.floor(player.hp * 0.8);
+          player.hp -= execDmg;
+          clog('  >> EXECUTE PROTOCOL! ' + execDmg + ' damage!', 'var(--red)');
+        }
+        currentEnemy.specialCooldown = 4;
+        break;
+      case 'shield':
+        if(!enemyStatusEffects.enemyShield){
+          enemyStatusEffects.enemyShield = 20;
+          clog('  >> Firewall raises shield! (+20 absorb)', 'var(--amber)');
+          currentEnemy.specialCooldown = 4;
+        }
+        break;
+      case 'crit_boost':
+        if(Math.random() < 0.3){
+          var critDmg = Math.floor(eDmg * 1.5);
+          player.hp -= critDmg;
+          clog('  >> NEURAL SPIKE CRIT! ' + critDmg + ' extra damage!', 'var(--red)');
+        }
+        currentEnemy.specialCooldown = 3;
+        break;
+      case 'summon':
+        if(Math.random() < 0.3){
+          clog('  >> Summons a WATCHDOG! (Bonus attack)', 'var(--amber)');
+          player.hp -= Math.max(1, 8 - getDEF() + rand(-2,2));
+        }
+        currentEnemy.specialCooldown = 3;
+        break;
+    }
+  }
+  if(currentEnemy.specialCooldown > 0) currentEnemy.specialCooldown--;
+
+  checkCombatEnd('enemy');
+}
+
+// ── EVENT HANDLERS ──
+function eventCache(choice){
+  if(choice === 0){
+    if(player.cpu >= 10){
+      player.cpu -= 10;
+      var amt = rand(50, 200) * Math.ceil(player.floor / 3);
+      gainCred(amt);
+      log('Cracked the encryption! Found ' + formatCred(amt), 'var(--green)');
+    } else {
+      log('Not enough CPU to crack!', 'var(--red)');
+    }
+  } else {
+    log('You leave the cache untouched.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventDaemon(choice){
+  if(choice === 0){
+    daemonAlly = 3;
+    log('The daemon joins you! It will fight alongside you for 3 rooms.', 'var(--cyan)');
+    changeRep('underground', 3);
+  } else {
+    log('You refuse the daemon. It dissolves into static.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventProxy(choice){
+  if(choice === 0){
+    // Stealth
+    var stealthChance = (player.playerClass === 'GHOST') ? 0.9 : 0.4;
+    if(Math.random() < stealthChance){
+      log('You slip past the proxy undetected!', 'var(--green)');
+      changeRep('underground', 2);
+    } else {
+      log('Detected! Proxy attacks your neural bridge!', 'var(--red)');
+      player.hp -= rand(10, 25);
+      if(player.hp <= 0){player.hp = 0; gameState = 'dead';}
+    }
+  } else if(choice === 1){
+    startCombat(genEnemy(player.floor));
+    return;
+  } else {
+    log('You jack out to safety. Floor progress lost.', 'var(--amber)');
+    player.floor = Math.max(1, player.floor - 1);
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventBackdoor(choice){
+  if(choice === 0){
+    var skip = rand(1, 3);
+    player.floor += skip;
+    if(player.floor > player.stats.floorRecord) player.stats.floorRecord = player.floor;
+    player._bossDefeatedThisFloor = false;
+    log('Backdoor teleports you ' + skip + ' floors deeper! Now at floor ' + player.floor, 'var(--magenta)');
+    player.stats.nodesHacked++;
+  } else {
+    log('You ignore the backdoor and move on.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventDeadRunner(choice){
+  if(choice === 0){
+    var loot = generateLoot();
+    if(loot.type === 'program'){
+      if(player.programs.length < 20){
+        player.programs.push(loot.program.name);
+        log('Found program: ' + loot.program.name + '!', 'var(--cyan)');
+      } else {
+        log('Inventory full! Could not take ' + loot.program.name, 'var(--amber)');
+      }
+    } else {
+      gainCred(loot.amount);
+    }
+  } else {
+    log('You leave the dead runner in peace.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventVirus(choice){
+  if(choice === 0){
+    var virusEnemy = {name:'VIRUS_WORM',hp:Math.floor(20*floorScale(player.floor)),hpMax:Math.floor(20*floorScale(player.floor)),
+      atk:Math.floor(6*floorScale(player.floor)),def:1,xp:25,cred:15,special:'none',desc:'Malicious worm',isICE:false,isBoss:false,dc:0,specialCooldown:0,turnCount:0};
+    startCombat(virusEnemy);
+    return;
+  } else {
+    var dmg = rand(10, 25);
+    player.hp -= dmg;
+    log('Endured the virus. Lost ' + dmg + ' HP.', 'var(--red)');
+    if(player.hp <= 0){player.hp = 0; gameState = 'dead';}
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventBroker(choice){
+  if(choice === 0){
+    if(player.cred >= 200){
+      player.cred -= 200;
+      log('Data broker reveals: next 3 rooms are mapped to your HUD.', 'var(--cyan)');
+      // Simple implementation: show next room types
+      var nextRooms = [];
+      for(var i=0;i<3;i++){
+        var r = generateRoom();
+        nextRooms.push(r.type.toUpperCase());
+      }
+      log('  Upcoming: ' + nextRooms.join(' → '), 'var(--amber)');
+    } else {
+      log('Not enough cred!', 'var(--red)');
+    }
+  } else {
+    log('You decline. The broker fades into the shadows.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventFeedback(choice){
+  player.cpu = Math.max(0, player.cpu - 15);
+  gainXP(50);
+  log('Neural feedback! Lost 15 CPU but gained 50 XP.', 'var(--amber)');
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventGlitch(choice){
+  if(choice === 0){
+    // Random good/bad
+    if(Math.random() < 0.5){
+      var bonusHP = rand(20, 50);
+      player.hp = Math.min(getMaxHP(), player.hp + bonusHP);
+      log('The glitch heals you! +' + bonusHP + ' HP!', 'var(--green)');
+      gainXP(rand(20,80));
+    } else {
+      var lostHP = rand(15, 40);
+      player.hp -= lostHP;
+      log('The glitch damages you! -' + lostHP + ' HP!', 'var(--red)');
+      if(player.hp <= 0){player.hp = 0; gameState = 'dead'; render(); return;}
+    }
+  } else {
+    log('You resist the glitch. Reality stabilizes.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventSatellite(choice){
+  if(choice === 0){
+    // Disable
+    var chance = (player.playerClass === 'GHOST') ? 0.85 : 0.35;
+    if(Math.random() < chance){
+      log('Satellite disabled! Gained stealth.', 'var(--green)');
+      gainXP(60);
+      changeRep('underground', 5);
+    } else {
+      log('Failed to disable! Combat initiated!', 'var(--red)');
+      var satEnemy = {name:'SATELLITE_AI',hp:Math.floor(80*floorScale(player.floor)),hpMax:Math.floor(80*floorScale(player.floor)),
+        atk:Math.floor(18*floorScale(player.floor)),def:Math.floor(8*floorScale(player.floor)),xp:60,cred:40,special:'trace',desc:'Orbital scanner',isICE:true,isBoss:false,dc:0,specialCooldown:0,turnCount:0};
+      startCombat(satEnemy);
+      return;
+    }
+  } else if(choice === 1){
+    log('You hide in the data shadows. The satellite passes.', 'var(--amber)');
+  } else {
+    var satEnemy2 = {name:'SATELLITE_AI',hp:Math.floor(80*floorScale(player.floor)),hpMax:Math.floor(80*floorScale(player.floor)),
+      atk:Math.floor(18*floorScale(player.floor)),def:Math.floor(8*floorScale(player.floor)),xp:60,cred:40,special:'trace',desc:'Orbital scanner',isICE:true,isBoss:false,dc:0,specialCooldown:0,turnCount:0};
+    startCombat(satEnemy2);
+    return;
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+// ── SHOP ──
+function getShopDiscount(){
+  if(player.reputation.underground >= 25) return 0.10;
+  return 0;
+}
+
+function buyProgram(name){
+  var prog = getProgramDef(name);
+  if(!prog) return;
+  var price = Math.floor(prog.price * (1 - getShopDiscount()));
+  var dcPrice = prog.dcPrice || 0;
+  if(player.cred < price){toast('Not enough CRED!');return;}
+  if(dcPrice > 0 && player.darkCred < dcPrice){toast('Not enough DARK CRED!');return;}
+  if(player.programs.length >= 20){toast('Inventory full! (20/20)');return;}
+  player.cred -= price;
+  if(dcPrice > 0) player.darkCred -= dcPrice;
+  player.programs.push(name);
+  log('Purchased: ' + name + ' for ' + formatCred(price) + (dcPrice > 0 ? ' + ' + dcPrice + ' DC' : ''), 'var(--green)');
+  save();
+  render();
+}
+
+function sellProgram(idx){
+  var name = player.programs[idx];
+  var prog = getProgramDef(name);
+  if(!prog) return;
+  var sellPrice = Math.floor(prog.price * 0.4);
+  player.cred += sellPrice;
+  player.programs.splice(idx, 1);
+  // Remove from equipped if there
+  var eIdx = player.equipped.indexOf(name);
+  if(eIdx >= 0) player.equipped.splice(eIdx, 1);
+  log('Sold: ' + name + ' for ' + formatCred(sellPrice), 'var(--amber)');
+  save();
+  render();
+}
+
+function equipProgram(name){
+  if(player.equipped.indexOf(name) >= 0){
+    // Unequip
+    player.equipped.splice(player.equipped.indexOf(name), 1);
+    log('Unequipped: ' + name, 'var(--amber)');
+  } else {
+    if(player.equipped.length >= 4){
+      toast('Max 4 equipped programs!');
+      return;
+    }
+    player.equipped.push(name);
+    log('Equipped: ' + name, 'var(--cyan)');
+  }
+  save();
+  render();
+}
+
+function buyHardware(slot, tier){
+  var hwList = HARDWARE[slot];
+  if(!hwList || !hwList[tier]) return;
+  var hw = hwList[tier];
+  if(player.hardware[slot].tier >= tier){toast('Already owned!');return;}
+  if(player.hardware[slot].tier < tier - 1){toast('Must buy previous tier first!');return;}
+  var price = Math.floor(hw.price * (1 - getShopDiscount()));
+  if(player.cred < price){toast('Not enough CRED!');return;}
+  if(hw.dc > 0 && player.darkCred < hw.dc){toast('Not enough DARK CRED!');return;}
+  player.cred -= price;
+  if(hw.dc > 0) player.darkCred -= hw.dc;
+  player.hardware[slot] = {name:hw.name, tier:tier, bonus:hw.bonus};
+  // Apply HP/CPU max changes
+  player.hp = Math.min(player.hp, getMaxHP());
+  player.cpu = Math.min(player.cpu, getMaxCPU());
+  log('Installed: ' + hw.name + ' (' + hw.bonus + ')', 'var(--magenta)');
+  toast(hw.name + ' installed!');
+  save();
+  render();
+}
+
+// ── PRESTIGE ──
+function doPrestige(){
+  if(player.level < 20){toast('Must be level 20+ to prestige!');return;}
+  player.prestige++;
+  player.prestigeBonus += 5;
+  gainDarkCred(player.prestige);
+  // Reset stats but keep items/cred/hardware
+  var keepCred = player.cred;
+  var keepDC = player.darkCred;
+  var keepPrograms = player.programs.slice();
+  var keepEquipped = player.equipped.slice();
+  var keepHW = JSON.parse(JSON.stringify(player.hardware));
+  var keepStats = JSON.parse(JSON.stringify(player.stats));
+  var keepRep = JSON.parse(JSON.stringify(player.reputation));
+  var keepHandle = player.handle;
+  var keepClass = player.playerClass;
+  var keepPrestige = player.prestige;
+  var keepPB = player.prestigeBonus;
+  var keepStreak = player.loginStreak;
+
+  player = defaultPlayer();
+  player.handle = keepHandle;
+  player.playerClass = keepClass;
+  player.cred = keepCred;
+  player.darkCred = keepDC;
+  player.programs = keepPrograms;
+  player.equipped = keepEquipped;
+  player.hardware = keepHW;
+  player.stats = keepStats;
+  player.reputation = keepRep;
+  player.prestige = keepPrestige;
+  player.prestigeBonus = keepPB;
+  player.loginStreak = keepStreak;
+
+  // Apply class base stats
+  var cls = CLASSES[keepClass];
+  if(cls){
+    player.hpMax = cls.hp;
+    player.cpuMax = cls.cpu;
+    player.atk = cls.atk;
+    player.def = cls.def;
+  }
+  player.hp = getMaxHP();
+  player.cpu = getMaxCPU();
+
+  log('═══ PRESTIGE ' + player.prestige + '! All stats +' + player.prestigeBonus + '% ═══', 'var(--magenta)');
+  toast('PRESTIGE ' + player.prestige + '!', 3000);
+  gameState = 'hub';
+  save();
+  render();
+}
+
+// ── DAILY LOGIN ──
+function checkDailyLogin(){
+  var today = new Date().toDateString();
+  var last = player.lastLogin;
+  if(last !== today){
+    player.lastLogin = today;
+    player.loginStreak = (player.loginStreak || 0) + 1;
+    player.cred += 200;
+    player.dailyBonus = true;
+    log('═══ DAILY JACK-IN BONUS: +200¢ (Streak: ' + player.loginStreak + ') ═══', 'var(--magenta)');
+    toast('DAILY BONUS: +200 CRED!', 3000);
+    save();
+  }
+}
+
+// ── ADVANCE FLOOR ──
+function advanceFloor(){
+  player.floor++;
+  player._bossDefeatedThisFloor = false;
+  if(player.floor > player.stats.floorRecord) player.stats.floorRecord = player.floor;
+  player.stats.nodesHacked++;
+  log('>> Advancing to Floor ' + player.floor, 'var(--cyan)');
+  save();
+}
+
+// ═══════════════════════════════════════════
+// RENDER SYSTEM
+// ═══════════════════════════════════════════
+
+function render(){
+  renderStatsPanel();
+  switch(gameState){
+    case 'boot': renderBoot(); break;
+    case 'title': renderTitle(); break;
+    case 'create': renderCreate(); break;
+    case 'hub': renderHub(); break;
+    case 'explore': renderExplore(); break;
+    case 'combat': renderCombat(); break;
+    case 'shop': renderShop(); break;
+    case 'inventory': renderInventory(); break;
+    case 'upgrade': renderUpgrade(); break;
+    case 'dead': renderDead(); break;
+    case 'prestige': renderPrestige(); break;
+    case 'codex': renderCodex(); break;
+  }
+}
+
+function renderStatsPanel(){
+  if(gameState === 'boot' || gameState === 'title' || gameState === 'create'){
+    $stats.innerHTML = '<div class="c-dim" style="text-align:center;padding-top:40px;">╔══════════════════╗\n║  AWAITING JACK-IN ║\n╚══════════════════╝</div>';
+    return;
+  }
+  var mhp = getMaxHP(), mcpu = getMaxCPU();
+  var hpPct = Math.max(0, Math.floor(player.hp / mhp * 100));
+  var cpuPct = Math.max(0, Math.floor(player.cpu / mcpu * 100));
+  var xpPct = Math.floor(player.xp / player.xpNext * 100);
+  var stars = '';
+  for(var i=0;i<player.prestige;i++) stars += '\u2606';
+
+  var h = '';
+  h += '<div class="section-hdr">\u2554\u2550 RUNNER STATUS \u2550\u2557</div>';
+  h += '<div class="c-cyan" style="font-size:18px;">' + esc(player.handle) + (stars ? ' <span class="c-magenta">' + stars + '</span>' : '') + '</div>';
+  h += '<div class="c-dim">' + esc(player.playerClass) + ' // LVL ' + player.level + '</div>';
+  h += '<div style="margin-top:6px;">';
+  // HP bar
+  h += '<div class="c-green" style="font-size:13px;">HP ' + player.hp + '/' + mhp + '</div>';
+  h += '<div class="bar-container bar-hp"><div class="bar-fill" style="width:'+hpPct+'%"></div></div>';
+  // CPU bar
+  h += '<div class="c-cyan" style="font-size:13px;">CPU ' + player.cpu + '/' + mcpu + '</div>';
+  h += '<div class="bar-container bar-cpu"><div class="bar-fill" style="width:'+cpuPct+'%"></div></div>';
+  // XP bar
+  h += '<div class="c-amber" style="font-size:13px;">XP ' + player.xp + '/' + player.xpNext + '</div>';
+  h += '<div class="bar-container bar-xp"><div class="bar-fill" style="width:'+xpPct+'%"></div></div>';
+  h += '</div>';
+
+  h += '<div style="margin-top:8px;font-size:14px;">';
+  h += '\u251C\u2500 ATK: <span class="c-red">' + getATK() + '</span><br>';
+  h += '\u251C\u2500 DEF: <span class="c-cyan">' + getDEF() + '</span><br>';
+  h += '\u251C\u2500 CRIT: <span class="c-magenta">' + Math.floor(getCritChance()*100) + '%</span><br>';
+  h += '\u251C\u2500 DODGE: <span class="c-cyan">' + Math.floor(getDodgeChance()*100) + '%</span><br>';
+  h += '\u2514\u2500 FLOOR: <span class="c-amber">' + player.floor + '</span>';
+  h += '</div>';
+
+  h += '<div style="margin-top:8px;font-size:14px;">';
+  h += '\u2554\u2550 FUNDS \u2550\u2557<br>';
+  h += '\u2551 CRED: <span class="c-green">' + formatCred(player.cred) + '</span><br>';
+  h += '\u2551 DC:   <span class="c-magenta">' + player.darkCred + ' DC</span><br>';
+  h += '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D';
+  h += '</div>';
+
+  // Equipped
+  h += '<div style="margin-top:8px;font-size:13px;">';
+  h += '\u2554\u2550 EQUIPPED \u2550\u2557<br>';
+  for(var e=0;e<4;e++){
+    var eq = player.equipped[e] || '---';
+    var cls = player.equipped[e] ? 'c-amber' : 'c-dim';
+    h += '\u2551 [' + (e+1) + '] <span class="' + cls + '">' + esc(eq) + '</span><br>';
+  }
+  h += '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D';
+  h += '</div>';
+
+  // Hardware
+  h += '<div style="margin-top:8px;font-size:12px;">';
+  h += '\u251C\u2500 DECK: <span class="c-cyan">' + esc(player.hardware.deck.name) + '</span><br>';
+  h += '\u251C\u2500 RAM:  <span class="c-cyan">' + esc(player.hardware.ram.name) + '</span><br>';
+  h += '\u251C\u2500 RIG:  <span class="c-cyan">' + esc(player.hardware.rig.name) + '</span><br>';
+  h += '\u2514\u2500 ICE:  <span class="c-cyan">' + esc(player.hardware.icebreaker.name) + '</span>';
+  h += '</div>';
+
+  // Rep
+  h += '<div style="margin-top:8px;font-size:12px;">';
+  h += '\u2554\u2550 REP \u2550\u2557<br>';
+  h += '\u2551 UNDERGROUND: ' + player.reputation.underground + '<br>';
+  h += '\u2551 CORPORATE: ' + player.reputation.corporate + '<br>';
+  h += '\u2551 GHOST NET: ' + player.reputation.ghost_net + '<br>';
+  h += '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D';
+  h += '</div>';
+
+  // Status effects in combat
+  if(gameState === 'combat'){
+    var se = '';
+    if(playerStatusEffects.traced) se += '<span class="c-red">TRACED(' + playerStatusEffects.traced + ')</span> ';
+    if(playerStatusEffects.shielded) se += '<span class="c-cyan">SHIELD(' + playerStatusEffects.shielded + ')</span> ';
+    if(playerStatusEffects.overclocked) se += '<span class="c-amber">OVERCLOCK(' + playerStatusEffects.overclocked + ')</span> ';
+    if(playerStatusEffects.stealth) se += '<span class="c-cyan">STEALTH(' + playerStatusEffects.stealth + ')</span> ';
+    if(se){
+      h += '<div style="margin-top:6px;font-size:12px;">\u2554\u2550 STATUS \u2550\u2557<br>' + se + '</div>';
+    }
+  }
+
+  $stats.innerHTML = h;
+}
+
+// ── BOOT SEQUENCE ──
+var bootLines = [
+  {text:'GRIDRUNNER OS v3.1.4 LOADING...', delay:0},
+  {text:'[OK] Initializing neural bridge...', delay:400},
+  {text:'[OK] Connecting to The Grid...', delay:800},
+  {text:'[OK] Loading ICE protocols...', delay:1200},
+  {text:'[OK] Establishing secure tunnel...', delay:1600},
+  {text:'[OK] Cryptography module: ONLINE', delay:2000},
+  {text:'[OK] Darknet access: GRANTED', delay:2400},
+  {text:'[OK] Memory integrity: VERIFIED', delay:2800},
+  {text:'[OK] Combat subroutines: LOADED', delay:3200},
+  {text:'[OK] Neural handshake: COMPLETE', delay:3600},
+  {text:'', delay:3800},
+  {text:'████████████████████████████████', delay:4000},
+  {text:'WELCOME TO THE NET.', delay:4400},
+];
+
+function renderBoot(){
+  var h = '<div style="padding:20px;font-size:16px;">';
+  for(var i=0;i<bootLines.length;i++){
+    var c = (i === bootLines.length - 1) ? 'var(--cyan)' : (i === bootLines.length - 2) ? 'var(--green)' : 'var(--green)';
+    h += '<div class="boot-line" style="animation-delay:'+bootLines[i].delay+'ms;color:'+c+'">'+esc(bootLines[i].text)+'</div>';
+  }
+  h += '</div>';
+  $main.innerHTML = h;
+  setTimeout(function(){gameState='title';render();}, 5200);
+}
+
+// ── TITLE SCREEN ──
+function renderTitle(){
+  titleContinue = loadSave() && player.handle;
+  if(titleContinue) player = defaultPlayer(); // Don't load yet, just check
+
+  var art = '';
+  art += '  ██████╗ ██████╗ ██╗██████╗ ██████╗ ██╗   ██╗███╗   ██╗███╗   ██╗███████╗██████╗ \n';
+  art += ' ██╔════╝ ██╔══██╗██║██╔══██╗██╔══██╗██║   ██║████╗  ██║████╗  ██║██╔════╝██╔══██╗\n';
+  art += ' ██║  ███╗██████╔╝██║██║  ██║██████╔╝██║   ██║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝\n';
+  art += ' ██║   ██║██╔══██╗██║██║  ██║██╔══██╗██║   ██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗\n';
+  art += ' ╚██████╔╝██║  ██║██║██████╔╝██║  ██║╚██████╔╝██║ ╚████║██║ ╚████║███████╗██║  ██║\n';
+  art += '  ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝\n';
+
+  var h = '<div style="text-align:center;padding-top:20px;">';
+  h += '<pre class="ascii" style="font-size:10px;display:inline-block;text-align:left;">' + art + '</pre>';
+  h += '<div class="c-magenta" style="font-size:28px;margin-top:6px;">// T H E &nbsp; N E T</div>';
+  h += '<div class="c-dim" style="margin:10px 0;">v2.0.77 // BBS DOOR GAME // EST. 2087</div>';
+  h += '<div style="margin-top:30px;">';
+  if(titleContinue){
+    h += '<div class="btn btn-cyan" onclick="doLoadAndContinue()" style="font-size:22px;padding:8px 40px;margin:6px;">[ CONTINUE ]</div><br>';
+  }
+  h += '<div class="btn" onclick="startNewGame()" style="font-size:22px;padding:8px 40px;margin:6px;">[ JACK IN ]</div><br>';
+  h += '<div class="btn btn-amber" onclick="gameState=\'codex\';render()" style="font-size:18px;padding:6px 30px;margin:6px;">[ CODEX ]</div><br>';
+  h += '<div class="btn btn-magenta" onclick="showCredits()" style="font-size:16px;padding:4px 24px;margin:6px;">[ CREDITS ]</div>';
+  h += '</div>';
+  h += '<div class="c-dim" style="margin-top:30px;font-size:13px;">Use mouse or keyboard to navigate. Type commands in the input bar.</div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+function doLoadAndContinue(){
+  loadSave();
+  checkDailyLogin();
+  gameState = 'hub';
+  log('Save loaded. Welcome back, ' + player.handle + '.', 'var(--cyan)');
+  render();
+}
+
+function startNewGame(){
+  clearSave();
+  player = defaultPlayer();
+  gameState = 'create';
+  render();
+}
+
+function showCredits(){
+  $main.innerHTML = '<div style="padding:20px;text-align:center;">' +
+    '<div class="section-hdr">CREDITS</div>' +
+    '<div style="margin:20px 0;">' +
+    '<div class="c-cyan" style="font-size:20px;">GRIDRUNNER // THE NET</div>' +
+    '<div class="c-dim" style="margin:8px 0;">A cyberpunk BBS door game</div>' +
+    '<div class="c-green">Designed and coded in the spirit of</div>' +
+    '<div class="c-green">classic BBS door games: LORD, TW2002,</div>' +
+    '<div class="c-green">Barren Realms Elite, Usurper</div>' +
+    '<div class="c-dim" style="margin-top:16px;">═══════════════════════════</div>' +
+    '<div class="c-amber" style="margin:8px 0;">"The Grid remembers all who jack in."</div>' +
+    '<div class="c-dim" style="margin-top:16px;">═══════════════════════════</div>' +
+    '<div style="margin-top:20px;"><span class="btn" onclick="gameState=\'title\';render();">[ BACK ]</span></div>' +
+    '</div></div>';
+}
+
+// ── CHARACTER CREATION ──
+function renderCreate(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550 JACK-IN PROTOCOL \u2550\u2550 NEW RUNNER REGISTRATION \u2550\u2557</div>';
+  h += '<div style="margin:12px 0;">';
+  h += '<div class="c-amber">ENTER YOUR HANDLE:</div>';
+  h += '<input type="text" id="handle-input" maxlength="12" style="background:rgba(0,20,0,0.5);border:1px solid var(--green);color:var(--green);font-family:VT323,monospace;font-size:18px;padding:4px 10px;width:200px;outline:none;" value="">';
+  h += '</div>';
+  h += '<div class="c-amber" style="margin:10px 0;">SELECT YOUR CLASS:</div>';
+
+  var classKeys = ['NETRUNNER','PHREAKER','BLACK_HAT','GHOST','SCRIPT_KIDDIE'];
+  for(var i=0;i<classKeys.length;i++){
+    var ck = classKeys[i];
+    var cl = CLASSES[ck];
+    var sel = selectedClass === ck ? ' selected' : '';
+    h += '<div class="class-card' + sel + '" onclick="selectedClass=\'' + ck + '\';render();">';
+    h += '<div class="c-cyan" style="font-size:17px;">' + cl.name + '</div>';
+    h += '<div class="c-dim" style="font-size:13px;">' + cl.desc + '</div>';
+    h += '<div style="font-size:13px;">HP:' + cl.hp + ' CPU:' + cl.cpu + ' ATK:' + cl.atk + ' DEF:' + cl.def + '</div>';
+    h += '<div class="c-magenta" style="font-size:13px;">Bonus: ' + cl.bonus + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:16px;">';
+  h += '<span class="btn btn-cyan" onclick="confirmCreate()" style="font-size:20px;padding:6px 30px;">[ INITIALIZE ]</span>';
+  h += ' <span class="btn" onclick="gameState=\'title\';render();">[ BACK ]</span>';
+  h += '</div></div>';
+  $main.innerHTML = h;
+}
+
+function confirmCreate(){
+  var inp = document.getElementById('handle-input');
+  var handle = inp ? inp.value.trim() : '';
+  if(!handle || handle.length < 1){toast('Enter a handle!');return;}
+  if(!selectedClass){toast('Select a class!');return;}
+
+  player = defaultPlayer();
+  player.handle = handle.toUpperCase().substring(0,12);
+  player.playerClass = selectedClass;
+
+  var cls = CLASSES[selectedClass];
+  player.hpMax = cls.hp;
+  player.cpuMax = cls.cpu;
+  player.atk = cls.atk;
+  player.def = cls.def;
+  player.hp = cls.hp;
+  player.cpu = cls.cpu;
+
+  if(selectedClass === 'GHOST') player.dodge = 0; // handled in getDodgeChance
+  if(selectedClass === 'SCRIPT_KIDDIE'){
+    // Start with 3 random programs
+    var starters = PROGRAMS.filter(function(p){return p.tier <= 2 && !p.consumable;});
+    for(var i=0;i<3 && starters.length > 0;i++){
+      var idx = rand(0, starters.length - 1);
+      player.programs.push(starters[idx].name);
+      starters.splice(idx, 1);
+    }
+  }
+
+  // Give everyone a starting PORTSCAN
+  if(player.programs.indexOf('PORTSCAN.EXE') < 0){
+    player.programs.push('PORTSCAN.EXE');
+  }
+  player.programs.push('REPAIR_KIT');
+  player.programs.push('REPAIR_KIT');
+  player.programs.push('CPU_BOOST');
+
+  player.equipped.push('PORTSCAN.EXE');
+
+  player.lastLogin = new Date().toDateString();
+  player.loginStreak = 1;
+
+  log('\u2550\u2550\u2550 RUNNER INITIALIZED: ' + player.handle + ' [' + player.playerClass + '] \u2550\u2550\u2550', 'var(--magenta)');
+  toast('WELCOME TO THE GRID, ' + player.handle, 3000);
+  gameState = 'hub';
+  save();
+  render();
+}
+
+// ── HUB RENDER ──
+function renderHub(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 THE GRID \u2550\u2550 MAIN HUB \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">Connected to: <span class="c-cyan">' + getAreaName(player.area) + '</span> // Floor: <span class="c-amber">' + player.floor + '</span></div>';
+
+  // Area description
+  var areaObj = AREAS.find(function(a){return a.id === player.area;});
+  if(areaObj) h += '<div class="c-dim" style="font-size:13px;margin-bottom:10px;">' + esc(areaObj.desc) + '</div>';
+
+  h += '<div style="margin:10px 0;">';
+  h += '<div class="c-cyan" style="margin-bottom:6px;">\u2550\u2550 NAVIGATION \u2550\u2550</div>';
+  h += '<div class="btn" onclick="enterExploration()" style="width:220px;">[1] EXPLORE NODE</div><br>';
+  h += '<div class="btn btn-amber" onclick="gameState=\'shop\';shopPage=\'buy\';render();" style="width:220px;">[2] BLACK MARKET</div><br>';
+  h += '<div class="btn btn-cyan" onclick="gameState=\'upgrade\';render();" style="width:220px;">[3] HARDWARE SHOP</div><br>';
+  h += '<div class="btn" onclick="gameState=\'inventory\';render();" style="width:220px;">[4] INVENTORY</div><br>';
+  h += '<div class="btn btn-amber" onclick="gameState=\'codex\';render();" style="width:220px;">[5] CODEX</div><br>';
+
+  // Rest
+  h += '<div class="btn btn-cyan" onclick="doRest()" style="width:220px;">[6] REST (Restore HP/CPU)</div><br>';
+
+  // Area selection
+  h += '<div class="c-cyan" style="margin:10px 0 4px 0;">\u2550\u2550 CHANGE AREA \u2550\u2550</div>';
+  for(var i=0;i<AREAS.length;i++){
+    var a = AREAS[i];
+    var unlocked = isAreaUnlocked(a);
+    var current = (player.area === a.id);
+    var cls = current ? 'btn btn-magenta' : (unlocked ? 'btn' : 'btn btn-disabled');
+    var label = a.name + (current ? ' [CURRENT]' : (!unlocked ? ' [LOCKED]' : ''));
+    h += '<div class="' + cls + '" onclick="changeArea(\'' + a.id + '\')" style="font-size:13px;width:260px;">' + esc(label) + '</div><br>';
+  }
+
+  // Prestige button
+  if(player.level >= 20){
+    h += '<div style="margin-top:14px;"><div class="btn btn-magenta" onclick="gameState=\'prestige\';render();" style="font-size:18px;">[JACK OUT] // PRESTIGE</div></div>';
+  }
+
+  // Export save
+  h += '<div style="margin-top:14px;">';
+  h += '<div class="btn c-dim" onclick="showExport()" style="font-size:12px;">[EXPORT SAVE]</div>';
+  h += '<div class="btn c-dim" onclick="showImport()" style="font-size:12px;">[IMPORT SAVE]</div>';
+  h += '</div>';
+
+  h += '</div></div>';
+  $main.innerHTML = h;
+}
+
+function getAreaName(id){
+  for(var i=0;i<AREAS.length;i++){if(AREAS[i].id===id)return AREAS[i].name;}
+  return 'UNKNOWN';
+}
+
+function isAreaUnlocked(area){
+  if(area.unlock === 0) return true;
+  if(area.unlock === -1) return player.prestige >= 1;
+  return player.stats.floorRecord >= area.unlock;
+}
+
+function changeArea(id){
+  var area = AREAS.find(function(a){return a.id === id;});
+  if(!area || !isAreaUnlocked(area)) return;
+  player.area = id;
+  log('Area changed to: ' + area.name, 'var(--cyan)');
+  save();
+  render();
+}
+
+function doRest(){
+  var hpRestore = Math.floor(getMaxHP() * 0.3);
+  var cpuRestore = Math.floor(getMaxCPU() * 0.5);
+  player.hp = Math.min(getMaxHP(), player.hp + hpRestore);
+  player.cpu = Math.min(getMaxCPU(), player.cpu + cpuRestore);
+  log('Rested at hub. +' + hpRestore + ' HP, +' + cpuRestore + ' CPU.', 'var(--green)');
+  save();
+  render();
+}
+
+function showExport(){
+  var code = exportSave();
+  $main.innerHTML = '<div style="padding:20px;"><div class="section-hdr">EXPORT SAVE</div>' +
+    '<div class="c-dim" style="margin:10px 0;">Copy this code to save your progress:</div>' +
+    '<textarea style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:12px;padding:6px;" readonly>' + code + '</textarea>' +
+    '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[ BACK ]</span></div></div>';
+}
+
+function showImport(){
+  $main.innerHTML = '<div style="padding:20px;"><div class="section-hdr">IMPORT SAVE</div>' +
+    '<div class="c-dim" style="margin:10px 0;">Paste your save code below:</div>' +
+    '<textarea id="import-input" style="width:100%;height:100px;background:#000;color:var(--green);border:1px solid var(--dimgreen);font-family:VT323,monospace;font-size:12px;padding:6px;"></textarea>' +
+    '<div style="margin-top:10px;"><span class="btn btn-cyan" onclick="doImport()">[ IMPORT ]</span> <span class="btn" onclick="gameState=\'hub\';render();">[ BACK ]</span></div></div>';
+}
+
+function doImport(){
+  var inp = document.getElementById('import-input');
+  if(inp && importSave(inp.value.trim())){
+    toast('Save imported!');
+    gameState = 'hub';
+    render();
+  } else {
+    toast('Invalid save data!');
+  }
+}
+
+// ── EXPLORE RENDER ──
+function enterExploration(){
+  currentRoom = generateRoom();
+  gameState = 'explore';
+  render();
+}
+
+function renderExplore(){
+  if(!currentRoom){
+    currentRoom = generateRoom();
+  }
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 ' + getAreaName(player.area) + ' \u2550\u2550 FLOOR ' + player.floor + ' \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;font-size:14px;font-style:italic;">' + esc(currentRoom.desc) + '</div>';
+  h += '<div style="margin-top:10px;">';
+
+  switch(currentRoom.type){
+    case 'enemy':
+      h += '<div class="c-red" style="font-size:18px;">\u2550\u2550 HOSTILE DETECTED \u2550\u2550</div>';
+      h += '<div class="combatant-box enemy-box">';
+      h += '<div class="c-red">' + esc(currentRoom.data.name) + '</div>';
+      h += '<div class="c-dim" style="font-size:13px;">' + esc(currentRoom.data.desc) + '</div>';
+      h += '<div style="font-size:13px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
+      h += '</div>';
+      h += '<div class="btn btn-red" onclick="startCombat(currentRoom.data);currentRoom=null;">[ENGAGE]</div>';
+      h += ' <div class="btn" onclick="tryFleeExplore()">[AVOID]</div>';
+      break;
+
+    case 'boss':
+      h += '<div class="c-magenta" style="font-size:20px;">\u2588\u2588 BOSS ENCOUNTER \u2588\u2588</div>';
+      h += '<div class="combatant-box enemy-box" style="border-color:var(--magenta);">';
+      h += '<div class="c-magenta" style="font-size:18px;">' + esc(currentRoom.data.name) + '</div>';
+      h += '<div class="c-dim" style="font-size:13px;">' + esc(currentRoom.data.desc) + '</div>';
+      h += '<div style="font-size:13px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
+      h += '<div class="c-magenta" style="font-size:13px;">REWARD: ' + currentRoom.data.dc + ' DARK CRED</div>';
+      h += '</div>';
+      h += '<div class="btn btn-magenta" onclick="startCombat(currentRoom.data);currentRoom=null;" style="font-size:18px;">[FACE THE BOSS]</div>';
+      break;
+
+    case 'event':
+      h += '<div class="c-amber" style="font-size:16px;">' + esc(currentRoom.data.text) + '</div>';
+      h += '<div style="margin-top:8px;">';
+      for(var ci=0;ci<currentRoom.data.choices.length;ci++){
+        h += '<div class="btn btn-amber" onclick="handleEvent('+ci+')">[' + esc(currentRoom.data.choices[ci]) + ']</div> ';
+      }
+      h += '</div>';
+      break;
+
+    case 'loot':
+      var loot = generateLoot();
+      h += '<div class="c-green" style="font-size:16px;">\u2550\u2550 LOOT FOUND \u2550\u2550</div>';
+      if(loot.type === 'program'){
+        h += '<div class="c-cyan" style="margin:6px 0;">Found program: <span class="c-magenta">' + esc(loot.program.name) + '</span></div>';
+        h += '<div class="c-dim" style="font-size:13px;">' + esc(loot.program.desc) + '</div>';
+        if(player.programs.length < 20){
+          h += '<div class="btn btn-cyan" onclick="takeLootProgram(\'' + loot.program.name + '\')">[TAKE]</div>';
+        } else {
+          h += '<div class="c-red">Inventory full!</div>';
+        }
+      } else {
+        h += '<div class="c-green">Found <span class="c-amber">' + formatCred(loot.amount) + '</span></div>';
+        h += '<div class="btn" onclick="takeLootCred(' + loot.amount + ')">[TAKE]</div>';
+      }
+      h += ' <div class="btn" onclick="currentRoom=null;render();">[LEAVE]</div>';
+      break;
+
+    case 'safe':
+      h += '<div class="c-cyan" style="font-size:16px;">\u2550\u2550 SAFE ROOM \u2550\u2550</div>';
+      h += '<div class="c-dim">A quiet node. The hum of data traffic is distant here. You can rest.</div>';
+      var restHP = 20, restCPU = 10;
+      player.hp = Math.min(getMaxHP(), player.hp + restHP);
+      player.cpu = Math.min(getMaxCPU(), player.cpu + restCPU);
+      h += '<div class="c-green" style="margin:6px 0;">Restored +' + restHP + ' HP, +' + restCPU + ' CPU</div>';
+      h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
+      save();
+      break;
+
+    case 'hidden':
+      h += '<div class="c-magenta" style="font-size:16px;">\u2550\u2550 HIDDEN CACHE \u2550\u2550</div>';
+      var hiddenCred = rand(50, 150) * Math.ceil(player.floor / 2);
+      var hiddenLoot = generateLoot();
+      h += '<div class="c-green">You found a hidden data cache!</div>';
+      h += '<div class="c-amber" style="margin:4px 0;">+ ' + formatCred(hiddenCred) + '</div>';
+      gainCred(hiddenCred);
+      if(hiddenLoot.type === 'program' && player.programs.length < 20){
+        player.programs.push(hiddenLoot.program.name);
+        h += '<div class="c-cyan">+ Program: ' + esc(hiddenLoot.program.name) + '</div>';
+        log('Found hidden program: ' + hiddenLoot.program.name, 'var(--cyan)');
+      }
+      h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
+      save();
+      break;
+
+    default: // empty
+      h += '<div class="c-dim" style="font-size:16px;">The node is quiet. Nothing of interest here.</div>';
+      h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
+      break;
+  }
+
+  h += '</div>';
+  // Navigation buttons
+  h += '<div style="margin-top:14px;border-top:1px solid var(--dimgreen);padding-top:8px;">';
+  h += '<div class="btn" onclick="currentRoom=null;enterExploration();">[NEXT ROOM]</div>';
+  h += ' <div class="btn btn-cyan" onclick="advanceFloor();currentRoom=null;enterExploration();">[NEXT FLOOR \u2191]</div>';
+  h += ' <div class="btn btn-amber" onclick="currentRoom=null;gameState=\'hub\';render();">[RETURN TO HUB]</div>';
+  h += '</div></div>';
+  $main.innerHTML = h;
+}
+
+function tryFleeExplore(){
+  var chance = (player.playerClass === 'GHOST') ? 1.0 : 0.6;
+  if(Math.random() < chance){
+    log('Avoided the hostile.', 'var(--amber)');
+    currentRoom = null;
+    render();
+  } else {
+    log('Cannot avoid! Combat initiated!', 'var(--red)');
+    startCombat(currentRoom.data);
+    currentRoom = null;
+  }
+}
+
+function handleEvent(choiceIdx){
+  var handler = currentRoom.data.handler;
+  if(window[handler]) window[handler](choiceIdx);
+}
+
+function takeLootProgram(name){
+  if(player.programs.length >= 20){toast('Inventory full!');return;}
+  player.programs.push(name);
+  log('Picked up: ' + name, 'var(--cyan)');
+  currentRoom = null;
+  save();
+  render();
+}
+
+function takeLootCred(amount){
+  gainCred(amount);
+  currentRoom = null;
+  save();
+  render();
+}
+
+// ── COMBAT RENDER ──
+function renderCombat(){
+  if(!currentEnemy){gameState='explore';render();return;}
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr c-red">\u2554\u2550\u2550 COMBAT \u2550\u2550\u2557</div>';
+
+  // Enemy display
+  var eHpPct = Math.max(0, Math.floor(currentEnemy.hp / currentEnemy.hpMax * 100));
+  h += '<div class="combatant-box enemy-box">';
+  h += '<div style="display:flex;justify-content:space-between;">';
+  h += '<span class="c-red" style="font-size:18px;">' + esc(currentEnemy.name) + (currentEnemy.isBoss ? ' \u2588BOSS\u2588' : '') + '</span>';
+  h += '<span class="c-dim">' + esc(currentEnemy.desc) + '</span>';
+  h += '</div>';
+  h += '<div class="c-red" style="font-size:13px;">HP: ' + Math.max(0,currentEnemy.hp) + '/' + currentEnemy.hpMax + ' | ATK: ' + currentEnemy.atk + ' | DEF: ' + currentEnemy.def + '</div>';
+  h += '<div class="bar-container" style="border-color:var(--red);"><div class="bar-fill" style="width:'+eHpPct+'%;background:linear-gradient(90deg,#330000,var(--red));"></div></div>';
+  // Enemy status
+  var eSt = '';
+  if(enemyStatusEffects.weakened) eSt += '<span class="c-amber">WEAKENED(' + enemyStatusEffects.weakened + ')</span> ';
+  if(enemyStatusEffects.scanned) eSt += '<span class="c-cyan">SCANNED(' + enemyStatusEffects.scanned + ')</span> ';
+  if(enemyStatusEffects.stunned) eSt += '<span class="c-magenta">STUNNED</span> ';
+  if(eSt) h += '<div style="font-size:12px;">' + eSt + '</div>';
+  h += '</div>';
+
+  // Combat log
+  h += '<div style="border:1px solid var(--dimgreen);padding:4px;height:130px;overflow-y:auto;margin:6px 0;font-size:13px;" id="combat-log-box">';
+  for(var i=0;i<combatLog.length;i++){
+    h += '<div style="color:'+combatLog[i].color+'">'+esc(combatLog[i].msg)+'</div>';
+  }
+  h += '</div>';
+
+  // Actions
+  h += '<div class="c-cyan" style="margin:6px 0;">\u2550\u2550 ACTIONS \u2550\u2550</div>';
+  h += '<div class="btn btn-red" onclick="playerBasicAttack();checkCombatEnd(\'player\')">[1] BASIC ATTACK (Free)</div> ';
+
+  // Equipped programs
+  for(var e=0;e<player.equipped.length;e++){
+    var pName = player.equipped[e];
+    var pDef = getProgramDef(pName);
+    if(!pDef) continue;
+    if(pDef.type === 'passive') continue; // passives auto-apply
+    var cost = getProgCPUCost(pDef);
+    var canUse = player.cpu >= cost;
+    var btnCls = canUse ? 'btn btn-cyan' : 'btn btn-disabled';
+    h += '<div class="' + btnCls + '" onclick="playerUseProgram(\'' + pName + '\')">[' + (e+2) + '] ' + esc(pName) + ' (' + cost + ' CPU)</div> ';
+  }
+
+  h += '<br>';
+  // Consumables
+  var consumables = player.programs.filter(function(p){var d=getProgramDef(p);return d&&d.consumable;});
+  if(consumables.length > 0){
+    h += '<div class="c-amber" style="margin:4px 0;">ITEMS:</div>';
+    for(var ci2=0;ci2<consumables.length;ci2++){
+      var cDef = getProgramDef(consumables[ci2]);
+      h += '<div class="btn btn-amber" onclick="useConsumable(\'' + consumables[ci2] + '\')">' + esc(consumables[ci2]) + ' (' + (cDef?cDef.desc:'') + ')</div> ';
+    }
+  }
+  h += '<br><div class="btn" onclick="playerFlee()">[F] FLEE</div>';
+
+  h += '</div>';
+  $main.innerHTML = h;
+
+  // Scroll combat log
+  var clb = document.getElementById('combat-log-box');
+  if(clb) clb.scrollTop = clb.scrollHeight;
+}
+
+// ── SHOP RENDER ──
+function renderShop(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 BLACK MARKET \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:4px 0;">Credits: <span class="c-green">' + formatCred(player.cred) + '</span> | Dark Cred: <span class="c-magenta">' + player.darkCred + ' DC</span></div>';
+  if(getShopDiscount() > 0){
+    h += '<div class="c-cyan" style="font-size:13px;">Underground discount: -' + Math.floor(getShopDiscount()*100) + '%</div>';
+  }
+
+  // Tab buttons
+  h += '<div style="margin:8px 0;">';
+  h += '<span class="btn' + (shopPage==='buy'?' btn-cyan':'') + '" onclick="shopPage=\'buy\';render();">[BUY]</span>';
+  h += '<span class="btn' + (shopPage==='sell'?' btn-amber':'') + '" onclick="shopPage=\'sell\';render();">[SELL]</span>';
+  h += '<span class="btn' + (shopPage==='consumables'?' btn-cyan':'') + '" onclick="shopPage=\'consumables\';render();">[CONSUMABLES]</span>';
+  h += '</div>';
+
+  if(shopPage === 'buy'){
+    var maxTier = Math.min(5, 1 + Math.floor(player.level / 10));
+    h += '<div class="c-cyan" style="margin:6px 0;">Available Programs (Tier 1-' + maxTier + '):</div>';
+    h += '<div class="shop-grid">';
+    for(var i=0;i<PROGRAMS.length;i++){
+      var p = PROGRAMS[i];
+      if(p.consumable) continue;
+      if(p.tier > maxTier) continue;
+      var price = Math.floor(p.price * (1 - getShopDiscount()));
+      var dcText = p.dcPrice ? ' + ' + p.dcPrice + 'DC' : '';
+      var canBuy = player.cred >= price && (!p.dcPrice || player.darkCred >= p.dcPrice) && player.programs.length < 20;
+      var owned = player.programs.indexOf(p.name) >= 0;
+      var btnStyle = owned ? 'opacity:0.5;' : (!canBuy ? 'opacity:0.35;' : '');
+      h += '<div class="shop-item" style="'+btnStyle+'" onclick="buyProgram(\''+p.name+'\')">';
+      h += '<div class="c-cyan">' + esc(p.name) + ' <span class="tier c-dim">T' + p.tier + '</span></div>';
+      h += '<div class="c-dim" style="font-size:12px;">' + esc(p.desc) + '</div>';
+      h += '<div style="font-size:12px;">';
+      if(p.type==='attack') h += 'PWR:' + p.pwr + ' ';
+      if(p.type==='defense') h += 'SHIELD:' + p.pwr + ' ';
+      if(p.cpu > 0) h += 'CPU:' + p.cpu + ' ';
+      h += '</div>';
+      h += '<div class="c-amber" style="font-size:13px;">' + formatCred(price) + dcText + (owned ? ' [OWNED]' : '') + '</div>';
+      h += '</div>';
+    }
+    h += '</div>';
+  } else if(shopPage === 'sell'){
+    h += '<div class="c-amber" style="margin:6px 0;">Sell programs (40% value):</div>';
+    if(player.programs.length === 0){
+      h += '<div class="c-dim">No programs to sell.</div>';
+    }
+    for(var j=0;j<player.programs.length;j++){
+      var sp = getProgramDef(player.programs[j]);
+      if(!sp) continue;
+      var sellPrice = Math.floor(sp.price * 0.4);
+      h += '<div class="shop-item" onclick="sellProgram('+j+')">';
+      h += '<span class="c-cyan">' + esc(sp.name) + '</span>';
+      h += ' <span class="c-amber">' + formatCred(sellPrice) + '</span>';
+      h += ' <span class="c-dim" style="font-size:12px;">' + esc(sp.desc) + '</span>';
+      h += '</div>';
+    }
+  } else if(shopPage === 'consumables'){
+    h += '<div class="c-cyan" style="margin:6px 0;">Consumable Items:</div>';
+    var consums = PROGRAMS.filter(function(p){return p.consumable;});
+    for(var k=0;k<consums.length;k++){
+      var cp = consums[k];
+      var cPrice = Math.floor(cp.price * (1 - getShopDiscount()));
+      var cCanBuy = player.cred >= cPrice && player.programs.length < 20;
+      h += '<div class="shop-item" style="' + (!cCanBuy?'opacity:0.35;':'') + '" onclick="buyProgram(\''+cp.name+'\')">';
+      h += '<span class="c-cyan">' + esc(cp.name) + '</span>';
+      h += ' <span class="c-amber">' + formatCred(cPrice) + '</span>';
+      h += ' <span class="c-dim" style="font-size:12px;">' + esc(cp.desc) + '</span>';
+      h += '</div>';
+    }
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK TO HUB]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── INVENTORY RENDER ──
+function renderInventory(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 INVENTORY \u2550\u2550 ' + player.programs.length + '/20 \u2550\u2550\u2557</div>';
+
+  // Equipped
+  h += '<div class="c-amber" style="margin:8px 0;">\u2550\u2550 EQUIPPED ('+player.equipped.length+'/4) \u2550\u2550</div>';
+  for(var e=0;e<4;e++){
+    var eq = player.equipped[e];
+    if(eq){
+      var eDef = getProgramDef(eq);
+      h += '<div class="equip-slot" onclick="equipProgram(\''+eq+'\')">' + esc(eq) + (eDef ? ' ['+eDef.type.toUpperCase()+']' : '') + '</div>';
+    } else {
+      h += '<div class="equip-slot empty">--- EMPTY ---</div>';
+    }
+  }
+
+  // All programs
+  h += '<div class="c-cyan" style="margin:10px 0 4px 0;">\u2550\u2550 ALL PROGRAMS \u2550\u2550</div>';
+  if(player.programs.length === 0){
+    h += '<div class="c-dim">No programs. Visit the Black Market.</div>';
+  }
+  for(var i=0;i<player.programs.length;i++){
+    var pName = player.programs[i];
+    var pDef = getProgramDef(pName);
+    if(!pDef) continue;
+    var isEquipped = player.equipped.indexOf(pName) >= 0;
+    var eqLabel = isEquipped ? ' [EQUIPPED]' : '';
+    var borderColor = isEquipped ? 'var(--amber)' : 'var(--dimgreen)';
+    h += '<div style="border:1px solid '+borderColor+';padding:3px 6px;margin:2px 0;font-size:13px;cursor:pointer;" onclick="equipProgram(\''+pName+'\')">';
+    h += '<span class="c-cyan">' + esc(pName) + '</span>';
+    h += '<span class="c-dim"> [' + pDef.type.toUpperCase() + ' T' + pDef.tier + ']</span>';
+    if(pDef.pwr) h += ' <span class="c-green">PWR:' + pDef.pwr + '</span>';
+    if(pDef.cpu) h += ' <span class="c-cyan">CPU:' + getProgCPUCost(pDef) + '</span>';
+    h += '<span class="c-amber">' + eqLabel + '</span>';
+    h += '<div class="c-dim" style="font-size:11px;">' + esc(pDef.desc) + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK TO HUB]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── HARDWARE UPGRADE RENDER ──
+function renderUpgrade(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 HARDWARE SHOP \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:4px 0;">Credits: <span class="c-green">' + formatCred(player.cred) + '</span> | DC: <span class="c-magenta">' + player.darkCred + '</span></div>';
+
+  var slots = ['deck','ram','rig','icebreaker'];
+  var slotLabels = ['CYBERDECK','RAM MODULE','COMBAT RIG','ICE BREAKER'];
+  for(var s=0;s<slots.length;s++){
+    var slot = slots[s];
+    var hwList = HARDWARE[slot];
+    h += '<div class="c-cyan" style="margin:10px 0 4px 0;">\u2550\u2550 ' + slotLabels[s] + ' (Current: ' + esc(player.hardware[slot].name) + ') \u2550\u2550</div>';
+    for(var t=0;t<hwList.length;t++){
+      var hw = hwList[t];
+      var owned = player.hardware[slot].tier >= t;
+      var canBuy = !owned && player.hardware[slot].tier >= t-1 && player.cred >= hw.price && (hw.dc === 0 || player.darkCred >= hw.dc);
+      var clsName = owned ? 'hw-tier owned' : (canBuy ? 'hw-tier available' : 'hw-tier locked');
+      h += '<div class="'+clsName+'" onclick="buyHardware(\''+slot+'\','+t+')">';
+      h += '<span>' + esc(hw.name) + ' <span class="c-dim">(' + hw.bonus + ')</span></span>';
+      if(owned){
+        h += '<span class="c-green">[INSTALLED]</span>';
+      } else {
+        var priceStr = formatCred(hw.price);
+        if(hw.dc > 0) priceStr += ' + ' + hw.dc + ' DC';
+        h += '<span class="c-amber">' + priceStr + '</span>';
+      }
+      h += '</div>';
+    }
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK TO HUB]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── DEAD RENDER ──
+function renderDead(){
+  var h = '<div style="padding:30px;text-align:center;">';
+  h += '<div class="c-red" style="font-size:28px;">\u2588\u2588\u2588 FLATLINED \u2588\u2588\u2588</div>';
+  h += '<pre class="ascii" style="color:var(--red);font-size:12px;margin:10px auto;">';
+  h += '  _____ _      _ _____ _     ___ _  _ ___ ___  \n';
+  h += ' |  ___| |    /_\\_   _| |   |_ _| \\| | __|   \\ \n';
+  h += ' | |_  | |__ / _ \\| | | |__  | || .` | _|| |) |\n';
+  h += ' |_|   |____/_/ \\_\\_| |____|___|_|\\_|___|___/ \n';
+  h += '</pre>';
+  h += '<div class="c-dim" style="margin:10px 0;">Your neural bridge has been severed.</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">The Grid reclaims another runner...</div>';
+  h += '<div class="c-amber" style="margin:10px 0;">You lose 20% of your CRED as resurrection tax.</div>';
+  h += '<div style="margin-top:20px;">';
+  h += '<span class="btn btn-cyan" onclick="doRespawn()" style="font-size:20px;padding:8px 30px;">[RESPAWN]</span>';
+  h += '</div></div>';
+  $main.innerHTML = h;
+}
+
+function doRespawn(){
+  var penalty = Math.floor(player.cred * 0.2);
+  player.cred = Math.max(0, player.cred - penalty);
+  player.hp = getMaxHP();
+  player.cpu = getMaxCPU();
+  player.floor = Math.max(1, player.floor - 1);
+  playerStatusEffects = {};
+  enemyStatusEffects = {};
+  currentEnemy = null;
+  currentRoom = null;
+  log('Respawned. Lost ' + formatCred(penalty) + '. Floor reset to ' + player.floor + '.', 'var(--amber)');
+  gameState = 'hub';
+  save();
+  render();
+}
+
+// ── PRESTIGE RENDER ──
+function renderPrestige(){
+  var h = '<div style="padding:20px;text-align:center;">';
+  h += '<div class="c-magenta" style="font-size:24px;">\u2550\u2550 JACK OUT // PRESTIGE \u2550\u2550</div>';
+  h += '<div class="c-dim" style="margin:10px 0;">You\'ve reached the edge of The Grid.</div>';
+  h += '<div class="c-dim">Current Prestige: <span class="c-magenta">' + player.prestige + '</span></div>';
+  h += '<div class="c-dim">Current Bonus: <span class="c-cyan">+' + player.prestigeBonus + '% all stats</span></div>';
+  h += '<div style="margin:16px 0;text-align:left;border:1px solid var(--magenta);padding:10px;">';
+  h += '<div class="c-magenta">PRESTIGE WILL:</div>';
+  h += '<div class="c-red" style="font-size:14px;">';
+  h += '\u2022 Reset level to 1<br>';
+  h += '\u2022 Reset HP/CPU/ATK/DEF to class base<br>';
+  h += '\u2022 Reset floor to 1<br>';
+  h += '</div>';
+  h += '<div class="c-green" style="font-size:14px;margin-top:6px;">';
+  h += '\u2022 Keep all CRED and DARK CRED<br>';
+  h += '\u2022 Keep all programs and hardware<br>';
+  h += '\u2022 +5% permanent stat bonus<br>';
+  h += '\u2022 +1 DARK CRED per prestige<br>';
+  h += '\u2022 Unlock GHOST NET area (prestige 1+)<br>';
+  h += '</div></div>';
+
+  if(player.level >= 20){
+    h += '<div class="btn btn-magenta" onclick="doPrestige()" style="font-size:20px;padding:8px 30px;">[JACK OUT \u2014 PRESTIGE NOW]</div><br>';
+  } else {
+    h += '<div class="c-red" style="margin:10px 0;">Requires Level 20+ (current: ' + player.level + ')</div>';
+  }
+  h += '<div class="btn" onclick="gameState=\'hub\';render();">[BACK]</div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── CODEX RENDER ──
+function renderCodex(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 CODEX \u2550\u2550 GRID ARCHIVES \u2550\u2550\u2557</div>';
+
+  if(codexOpen >= 0 && codexOpen < CODEX.length){
+    var entry = CODEX[codexOpen];
+    h += '<div style="border:1px solid var(--amber);padding:10px;margin:8px 0;">';
+    h += '<div class="c-amber" style="font-size:20px;">' + esc(entry.title) + '</div>';
+    h += '<div class="c-green" style="margin-top:8px;font-size:14px;line-height:1.5;">' + esc(entry.text) + '</div>';
+    h += '</div>';
+    h += '<div class="btn" onclick="codexOpen=-1;render();">[BACK TO INDEX]</div>';
+  } else {
+    for(var i=0;i<CODEX.length;i++){
+      h += '<div class="codex-entry" onclick="codexOpen='+i+';render();">';
+      h += '<span class="c-amber">[' + (i+1) + ']</span> <span class="c-cyan">' + esc(CODEX[i].title) + '</span>';
+      h += '</div>';
+    }
+  }
+
+  h += '<div style="margin-top:12px;">';
+  var backState = (player.handle) ? 'hub' : 'title';
+  h += '<span class="btn" onclick="gameState=\''+backState+'\';codexOpen=-1;render();">[BACK]</span>';
+  h += '</div></div>';
+  $main.innerHTML = h;
+}
+
+// ── INPUT HANDLING ──
+$input.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    var cmd = $input.value.trim().toLowerCase();
+    $input.value = '';
+    processCommand(cmd);
+  }
+});
+
+function processCommand(cmd){
+  if(!cmd) return;
+  log('> ' + cmd, 'var(--cyan)');
+
+  // Universal commands
+  if(cmd === 'help'){
+    log('Commands: explore, hub, shop, inventory, upgrade, codex, stats, rest, flee, prestige, save, export, clear', 'var(--amber)');
+    return;
+  }
+  if(cmd === 'clear'){
+    activityLog = [];
+    renderLog();
+    return;
+  }
+  if(cmd === 'save'){
+    save();
+    log('Game saved.', 'var(--green)');
+    return;
+  }
+  if(cmd === 'export'){
+    log('Save code: ' + exportSave(), 'var(--amber)');
+    return;
+  }
+  if(cmd === 'stats'){
+    log('Kills: ' + player.stats.kills + ' | Nodes: ' + player.stats.nodesHacked +
+      ' | Boss kills: ' + player.stats.bossKills + ' | Floor record: ' + player.stats.floorRecord +
+      ' | Total cred: ' + formatCred(player.stats.credEarned) + ' | Total DC: ' + player.stats.darkCredEarned, 'var(--cyan)');
+    return;
+  }
+
+  // State-specific
+  if(gameState === 'hub'){
+    if(cmd === 'explore' || cmd === '1'){enterExploration();return;}
+    if(cmd === 'shop' || cmd === 'market' || cmd === '2'){gameState='shop';shopPage='buy';render();return;}
+    if(cmd === 'hardware' || cmd === 'upgrade' || cmd === '3'){gameState='upgrade';render();return;}
+    if(cmd === 'inventory' || cmd === 'inv' || cmd === '4'){gameState='inventory';render();return;}
+    if(cmd === 'codex' || cmd === '5'){gameState='codex';render();return;}
+    if(cmd === 'rest' || cmd === '6'){doRest();return;}
+    if(cmd === 'prestige'){gameState='prestige';render();return;}
+    log('Unknown command. Type "help" for list.', 'var(--red)');
+  } else if(gameState === 'combat'){
+    if(cmd === '1' || cmd === 'attack'){playerBasicAttack();checkCombatEnd('player');return;}
+    if(cmd === 'f' || cmd === 'flee' || cmd === 'run'){playerFlee();return;}
+    // Number keys for equipped programs
+    var num = parseInt(cmd);
+    if(num >= 2 && num <= 5 && player.equipped[num-2]){
+      playerUseProgram(player.equipped[num-2]);
+      return;
+    }
+    log('Combat: 1=attack, 2-5=programs, f=flee', 'var(--amber)');
+  } else if(gameState === 'explore'){
+    if(cmd === 'hub' || cmd === 'back'){currentRoom=null;gameState='hub';render();return;}
+    if(cmd === 'next'){currentRoom=null;enterExploration();return;}
+    if(cmd === 'floor' || cmd === 'up'){advanceFloor();currentRoom=null;enterExploration();return;}
+  } else if(gameState === 'shop' || gameState === 'inventory' || gameState === 'upgrade' || gameState === 'codex' || gameState === 'prestige'){
+    if(cmd === 'back' || cmd === 'hub'){gameState='hub';codexOpen=-1;render();return;}
+  }
+}
+
+// ── INITIALIZATION ──
+function init(){
+  var hasSave = false;
+  try{hasSave = !!localStorage.getItem(SAVE_KEY);}catch(e){}
+  if(hasSave){
+    titleContinue = true;
+  }
+  gameState = 'boot';
+  render();
+}
+
+// ── ACHIEVEMENTS SYSTEM ──
+var ACHIEVEMENTS = [
+  {id:'first_blood',name:'FIRST BLOOD',desc:'Terminate your first hostile program.',check:function(){return player.stats.kills>=1;}},
+  {id:'floor5',name:'DEEP DIVER',desc:'Reach floor 5.',check:function(){return player.stats.floorRecord>=5;}},
+  {id:'floor10',name:'NODE BREAKER',desc:'Reach floor 10.',check:function(){return player.stats.floorRecord>=10;}},
+  {id:'floor20',name:'GRID WALKER',desc:'Reach floor 20.',check:function(){return player.stats.floorRecord>=20;}},
+  {id:'floor50',name:'VOID TOUCHED',desc:'Reach floor 50.',check:function(){return player.stats.floorRecord>=50;}},
+  {id:'boss1',name:'SENTINEL SLAYER',desc:'Defeat your first boss.',check:function(){return player.stats.bossKills>=1;}},
+  {id:'boss5',name:'BOSS HUNTER',desc:'Defeat 5 bosses.',check:function(){return player.stats.bossKills>=5;}},
+  {id:'rich',name:'CREDIT HOARDER',desc:'Accumulate 10,000 CRED.',check:function(){return player.cred>=10000;}},
+  {id:'dark_rich',name:'SHADOW BANKER',desc:'Accumulate 50 DARK CRED.',check:function(){return player.darkCred>=50;}},
+  {id:'prestige1',name:'BORN AGAIN',desc:'Prestige for the first time.',check:function(){return player.prestige>=1;}},
+  {id:'prestige3',name:'TRANSCENDENT',desc:'Reach prestige 3.',check:function(){return player.prestige>=3;}},
+  {id:'kills100',name:'DIGITAL REAPER',desc:'Terminate 100 hostile programs.',check:function(){return player.stats.kills>=100;}},
+  {id:'kills500',name:'GENOCIDE.EXE',desc:'Terminate 500 hostile programs.',check:function(){return player.stats.kills>=500;}},
+  {id:'level10',name:'SEASONED RUNNER',desc:'Reach level 10.',check:function(){return player.level>=10;}},
+  {id:'level20',name:'ELITE HACKER',desc:'Reach level 20.',check:function(){return player.level>=20;}},
+  {id:'underground50',name:'SHADOW LORD',desc:'Reach 50 underground reputation.',check:function(){return player.reputation.underground>=50;}},
+  {id:'full_equip',name:'LOADED',desc:'Have 4 programs equipped simultaneously.',check:function(){return player.equipped.length>=4;}},
+  {id:'hwmax',name:'CHROME JOCKEY',desc:'Install a tier 4 hardware piece.',check:function(){return player.hardware.deck.tier>=4||player.hardware.ram.tier>=4||player.hardware.rig.tier>=4||player.hardware.icebreaker.tier>=4;}},
+];
+
+function checkAchievements(){
+  if(!player._achievements) player._achievements = [];
+  for(var i=0;i<ACHIEVEMENTS.length;i++){
+    var a = ACHIEVEMENTS[i];
+    if(player._achievements.indexOf(a.id) < 0 && a.check()){
+      player._achievements.push(a.id);
+      log('\u2605 ACHIEVEMENT UNLOCKED: ' + a.name + ' \u2605', 'var(--magenta)');
+      toast('\u2605 ' + a.name + ' \u2605', 3000);
+      save();
+    }
+  }
+}
+
+// ── ACHIEVEMENTS DISPLAY (added to codex) ──
+function renderAchievements(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 ACHIEVEMENTS \u2550\u2550\u2557</div>';
+  if(!player._achievements) player._achievements = [];
+  for(var i=0;i<ACHIEVEMENTS.length;i++){
+    var a = ACHIEVEMENTS[i];
+    var unlocked = player._achievements.indexOf(a.id) >= 0;
+    var color = unlocked ? 'var(--green)' : 'var(--dim)';
+    var icon = unlocked ? '\u2605' : '\u2606';
+    h += '<div style="border:1px solid '+(unlocked?'var(--green)':'#222')+';padding:3px 6px;margin:2px 0;font-size:13px;color:'+color+';">';
+    h += icon + ' <span style="color:var(--cyan);">' + esc(a.name) + '</span> - ' + esc(a.desc);
+    h += '</div>';
+  }
+  h += '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── BESTIARY / ENEMY DATABASE VIEWER ──
+function renderBestiary(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 THREAT DATABASE \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:4px 0;">Known hostile programs in The Grid:</div>';
+
+  for(var i=0;i<ENEMY_TYPES.length;i++){
+    var e = ENEMY_TYPES[i];
+    h += '<div style="border:1px solid var(--red);padding:4px 6px;margin:3px 0;font-size:13px;">';
+    h += '<span class="c-red">' + esc(e.name) + '</span>';
+    h += (e.isICE ? ' <span class="c-cyan">[ICE]</span>' : '');
+    h += '<div class="c-dim">' + esc(e.desc) + '</div>';
+    h += '<div>HP:' + e.hp + ' ATK:' + e.atk + ' DEF:' + e.def + ' XP:' + e.xp + ' CRED:' + e.cred + '</div>';
+    if(e.special !== 'none') h += '<div class="c-amber">Special: ' + esc(e.special) + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div class="c-magenta" style="margin:10px 0 4px 0;">\u2550\u2550 BOSSES \u2550\u2550</div>';
+  for(var j=0;j<BOSS_DATA.length;j++){
+    var b = BOSS_DATA[j];
+    h += '<div style="border:1px solid var(--magenta);padding:4px 6px;margin:3px 0;font-size:13px;">';
+    h += '<span class="c-magenta">' + esc(b.name) + '</span> <span class="c-dim">(Floor ' + b.floor + '+)</span>';
+    h += '<div class="c-dim">' + esc(b.desc) + '</div>';
+    h += '<div>HP:' + b.hp + ' ATK:' + b.atk + ' DEF:' + b.def + ' DC:' + b.dc + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── MINI-MAP / NODE MAP ──
+function renderMinimap(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 NODE MAP \u2550\u2550\u2557</div>';
+  h += '<pre class="ascii" style="font-size:12px;color:var(--dimgreen);">';
+
+  // Generate a simple visual map
+  var mapW = 40, mapH = 15;
+  var grid = [];
+  for(var y=0;y<mapH;y++){
+    grid[y] = [];
+    for(var x=0;x<mapW;x++){
+      grid[y][x] = ' ';
+    }
+  }
+
+  // Draw some "nodes" based on floor
+  var nodeCount = Math.min(20, 5 + player.floor);
+  var nodes = [];
+  for(var n=0;n<nodeCount;n++){
+    var nx = rand(1, mapW-2);
+    var ny = rand(1, mapH-2);
+    grid[ny][nx] = (n === 0) ? '@' : (Math.random() < 0.3 ? '!' : (Math.random() < 0.2 ? '$' : '#'));
+    nodes.push({x:nx,y:ny});
+  }
+
+  // Draw connections
+  for(var c=1;c<nodes.length;c++){
+    var prev = nodes[c-1];
+    var curr = nodes[c];
+    var dx = curr.x > prev.x ? 1 : -1;
+    var cx = prev.x;
+    while(cx !== curr.x){
+      if(grid[prev.y][cx] === ' ') grid[prev.y][cx] = '\u2500';
+      cx += dx;
+    }
+    var dy = curr.y > prev.y ? 1 : -1;
+    var cy = prev.y;
+    while(cy !== curr.y){
+      if(grid[cy][curr.x] === ' ') grid[cy][curr.x] = '\u2502';
+      cy += dy;
+    }
+  }
+
+  // Border
+  var mapStr = '\u250C' + '\u2500'.repeat(mapW) + '\u2510\n';
+  for(var my=0;my<mapH;my++){
+    mapStr += '\u2502';
+    for(var mx=0;mx<mapW;mx++){
+      var ch = grid[my][mx];
+      if(ch === '@') mapStr += '<span class="c-green">' + ch + '</span>';
+      else if(ch === '!') mapStr += '<span class="c-red">' + ch + '</span>';
+      else if(ch === '$') mapStr += '<span class="c-amber">' + ch + '</span>';
+      else if(ch === '#') mapStr += '<span class="c-cyan">' + ch + '</span>';
+      else mapStr += ch;
+    }
+    mapStr += '\u2502\n';
+  }
+  mapStr += '\u2514' + '\u2500'.repeat(mapW) + '\u2518\n';
+
+  h += mapStr;
+  h += '</pre>';
+  h += '<div style="font-size:12px;margin:4px 0;">';
+  h += '<span class="c-green">@ = You</span> ';
+  h += '<span class="c-red">! = Hostile</span> ';
+  h += '<span class="c-amber">$ = Loot</span> ';
+  h += '<span class="c-cyan"># = Node</span>';
+  h += '</div>';
+  h += '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── CHARACTER STAT DETAIL VIEW ──
+function renderCharDetail(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 RUNNER DOSSIER \u2550\u2550\u2557</div>';
+  var stars = '';
+  for(var i=0;i<player.prestige;i++) stars += '\u2606';
+
+  h += '<pre class="ascii" style="font-size:13px;">';
+  h += '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n';
+  h += '\u2551 HANDLE:   <span class="c-cyan">' + esc(player.handle) + '</span>' + ' '.repeat(Math.max(0,20-player.handle.length)) + '\u2551\n';
+  h += '\u2551 CLASS:    <span class="c-magenta">' + esc(player.playerClass) + '</span>' + ' '.repeat(Math.max(0,20-player.playerClass.length)) + '\u2551\n';
+  h += '\u2551 LEVEL:    <span class="c-amber">' + player.level + '</span>' + ' '.repeat(Math.max(0,20-String(player.level).length)) + '\u2551\n';
+  h += '\u2551 PRESTIGE: <span class="c-magenta">' + player.prestige + ' ' + stars + '</span>' + ' '.repeat(Math.max(0,18-String(player.prestige).length-stars.length)) + '\u2551\n';
+  h += '\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n';
+  h += '\u2551 HP:    ' + player.hp + '/' + getMaxHP() + ' '.repeat(Math.max(0,22-(player.hp+'/'+getMaxHP()).length)) + '\u2551\n';
+  h += '\u2551 CPU:   ' + player.cpu + '/' + getMaxCPU() + ' '.repeat(Math.max(0,22-(player.cpu+'/'+getMaxCPU()).length)) + '\u2551\n';
+  h += '\u2551 ATK:   ' + getATK() + ' '.repeat(Math.max(0,24-String(getATK()).length)) + '\u2551\n';
+  h += '\u2551 DEF:   ' + getDEF() + ' '.repeat(Math.max(0,24-String(getDEF()).length)) + '\u2551\n';
+  h += '\u2551 CRIT:  ' + Math.floor(getCritChance()*100) + '%' + ' '.repeat(Math.max(0,23-String(Math.floor(getCritChance()*100)).length)) + '\u2551\n';
+  h += '\u2551 DODGE: ' + Math.floor(getDodgeChance()*100) + '%' + ' '.repeat(Math.max(0,23-String(Math.floor(getDodgeChance()*100)).length)) + '\u2551\n';
+  h += '\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2563\n';
+  h += '\u2551 KILLS:      <span class="c-red">' + player.stats.kills + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.kills).length)) + '\u2551\n';
+  h += '\u2551 NODES:      <span class="c-cyan">' + player.stats.nodesHacked + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.nodesHacked).length)) + '\u2551\n';
+  h += '\u2551 BOSSES:     <span class="c-magenta">' + player.stats.bossKills + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.bossKills).length)) + '\u2551\n';
+  h += '\u2551 FLOOR REC:  <span class="c-amber">' + player.stats.floorRecord + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.floorRecord).length)) + '\u2551\n';
+  h += '\u2551 CRED TOTAL: <span class="c-green">' + player.stats.credEarned + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.credEarned).length)) + '\u2551\n';
+  h += '\u2551 DC TOTAL:   <span class="c-magenta">' + player.stats.darkCredEarned + '</span>' + ' '.repeat(Math.max(0,18-String(player.stats.darkCredEarned).length)) + '\u2551\n';
+  h += '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D\n';
+  h += '</pre>';
+
+  // Class bonus reminder
+  var clsDef = CLASSES[player.playerClass];
+  if(clsDef){
+    h += '<div class="c-magenta" style="margin:6px 0;">Class Bonus: ' + esc(clsDef.bonus) + '</div>';
+  }
+
+  h += '<div style="margin-top:10px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+// ── GAMBLING MINI-GAME (ICE DICE) ──
+var diceState = {bet:0, rolling:false, result:''};
+
+function renderGamble(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 ICE DICE \u2550\u2550 GAMBLING DEN \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">A shadowy figure beckons you to a table of glowing dice.</div>';
+  h += '<div class="c-dim">"Place your bets, runner. The Grid favors the bold."</div>';
+  h += '<div class="c-green" style="margin:8px 0;">Your CRED: ' + formatCred(player.cred) + '</div>';
+
+  h += '<div style="margin:10px 0;">';
+  h += '<div class="c-amber">RULES: Roll 2d6. Total of 7 or 11 = WIN (2x bet). 2 or 12 = JACKPOT (5x). Otherwise LOSE.</div>';
+  h += '</div>';
+
+  // Bet selection
+  h += '<div class="c-cyan" style="margin:6px 0;">Place your bet:</div>';
+  var bets = [50, 100, 250, 500, 1000];
+  for(var b=0;b<bets.length;b++){
+    var canBet = player.cred >= bets[b];
+    h += '<span class="btn' + (!canBet ? ' btn-disabled' : ' btn-amber') + '" onclick="rollDice(' + bets[b] + ')">[' + formatCred(bets[b]) + ']</span> ';
+  }
+
+  if(diceState.result){
+    h += '<div style="margin:12px 0;border:1px solid var(--amber);padding:8px;font-size:16px;">';
+    h += diceState.result;
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="diceState.result=\'\';gameState=\'hub\';render();">[LEAVE TABLE]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+function rollDice(bet){
+  if(player.cred < bet) return;
+  player.cred -= bet;
+  var d1 = rand(1,6);
+  var d2 = rand(1,6);
+  var total = d1 + d2;
+
+  var diceArt = getDiceArt(d1) + '  ' + getDiceArt(d2);
+
+  if(total === 7 || total === 11){
+    var win = bet * 2;
+    player.cred += win;
+    diceState.result = '<span class="c-green">Rolled: ' + d1 + ' + ' + d2 + ' = ' + total + '\nWIN! +' + formatCred(win) + '</span>';
+    log('ICE DICE: Won ' + formatCred(win) + '!', 'var(--green)');
+  } else if(total === 2 || total === 12){
+    var jackpot = bet * 5;
+    player.cred += jackpot;
+    diceState.result = '<span class="c-magenta">Rolled: ' + d1 + ' + ' + d2 + ' = ' + total + '\nJACKPOT! +' + formatCred(jackpot) + '!!!</span>';
+    log('ICE DICE: JACKPOT ' + formatCred(jackpot) + '!!!', 'var(--magenta)');
+  } else {
+    diceState.result = '<span class="c-red">Rolled: ' + d1 + ' + ' + d2 + ' = ' + total + '\nLOST ' + formatCred(bet) + '</span>';
+    log('ICE DICE: Lost ' + formatCred(bet), 'var(--red)');
+  }
+  save();
+  render();
+}
+
+function getDiceArt(n){
+  return '[' + n + ']';
+}
+
+// ── TRAINING / PRACTICE COMBAT ──
+function renderTraining(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 TRAINING SIM \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">Test your skills against simulated hostiles. No risk, reduced rewards (25% XP/CRED).</div>';
+
+  h += '<div class="c-cyan" style="margin:8px 0;">Select difficulty:</div>';
+  h += '<div class="btn" onclick="startTraining(1)">[EASY - Floor 1 Enemy]</div><br>';
+  h += '<div class="btn btn-amber" onclick="startTraining(5)">[MEDIUM - Floor 5 Enemy]</div><br>';
+  h += '<div class="btn btn-red" onclick="startTraining(10)">[HARD - Floor 10 Enemy]</div><br>';
+  if(player.level >= 10){
+    h += '<div class="btn btn-magenta" onclick="startTrainingBoss()">[BOSS SIM - Arasaka Sentinel]</div><br>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+var isTraining = false;
+
+function startTraining(floor){
+  isTraining = true;
+  var enemy = genEnemy(floor);
+  enemy.xp = Math.floor(enemy.xp * 0.25);
+  enemy.cred = Math.floor(enemy.cred * 0.25);
+  enemy.name = 'SIM_' + enemy.name;
+  startCombat(enemy);
+}
+
+function startTrainingBoss(){
+  isTraining = true;
+  var enemy = genBoss(5);
+  enemy.xp = Math.floor(enemy.xp * 0.25);
+  enemy.cred = Math.floor(enemy.cred * 0.25);
+  enemy.dc = 0;
+  enemy.name = 'SIM_' + enemy.name;
+  startCombat(enemy);
+}
+
+// ── EXTEND HUB WITH NEW OPTIONS ──
+var _oldRenderHub = renderHub;
+renderHub = function(){
+  _oldRenderHub();
+  // Append extra buttons to hub
+  var extra = '<div style="margin-top:6px;border-top:1px solid var(--dimgreen);padding-top:6px;">';
+  extra += '<div class="c-cyan" style="margin-bottom:4px;">\u2550\u2550 MORE \u2550\u2550</div>';
+  extra += '<div class="btn" onclick="gameState=\'achievements\';render();" style="width:220px;">[7] ACHIEVEMENTS</div><br>';
+  extra += '<div class="btn btn-cyan" onclick="gameState=\'bestiary\';render();" style="width:220px;">[8] THREAT DATABASE</div><br>';
+  extra += '<div class="btn btn-amber" onclick="gameState=\'gamble\';render();" style="width:220px;">[9] ICE DICE (Gambling)</div><br>';
+  extra += '<div class="btn" onclick="gameState=\'training\';render();" style="width:220px;">[0] TRAINING SIM</div><br>';
+  extra += '<div class="btn btn-cyan" onclick="gameState=\'nodemap\';render();" style="width:220px;">[M] NODE MAP</div><br>';
+  extra += '<div class="btn btn-magenta" onclick="gameState=\'chardetail\';render();" style="width:220px;">[S] RUNNER DOSSIER</div><br>';
+  extra += '</div>';
+  $main.innerHTML += extra;
+  checkAchievements();
+};
+
+// ── EXTEND RENDER DISPATCH ──
+var _oldRender = render;
+render = function(){
+  renderStatsPanel();
+  switch(gameState){
+    case 'boot': renderBoot(); break;
+    case 'title': renderTitle(); break;
+    case 'create': renderCreate(); break;
+    case 'hub': renderHub(); break;
+    case 'explore': renderExplore(); break;
+    case 'combat': renderCombat(); break;
+    case 'shop': renderShop(); break;
+    case 'inventory': renderInventory(); break;
+    case 'upgrade': renderUpgrade(); break;
+    case 'dead': renderDead(); break;
+    case 'prestige': renderPrestige(); break;
+    case 'codex': renderCodex(); break;
+    case 'achievements': renderAchievements(); break;
+    case 'bestiary': renderBestiary(); break;
+    case 'gamble': renderGamble(); break;
+    case 'training': renderTraining(); break;
+    case 'nodemap': renderMinimap(); break;
+    case 'chardetail': renderCharDetail(); break;
+    default: renderHub(); break;
+  }
+};
+
+// ── EXTEND COMMAND INPUT ──
+var _oldProcessCommand = processCommand;
+processCommand = function(cmd){
+  if(gameState === 'hub'){
+    if(cmd === '7' || cmd === 'achievements'){gameState='achievements';render();return;}
+    if(cmd === '8' || cmd === 'bestiary' || cmd === 'threats'){gameState='bestiary';render();return;}
+    if(cmd === '9' || cmd === 'dice' || cmd === 'gamble'){gameState='gamble';render();return;}
+    if(cmd === '0' || cmd === 'train' || cmd === 'training'){gameState='training';render();return;}
+    if(cmd === 'm' || cmd === 'map'){gameState='nodemap';render();return;}
+    if(cmd === 's' || cmd === 'dossier'){gameState='chardetail';render();return;}
+  }
+  if(gameState === 'achievements' || gameState === 'bestiary' || gameState === 'gamble' ||
+     gameState === 'training' || gameState === 'nodemap' || gameState === 'chardetail'){
+    if(cmd === 'back' || cmd === 'hub'){gameState='hub';render();return;}
+  }
+  _oldProcessCommand(cmd);
+};
+
+// ── AMBIENT FLAVOR TEXT ──
+var FLAVOR_TEXTS = [
+  'Data streams ripple in the peripheral...',
+  'A distant alarm klaxon echoes through the node...',
+  'Encrypted traffic pulses overhead like digital rain...',
+  'The hum of corporate servers vibrates through your cyberdeck...',
+  'Ghost signals flicker at the edge of your neural bridge...',
+  'ICE crystals form and dissolve in the ambient data flow...',
+  'A rogue advertisement flashes: "UPGRADE YOUR MEAT. GO CHROME."',
+  'The Grid breathes. You are not alone.',
+  'Someone is watching. Trace signatures in the background noise.',
+  'The neon glow of data highways stretches to infinity...',
+  'Fragmented code whispers from dead netrunner ghosts...',
+  'Your cyberdeck hums with barely contained potential...',
+  'Corporate drones patrol the data highways in formation...',
+  'The timestamp reads 2087. Or is it 3087? Time is fluid in The Grid.',
+  'A distant explosion of data — someone tripped Black ICE somewhere...',
+];
+
+// Show random flavor text periodically
+setInterval(function(){
+  if(gameState === 'hub' || gameState === 'explore'){
+    if(Math.random() < 0.3){
+      log(pick(FLAVOR_TEXTS), '#446644');
+    }
+  }
+}, 15000);
+
+// ── AUTO-SAVE PERIODIC ──
+setInterval(function(){
+  if(player.handle) save();
+}, 30000);
+
+// ── COMBAT ANIMATION EFFECTS ──
+function flashScreen(color){
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:'+color+';opacity:0.15;z-index:8998;pointer-events:none;';
+  document.body.appendChild(overlay);
+  setTimeout(function(){overlay.remove();},150);
+}
+
+// Override playerBasicAttack to add screen flash
+var _oldBasicAttack = playerBasicAttack;
+playerBasicAttack = function(){
+  _oldBasicAttack();
+  flashScreen('var(--green)');
+};
+
+// ── ADDITIONAL ROOM DESCRIPTIONS ──
+ROOM_DESCS.push('A vast data lake stretches before you, its surface shimmering with stolen memories.');
+ROOM_DESCS.push('Broken firewalls lie in ruins — someone was here before you. Recently.');
+ROOM_DESCS.push('The architecture here is ancient — pre-war code, primitive but enduring.');
+ROOM_DESCS.push('A cascade of error messages scrolls endlessly on phantom displays.');
+ROOM_DESCS.push('The node splits into fractal branches. Each path looks equally dangerous.');
+ROOM_DESCS.push('Surveillance orbs drift lazily, their red eyes scanning, always scanning.');
+ROOM_DESCS.push('A digital garden grows wild with mutated code — flowers of pure data blooming and dying.');
+ROOM_DESCS.push('The gravity of data feels heavier here. Your deck strains under the processing load.');
+ROOM_DESCS.push('Graffiti code on the walls: "WE WERE HERE BEFORE THE CORPS. WE WILL BE HERE AFTER."');
+ROOM_DESCS.push('A junction of high-speed data lanes — information screams past at light speed.');
+ROOM_DESCS.push('The node is quiet. Too quiet. Even the ambient processes have gone silent.');
+ROOM_DESCS.push('Holographic wanted posters cycle through faces. Is that... your handle on one?');
+ROOM_DESCS.push('A decommissioned combat drone sits in the corner, its weapons still warm.');
+ROOM_DESCS.push('The architecture shifts between corporate sterile and chaotic shadow-net design.');
+ROOM_DESCS.push('Cryptocurrency fragments litter the ground like digital confetti.');
+
+// ── ADDITIONAL EVENTS ──
+EVENTS.push({id:'hacker_duel',text:'[EVENT] Another netrunner challenges you to a code duel!',choices:['ACCEPT','DECLINE'],handler:'eventHackerDuel'});
+EVENTS.push({id:'corrupt_data',text:'[EVENT] Corrupted data stream blocks the path. Contains encrypted valuables.',choices:['DECRYPT (15 CPU)','FORCE THROUGH','GO AROUND'],handler:'eventCorruptData'});
+EVENTS.push({id:'ai_merchant',text:'[EVENT] A rogue AI merchant materializes. "I have wares, if you have coin..."',choices:['BROWSE','IGNORE'],handler:'eventAIMerchant'});
+
+function eventHackerDuel(choice){
+  if(choice === 0){
+    // Compare stats
+    var enemySkill = rand(5, 15) + player.floor * 2;
+    var playerSkill = getATK() + Math.floor(getCritChance() * 20);
+    if(playerSkill > enemySkill){
+      var prize = rand(100, 300) * Math.ceil(player.floor / 3);
+      gainCred(prize);
+      gainXP(rand(30, 80));
+      log('You won the code duel! The other runner pays up.', 'var(--green)');
+      changeRep('underground', 3);
+    } else {
+      var loss = rand(50, 150);
+      player.cred = Math.max(0, player.cred - loss);
+      log('You lost the code duel! Lost ' + formatCred(loss), 'var(--red)');
+    }
+  } else {
+    log('You decline. "Another time, then," the runner says.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventCorruptData(choice){
+  if(choice === 0){
+    if(player.cpu >= 15){
+      player.cpu -= 15;
+      var amt = rand(80, 250) * Math.ceil(player.floor / 2);
+      gainCred(amt);
+      log('Decrypted the data stream! Found ' + formatCred(amt), 'var(--green)');
+    } else {
+      log('Not enough CPU!', 'var(--red)');
+    }
+  } else if(choice === 1){
+    var dmg = rand(10, 30);
+    player.hp -= dmg;
+    log('Forced through the corruption! Took ' + dmg + ' damage.', 'var(--red)');
+    if(player.hp <= 0){player.hp = 0; gameState = 'dead'; render(); return;}
+    gainXP(20);
+  } else {
+    log('You take a longer route around the corruption.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+function eventAIMerchant(choice){
+  if(choice === 0){
+    // Offer a random discounted program
+    var maxTier = Math.min(4, 1 + Math.floor(player.level / 8));
+    var candidates = PROGRAMS.filter(function(p){return p.tier <= maxTier && !p.consumable;});
+    if(candidates.length > 0){
+      var offer = pick(candidates);
+      var discPrice = Math.floor(offer.price * 0.6);
+      if(player.cred >= discPrice && player.programs.length < 20){
+        player.cred -= discPrice;
+        player.programs.push(offer.name);
+        log('Purchased ' + offer.name + ' from rogue AI for ' + formatCred(discPrice) + ' (40% off)!', 'var(--green)');
+      } else {
+        log('Cannot afford or inventory full. The AI shrugs and vanishes.', 'var(--amber)');
+      }
+    }
+  } else {
+    log('The AI merchant dissolves into static.', 'var(--amber)');
+  }
+  currentRoom = null;
+  save();
+  render();
+}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', function(e){
+  // Focus input on any key if not already focused and not in an input
+  if(document.activeElement !== $input && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA'){
+    if(e.key.length === 1 || e.key === 'Enter'){
+      $input.focus();
+    }
+  }
+});
+
+// ── SOUND EFFECTS (simple beep via AudioContext) ──
+var audioCtx = null;
+function beep(freq, dur, vol){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq || 440;
+    gain.gain.value = vol || 0.05;
+    osc.type = 'square';
+    osc.start();
+    setTimeout(function(){osc.stop();},dur||80);
+  }catch(e){}
+}
+
+// Type sound on input
+$input.addEventListener('input', function(){
+  beep(800 + rand(0,400), 30, 0.02);
+});
+
+// ── TOOLTIP SYSTEM ──
+function showTooltip(text, x, y){
+  var existing = document.getElementById('game-tooltip');
+  if(existing) existing.remove();
+  var tt = document.createElement('div');
+  tt.id = 'game-tooltip';
+  tt.style.cssText = 'position:fixed;left:'+x+'px;top:'+y+'px;background:rgba(0,10,0,0.95);border:1px solid var(--cyan);color:var(--cyan);padding:4px 8px;font-family:VT323,monospace;font-size:13px;z-index:9100;pointer-events:none;max-width:250px;';
+  tt.textContent = text;
+  document.body.appendChild(tt);
+  setTimeout(function(){tt.remove();},3000);
+}
+
+// ── ENSURE PROPER GAME LOOP ──
+// After combat ends due to training, return to training screen
+var _oldCheckCombatEnd = checkCombatEnd;
+checkCombatEnd = function(lastAttacker){
+  if(!currentEnemy) return;
+  if(currentEnemy.hp <= 0){
+    currentEnemy.hp = 0;
+    clog('\u2550\u2550\u2550 ' + currentEnemy.name + ' TERMINATED \u2550\u2550\u2550', 'var(--green)');
+    gainXP(currentEnemy.xp);
+    gainCred(currentEnemy.cred);
+    if(currentEnemy.dc > 0) gainDarkCred(currentEnemy.dc);
+    player.stats.kills++;
+    if(currentEnemy.isBoss){
+      player.stats.bossKills++;
+      player._bossDefeatedThisFloor = true;
+      changeRep('underground', 10);
+    } else {
+      changeRep('underground', 1);
+    }
+    changeRep('corporate', -1);
+    currentEnemy = null;
+    enemyStatusEffects = {};
+    checkAchievements();
+    if(isTraining){
+      isTraining = false;
+      gameState = 'training';
+    } else {
+      gameState = 'explore';
+    }
+    save();
+    render();
+    return;
+  }
+  if(player.hp <= 0){
+    player.hp = 0;
+    if(isTraining){
+      isTraining = false;
+      clog('Training simulation ended. No penalty.', 'var(--amber)');
+      player.hp = Math.floor(getMaxHP() * 0.5);
+      currentEnemy = null;
+      gameState = 'training';
+      save();
+      render();
+      return;
+    }
+    clog('\u2550\u2550\u2550 YOU HAVE BEEN FLATLINED \u2550\u2550\u2550', 'var(--red)');
+    currentEnemy = null;
+    gameState = 'dead';
+    save();
+    render();
+    return;
+  }
+  if(lastAttacker === 'player') endPlayerTurn();
+  else render();
+};
+
+// ── HACKING MINI-GAME (unlock bonus loot) ──
+var hackGame = {active:false, sequence:[], playerSeq:[], round:0, maxRounds:5, reward:0};
+
+function renderHackGame(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 ICE CRACKER \u2550\u2550 HACKING MINI-GAME \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">Crack the ICE by repeating the code sequence. Each round adds one element.</div>';
+  h += '<div class="c-amber" style="margin:4px 0;">Round: ' + (hackGame.round + 1) + ' / ' + hackGame.maxRounds + '</div>';
+  h += '<div class="c-cyan" style="margin:4px 0;">Potential Reward: ' + formatCred(hackGame.reward) + '</div>';
+
+  // Display sequence to memorize
+  if(hackGame.showing){
+    h += '<div style="margin:12px 0;font-size:24px;letter-spacing:8px;" class="c-magenta">';
+    for(var i=0;i<=hackGame.round;i++){
+      h += '<span>' + hackGame.sequence[i] + '</span> ';
+    }
+    h += '</div>';
+    h += '<div class="c-amber">Memorize the sequence...</div>';
+  } else {
+    h += '<div style="margin:12px 0;">';
+    h += '<div class="c-cyan" style="margin-bottom:6px;">Enter the sequence: (' + hackGame.playerSeq.length + '/' + (hackGame.round+1) + ')</div>';
+    var symbols = ['\u25B2','\u25BC','\u25C0','\u25B6','\u2605','\u2666'];
+    for(var s=0;s<symbols.length;s++){
+      h += '<span class="btn btn-cyan" onclick="hackInput('+s+')" style="font-size:22px;width:40px;text-align:center;">' + symbols[s] + '</span> ';
+    }
+    h += '</div>';
+    // Show player input so far
+    h += '<div style="margin:6px 0;font-size:20px;letter-spacing:6px;" class="c-green">';
+    for(var p=0;p<hackGame.playerSeq.length;p++){
+      h += hackGame.playerSeq[p] + ' ';
+    }
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="hackGame.active=false;gameState=\'hub\';render();">[ABORT]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+function startHackGame(){
+  var symbols = ['\u25B2','\u25BC','\u25C0','\u25B6','\u2605','\u2666'];
+  hackGame.active = true;
+  hackGame.sequence = [];
+  hackGame.playerSeq = [];
+  hackGame.round = 0;
+  hackGame.maxRounds = 5;
+  hackGame.reward = rand(200, 500) * Math.ceil(player.floor / 2);
+  hackGame.showing = true;
+
+  // Generate full sequence
+  for(var i=0;i<hackGame.maxRounds;i++){
+    hackGame.sequence.push(symbols[rand(0, symbols.length - 1)]);
+  }
+
+  gameState = 'hackgame';
+  render();
+
+  // Show sequence then hide
+  setTimeout(function(){
+    hackGame.showing = false;
+    render();
+  }, 2000 + hackGame.round * 500);
+}
+
+function hackInput(symbolIdx){
+  var symbols = ['\u25B2','\u25BC','\u25C0','\u25B6','\u2605','\u2666'];
+  if(hackGame.showing) return;
+
+  hackGame.playerSeq.push(symbols[symbolIdx]);
+  beep(400 + symbolIdx * 100, 50, 0.03);
+
+  var idx = hackGame.playerSeq.length - 1;
+  if(hackGame.playerSeq[idx] !== hackGame.sequence[idx]){
+    // Wrong!
+    log('ICE CRACKER: Failed at round ' + (hackGame.round + 1) + '!', 'var(--red)');
+    toast('HACK FAILED!');
+    var partialReward = Math.floor(hackGame.reward * hackGame.round / hackGame.maxRounds * 0.5);
+    if(partialReward > 0){
+      gainCred(partialReward);
+      log('Partial data recovered: ' + formatCred(partialReward), 'var(--amber)');
+    }
+    hackGame.active = false;
+    gameState = 'hub';
+    save();
+    render();
+    return;
+  }
+
+  if(hackGame.playerSeq.length > hackGame.round){
+    // Completed this round
+    hackGame.round++;
+    hackGame.playerSeq = [];
+
+    if(hackGame.round >= hackGame.maxRounds){
+      // Won!
+      log('ICE CRACKER: Complete! Perfect crack!', 'var(--green)');
+      toast('ICE CRACKED!', 2500);
+      gainCred(hackGame.reward);
+      gainXP(rand(40, 100));
+      changeRep('underground', 5);
+      hackGame.active = false;
+      gameState = 'hub';
+      save();
+      render();
+      return;
+    }
+
+    // Show next round
+    hackGame.showing = true;
+    render();
+    setTimeout(function(){
+      hackGame.showing = false;
+      render();
+    }, 2000 + hackGame.round * 500);
+    return;
+  }
+
+  render();
+}
+
+// ── BOUNTY BOARD (repeatable quests) ──
+var BOUNTIES = [
+  {id:'kill10',name:'EXTERMINATOR',desc:'Terminate 10 hostile programs.',target:'kills',amount:10,reward:500,xpReward:100,repReward:{underground:5}},
+  {id:'kill25',name:'MASS DELETION',desc:'Terminate 25 hostile programs.',target:'kills',amount:25,reward:1200,xpReward:250,repReward:{underground:10}},
+  {id:'floor10',name:'DEEP NODE ACCESS',desc:'Reach floor 10 in any area.',target:'floorRecord',amount:10,reward:800,xpReward:200,repReward:{underground:8}},
+  {id:'floor25',name:'ABYSS RUNNER',desc:'Reach floor 25.',target:'floorRecord',amount:25,reward:3000,xpReward:500,repReward:{underground:15}},
+  {id:'boss3',name:'BOSS HUNTER',desc:'Defeat 3 bosses.',target:'bossKills',amount:3,reward:1500,xpReward:300,repReward:{underground:10}},
+  {id:'cred5000',name:'WEALTH ACCUMULATOR',desc:'Earn 5000 total CRED.',target:'credEarned',amount:5000,reward:1000,xpReward:150,repReward:{corporate:5}},
+  {id:'nodes20',name:'NODE CRAWLER',desc:'Hack through 20 nodes.',target:'nodesHacked',amount:20,reward:700,xpReward:180,repReward:{underground:7}},
+];
+
+function renderBounties(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 BOUNTY BOARD \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">Accept contracts for CRED and reputation. Progress tracked automatically.</div>';
+
+  if(!player._bounties) player._bounties = {};
+  if(!player._completedBounties) player._completedBounties = [];
+
+  for(var i=0;i<BOUNTIES.length;i++){
+    var b = BOUNTIES[i];
+    var completed = player._completedBounties.indexOf(b.id) >= 0;
+    var active = !!player._bounties[b.id];
+    var progress = 0;
+    if(b.target === 'kills') progress = player.stats.kills;
+    else if(b.target === 'floorRecord') progress = player.stats.floorRecord;
+    else if(b.target === 'bossKills') progress = player.stats.bossKills;
+    else if(b.target === 'credEarned') progress = player.stats.credEarned;
+    else if(b.target === 'nodesHacked') progress = player.stats.nodesHacked;
+
+    var startProgress = active ? player._bounties[b.id].start : progress;
+    var current = progress - startProgress;
+    var pct = Math.min(100, Math.floor(current / b.amount * 100));
+
+    var borderColor = completed ? '#333' : (active ? 'var(--cyan)' : 'var(--dimgreen)');
+    h += '<div style="border:1px solid '+borderColor+';padding:4px 6px;margin:3px 0;'+(completed?'opacity:0.4;':'') +'">';
+    h += '<div><span class="c-cyan">' + esc(b.name) + '</span>' + (completed ? ' <span class="c-green">[DONE]</span>' : '') + '</div>';
+    h += '<div class="c-dim" style="font-size:13px;">' + esc(b.desc) + '</div>';
+    h += '<div style="font-size:13px;">Reward: <span class="c-green">' + formatCred(b.reward) + '</span> + <span class="c-amber">' + b.xpReward + ' XP</span></div>';
+
+    if(active && !completed){
+      h += '<div class="bar-container bar-xp" style="margin:3px 0;"><div class="bar-fill" style="width:'+pct+'%;"></div></div>';
+      h += '<div style="font-size:12px;">' + Math.min(current, b.amount) + '/' + b.amount + '</div>';
+      if(current >= b.amount){
+        h += '<div class="btn btn-cyan" onclick="claimBounty(\''+b.id+'\')" style="font-size:13px;">[CLAIM REWARD]</div>';
+      }
+    } else if(!active && !completed){
+      h += '<div class="btn" onclick="acceptBounty(\''+b.id+'\')" style="font-size:13px;">[ACCEPT]</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+function acceptBounty(id){
+  if(!player._bounties) player._bounties = {};
+  var b = BOUNTIES.find(function(x){return x.id === id;});
+  if(!b) return;
+  var progress = 0;
+  if(b.target === 'kills') progress = player.stats.kills;
+  else if(b.target === 'floorRecord') progress = player.stats.floorRecord;
+  else if(b.target === 'bossKills') progress = player.stats.bossKills;
+  else if(b.target === 'credEarned') progress = player.stats.credEarned;
+  else if(b.target === 'nodesHacked') progress = player.stats.nodesHacked;
+  player._bounties[id] = {start: progress};
+  log('Bounty accepted: ' + b.name, 'var(--cyan)');
+  save();
+  render();
+}
+
+function claimBounty(id){
+  if(!player._completedBounties) player._completedBounties = [];
+  var b = BOUNTIES.find(function(x){return x.id === id;});
+  if(!b) return;
+  player._completedBounties.push(id);
+  delete player._bounties[id];
+  gainCred(b.reward);
+  gainXP(b.xpReward);
+  if(b.repReward){
+    for(var fac in b.repReward) changeRep(fac, b.repReward[fac]);
+  }
+  log('Bounty completed: ' + b.name + '!', 'var(--magenta)');
+  toast('BOUNTY COMPLETE: ' + b.name);
+  save();
+  render();
+}
+
+// ── PROGRAM CRAFTING (combine 2 programs for upgrade) ──
+var CRAFT_RECIPES = [
+  {input:['PORTSCAN.EXE','BRUTEFORCE.SH'],output:'EXPLOIT.DB',desc:'Combine basic tools into an exploit chain'},
+  {input:['EXPLOIT.DB','SQL_INJECT'],output:'METASPLOIT',desc:'Full exploit framework from injection vectors'},
+  {input:['REPAIR_KIT','REPAIR_KIT'],output:'LARGE_REPAIR',desc:'Combine two repair kits'},
+  {input:['METASPLOIT','ICE_PICK'],output:'ZERO_DAY',desc:'Forge a zero-day from advanced tools'},
+  {input:['CRYPTWALL','PROXY.SHIELD'],output:'GHOST_PROTOCOL',desc:'Ultimate stealth from layered defenses'},
+  {input:['DAEMON.BOT','NEURAL_IMPLANT'],output:'BLACK_ICE_SHARD',desc:'Merge daemon with neural tech'},
+];
+
+function renderCrafting(){
+  var h = '<div style="padding:10px;">';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 PROGRAM FORGE \u2550\u2550\u2557</div>';
+  h += '<div class="c-dim" style="margin:6px 0;">Combine programs to create more powerful versions. Consumes input programs.</div>';
+
+  for(var i=0;i<CRAFT_RECIPES.length;i++){
+    var r = CRAFT_RECIPES[i];
+    var hasA = player.programs.indexOf(r.input[0]) >= 0;
+    var hasB = player.programs.indexOf(r.input[1]) >= 0;
+    // For duplicate inputs, check count
+    if(r.input[0] === r.input[1]){
+      var count = player.programs.filter(function(p){return p === r.input[0];}).length;
+      hasA = count >= 1;
+      hasB = count >= 2;
+    }
+    var canCraft = hasA && hasB && player.programs.length < 20;
+    var borderColor = canCraft ? 'var(--cyan)' : '#333';
+    h += '<div style="border:1px solid '+borderColor+';padding:4px 6px;margin:3px 0;">';
+    h += '<div><span class="'+(hasA?'c-green':'c-red')+'">' + esc(r.input[0]) + '</span>';
+    h += ' + <span class="'+(hasB?'c-green':'c-red')+'">' + esc(r.input[1]) + '</span>';
+    h += ' \u2192 <span class="c-magenta">' + esc(r.output) + '</span></div>';
+    h += '<div class="c-dim" style="font-size:12px;">' + esc(r.desc) + '</div>';
+    if(canCraft){
+      h += '<div class="btn btn-cyan" onclick="doCraft('+i+')" style="font-size:13px;">[FORGE]</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK]</span></div>';
+  h += '</div>';
+  $main.innerHTML = h;
+}
+
+function doCraft(recipeIdx){
+  var r = CRAFT_RECIPES[recipeIdx];
+  if(!r) return;
+  // Remove inputs
+  for(var i=0;i<r.input.length;i++){
+    var idx = player.programs.indexOf(r.input[i]);
+    if(idx >= 0){
+      player.programs.splice(idx, 1);
+      var eIdx = player.equipped.indexOf(r.input[i]);
+      if(eIdx >= 0) player.equipped.splice(eIdx, 1);
+    }
+  }
+  // Add output
+  player.programs.push(r.output);
+  log('Forged: ' + r.output + '!', 'var(--magenta)');
+  toast('FORGED: ' + r.output);
+  save();
+  render();
+}
+
+// ── INTEGRATE ALL NEW FEATURES INTO HUB AND RENDER ──
+// Extend hub once more
+var _hubRender2 = renderHub;
+renderHub = function(){
+  _hubRender2();
+  var extra2 = '<div style="margin-top:4px;">';
+  extra2 += '<div class="btn btn-magenta" onclick="startHackGame();" style="width:220px;">[H] ICE CRACKER</div><br>';
+  extra2 += '<div class="btn btn-amber" onclick="gameState=\'bounties\';render();" style="width:220px;">[B] BOUNTY BOARD</div><br>';
+  extra2 += '<div class="btn btn-cyan" onclick="gameState=\'crafting\';render();" style="width:220px;">[C] PROGRAM FORGE</div><br>';
+  extra2 += '</div>';
+  $main.innerHTML += extra2;
+};
+
+// Extend render again
+var _render2 = render;
+render = function(){
+  renderStatsPanel();
+  switch(gameState){
+    case 'boot': renderBoot(); break;
+    case 'title': renderTitle(); break;
+    case 'create': renderCreate(); break;
+    case 'hub': renderHub(); break;
+    case 'explore': renderExplore(); break;
+    case 'combat': renderCombat(); break;
+    case 'shop': renderShop(); break;
+    case 'inventory': renderInventory(); break;
+    case 'upgrade': renderUpgrade(); break;
+    case 'dead': renderDead(); break;
+    case 'prestige': renderPrestige(); break;
+    case 'codex': renderCodex(); break;
+    case 'achievements': renderAchievements(); break;
+    case 'bestiary': renderBestiary(); break;
+    case 'gamble': renderGamble(); break;
+    case 'training': renderTraining(); break;
+    case 'nodemap': renderMinimap(); break;
+    case 'chardetail': renderCharDetail(); break;
+    case 'hackgame': renderHackGame(); break;
+    case 'bounties': renderBounties(); break;
+    case 'crafting': renderCrafting(); break;
+    default: renderHub(); break;
+  }
+};
+
+// Extend commands
+var _cmd2 = processCommand;
+processCommand = function(cmd){
+  if(gameState === 'hub'){
+    if(cmd === 'h' || cmd === 'hack'){startHackGame();return;}
+    if(cmd === 'b' || cmd === 'bounty' || cmd === 'bounties'){gameState='bounties';render();return;}
+    if(cmd === 'c' || cmd === 'craft' || cmd === 'forge'){gameState='crafting';render();return;}
+  }
+  if(gameState === 'bounties' || gameState === 'crafting' || gameState === 'hackgame'){
+    if(cmd === 'back' || cmd === 'hub'){hackGame.active=false;gameState='hub';render();return;}
+  }
+  _cmd2(cmd);
+};
+
+// ── HELP SCREEN ──
+var _cmd3 = processCommand;
+processCommand = function(cmd){
+  if(cmd === 'help' && (gameState === 'hub' || gameState === 'explore')){
+    log('\u2550\u2550\u2550 GRIDRUNNER COMMAND REFERENCE \u2550\u2550\u2550', 'var(--cyan)');
+    log('  explore / 1    - Enter the node and explore rooms', 'var(--green)');
+    log('  shop / 2       - Open the Black Market', 'var(--amber)');
+    log('  hardware / 3   - Open Hardware Shop', 'var(--cyan)');
+    log('  inventory / 4  - View and manage programs', 'var(--green)');
+    log('  codex / 5      - Read lore entries', 'var(--amber)');
+    log('  rest / 6       - Restore HP and CPU at hub', 'var(--green)');
+    log('  achievements / 7 - View achievements', 'var(--green)');
+    log('  bestiary / 8   - View known threats', 'var(--cyan)');
+    log('  dice / 9       - ICE Dice gambling', 'var(--amber)');
+    log('  train / 0      - Practice combat', 'var(--green)');
+    log('  map / m        - View node map', 'var(--cyan)');
+    log('  dossier / s    - Detailed character stats', 'var(--magenta)');
+    log('  hack / h       - ICE Cracker mini-game', 'var(--magenta)');
+    log('  bounty / b     - Bounty board quests', 'var(--amber)');
+    log('  craft / c      - Program forge', 'var(--cyan)');
+    log('  prestige       - Jack out (level 20+)', 'var(--magenta)');
+    log('  save           - Manual save', 'var(--green)');
+    log('  export         - Export save code', 'var(--amber)');
+    log('  clear          - Clear activity log', 'var(--green)');
+    log('  stats          - View kill/node statistics', 'var(--cyan)');
+    log('\u2550\u2550\u2550 In Combat: 1=attack, 2-5=programs, f=flee \u2550\u2550\u2550', 'var(--cyan)');
+    return;
+  }
+  _cmd3(cmd);
+};
+
+// ── FINAL INIT ──
+init();
+</script>
+</body>
+</html>
