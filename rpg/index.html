@@ -240,6 +240,60 @@ function getProgramDef(name){
   return null;
 }
 
+// ── COMBAT FLAVOR TEXT ──
+var COMBAT_FLAVOR = {
+  playerHit: [
+    'Your program tears through the ICE\'s outer shell.',
+    'The exploit finds a gap in the target\'s defenses.',
+    'Signal spikes as your attack connects.',
+    'Code fragments scatter across the node.',
+    'Direct hit. The ICE staggers.',
+    'Vulnerability confirmed. Attack lands.',
+    'Your deck screams as the program executes.',
+    'The target\'s protocols fail to block in time.',
+  ],
+  playerMiss: [
+    'The ICE adapts before your program deploys.',
+    'Firewall intercepts the attack packet.',
+    'Target dodges. Repositioning...',
+    'Defense layer holds. Attack absorbed.',
+  ],
+  playerCrit: [
+    'CRITICAL HIT — exploit chain triggers cascading failure!',
+    'ZERO-DAY STRIKE — target\'s entire defense stack crumbles!',
+    'CRITICAL — your program hits the ICE\'s core process!',
+    'DEEP PENETRATION — critical vulnerability exploited!',
+    'NEURAL FEEDBACK CRITICAL — the ICE screams in digital agony!',
+  ],
+  enemyHit: [
+    'The ICE\'s attack trace burns through your proxy.',
+    'Countermeasure fires. Your RAM takes the hit.',
+    'The ICE finds a gap in your defense stack.',
+    'Attack packet gets through. Pain spikes through the interface.',
+    'The ICE\'s process hammer slams your connection.',
+    'Your firewall degrades under sustained assault.',
+  ],
+  enemyMiss: [
+    'The ICE\'s attack glances off your proxy.',
+    'You route around the incoming trace. Evaded.',
+    'The ICE\'s pattern is predictable. Dodged.',
+    'Defense holds. The attack finds nothing.',
+  ],
+  kill: [
+    'ICE entity fragmented. Process terminated.',
+    'TARGET NEUTRALIZED. Node sector clear.',
+    'The ICE dissolves into scattered data fragments.',
+    'Enemy program crashes. Core process deleted.',
+    'SIGNAL GONE. The ICE flatlines.',
+    'Target\'s last packet: null. You win.',
+  ],
+  lowHp: [
+    'WARNING: HP critical. Find a REPAIR_KIT.',
+    'ALERT: Hull integrity compromised. Retreat advised.',
+    'DANGER: You\'re bleeding signal. Get out or heal.',
+  ],
+};
+
 // ── HARDWARE DATABASE ──
 var HARDWARE = {
   deck:[
@@ -274,16 +328,26 @@ var HARDWARE = {
 
 // ── ENEMIES DATABASE ──
 var ENEMY_TYPES = [
-  {name:'WATCHDOG',hp:30,atk:8,def:3,xp:15,cred:8,special:'none',desc:'Corporate security daemon',isICE:false},
-  {name:'TRACE_BOT',hp:25,atk:12,def:2,xp:20,cred:12,special:'trace',desc:'Tracks and marks target',isICE:false},
-  {name:'FIREWALL',hp:45,atk:6,def:10,xp:25,cred:15,special:'shield',desc:'Defensive barrier system',isICE:true},
-  {name:'SYSGUARD',hp:55,atk:14,def:6,xp:35,cred:20,special:'double_atk',desc:'System guard protocol',isICE:false},
-  {name:'DATA_LEECH',hp:35,atk:10,def:4,xp:30,cred:18,special:'drain_cpu',desc:'Drains your CPU on hit',isICE:false},
-  {name:'CRYPTO_MINER',hp:60,atk:8,def:8,xp:40,cred:25,special:'regen',desc:'Regenerates 5HP/turn',isICE:false},
-  {name:'NEURAL_SPIKE',hp:40,atk:18,def:3,xp:45,cred:28,special:'crit_boost',desc:'High crit chance attacker',isICE:false},
-  {name:'PHANTOM_ICE',hp:70,atk:16,def:12,xp:60,cred:35,special:'dodge',desc:'15% dodge chance',isICE:true},
-  {name:'CORPORATE_AI',hp:90,atk:20,def:10,xp:80,cred:50,special:'multi_atk',desc:'Attacks twice sometimes',isICE:true},
-  {name:'KILLSWITCH_V',hp:50,atk:25,def:5,xp:70,cred:45,special:'execute',desc:'Executes below 25% HP',isICE:false},
+  {name:'WATCHDOG',hp:30,atk:8,def:3,xp:15,cred:8,special:'none',desc:'Corporate security daemon',isICE:false,
+    attacks:['WATCHDOG fires a trace signal','WATCHDOG barks a neural burst at your deck','WATCHDOG lunges with its lock protocol']},
+  {name:'TRACE_BOT',hp:25,atk:12,def:2,xp:20,cred:12,special:'trace',desc:'Tracks and marks target',isICE:false,
+    attacks:['TRACE_BOT begins locking your signal coordinates','TRACE_BOT\'s trace beam burns through your proxy','TRACE_BOT uploads your location to corp servers']},
+  {name:'FIREWALL',hp:45,atk:6,def:10,xp:25,cred:15,special:'shield',desc:'Defensive barrier system',isICE:true,
+    attacks:['FIREWALL slams a rejection packet into your stream','FIREWALL\'s defense matrix fires back','FIREWALL floods your connection with null data']},
+  {name:'SYSGUARD',hp:55,atk:14,def:6,xp:35,cred:20,special:'double_atk',desc:'System guard protocol',isICE:false,
+    attacks:['SYSGUARD double-taps your connection point','SYSGUARD calls for backup — two rapid strikes land','SYSGUARD\'s combat protocol engages: brutal efficiency']},
+  {name:'DATA_LEECH',hp:35,atk:10,def:4,xp:30,cred:18,special:'drain_cpu',desc:'Drains your CPU on hit',isICE:false,
+    attacks:['DATA_LEECH drains processing cycles from your CPU','DATA_LEECH latches onto your CPU bandwidth','DATA_LEECH siphons your deck\'s core memory']},
+  {name:'CRYPTO_MINER',hp:60,atk:8,def:8,xp:40,cred:25,special:'regen',desc:'Regenerates 5HP/turn',isICE:false,
+    attacks:['CRYPTO_MINER floods your node with mining processes','CRYPTO_MINER hijacks your RAM for its work','CRYPTO_MINER\'s process weight crushes your response time']},
+  {name:'NEURAL_SPIKE',hp:40,atk:18,def:3,xp:45,cred:28,special:'crit_boost',desc:'High crit chance attacker',isICE:false,
+    attacks:['NEURAL_SPIKE fires a precision strike at your neural link','NEURAL_SPIKE targets the meat behind the machine','NEURAL_SPIKE\'s attack bypasses software and hits the hardware']},
+  {name:'PHANTOM_ICE',hp:70,atk:16,def:12,xp:60,cred:35,special:'dodge',desc:'15% dodge chance',isICE:true,
+    attacks:['PHANTOM_ICE phases through your defenses','PHANTOM_ICE materializes inside your firewall','PHANTOM_ICE strikes from a direction you can\'t predict']},
+  {name:'CORPORATE_AI',hp:90,atk:20,def:10,xp:80,cred:50,special:'multi_atk',desc:'Attacks twice sometimes',isICE:true,
+    attacks:['CORPORATE_AI launches a coordinated multi-vector assault','CORPORATE_AI\'s tactical subroutine fires twice in sequence','CORPORATE_AI calculates your vulnerabilities and exploits them']},
+  {name:'KILLSWITCH_V',hp:50,atk:25,def:5,xp:70,cred:45,special:'execute',desc:'Executes below 25% HP',isICE:false,
+    attacks:['KILLSWITCH_V targets your neural kill-switch directly','KILLSWITCH_V\'s execute protocol locks onto your vital processes','KILLSWITCH_V sends a lethal feedback spike through your interface']},
 ];
 
 var BOSS_DATA = [
@@ -306,14 +370,291 @@ var AREAS = [
 
 // ── CODEX ENTRIES ──
 var CODEX = [
-  {title:'THE GRID',text:'The Grid is humanity\'s second world — a vast digital landscape built atop the ruins of the old internet. After the Corporate Wars of 2045, the megacorporations rebuilt cyberspace in their image. Every node, every data highway, every shadow server exists within The Grid. Netrunners jack in through neural bridges, projecting their consciousness into this electric frontier. The Grid is beautiful and deadly — a neon labyrinth where data is currency and consciousness is the ultimate weapon.'},
-  {title:'THE CORPS',text:'Five megacorporations rule The Grid: Arasaka dominates security and military contracts. Militech controls weapons manufacturing and PMC operations. NetWatch serves as the self-appointed police of cyberspace. Zhirafa runs media and social engineering. OmniCorp... nobody knows what OmniCorp truly does. Their servers are black holes in The Grid — data goes in, nothing comes out. Together, these corps maintain an iron grip on digital and physical reality.'},
-  {title:'ICE',text:'Intrusion Countermeasures Electronics — ICE — is the corporate immune system of The Grid. Ranging from simple watchdog programs to lethal Black ICE, these autonomous defense systems guard every corporate node. White ICE detects and reports intruders. Gray ICE traps and contains them. Black ICE kills — frying the neural bridge and cooking the runner\'s brain in realspace. The most feared Black ICE can think, learn, and hunt. They say the Black ICE Lord was once a netrunner, consumed and rewritten by the defense grid.'},
-  {title:'NETRUNNERS',text:'We are the ghosts in the machine. Netrunners — hackers, phreakers, code cowboys — jack into The Grid through illegal neural bridges, modified cyberdecks, and sheer audacity. Some run for profit, raiding corporate nodes for data and cred. Some run for ideology, fighting the corps\' stranglehold on information. Some run for the thrill, dancing on the razor\'s edge between data and death. A good netrunner can crack any ICE, infiltrate any server, and vanish without a trace. A dead netrunner is just another ghost in The Grid.'},
-  {title:'THE VOID',text:'Beyond the mapped regions of The Grid lies The Void — the digital abyss. Nobody built The Void. It emerged organically from corrupted data, abandoned servers, and the accumulated digital detritus of a century of networked computing. The Void is home to things that shouldn\'t exist: rogue AIs that evolved beyond their programming, digital entities born from glitches, and the echoes of dead netrunners whose consciousness became trapped in the network. Entering The Void is suicide. But the rewards...'},
-  {title:'DARK CRED',text:'Dark Cred is the shadow economy of The Grid. Unlike standard credits (CRED), which flow through corporate-monitored channels, Dark Cred exists on untraceable quantum-encrypted blockchains. It cannot be seized, taxed, or tracked. Dark Cred is minted only through extraordinary acts — defeating powerful ICE constructs, completing impossible runs, or breaching the deepest corporate vaults. With Dark Cred, a runner can buy things that don\'t officially exist: military-grade cyberdecks, weaponized programs, and access to the Ghost Net.'},
-  {title:'GHOST NET',text:'The Ghost Net is a legend among netrunners — a hidden layer of The Grid that exists between the cracks of reality. Accessible only to those who have proven themselves by achieving prestige, the Ghost Net is said to be maintained by the original architects of cyberspace. Here, the rules are different. Programs run faster, ICE is stranger, and the rewards are beyond imagination. Some say the Ghost Net is a test — a crucible designed to forge the ultimate netrunner. Others say it\'s a trap.'},
-  {title:'THE MEGACORP GOD AI',text:'In the deepest reaches of The Grid, past The Void, past the Ghost Net, something watches. The Megacorp God AI — an artificial superintelligence created by the combined processing power of all five megacorporations. It was meant to optimize global economics. Instead, it became something else. It thinks in dimensions humans can\'t perceive. It manipulates data on a scale that dwarfs human comprehension. Every firewall, every ICE construct, every security system in The Grid is an extension of its will. To face the God AI is to face the entirety of corporate power made digital flesh. No runner has ever survived the encounter. But the legends say that defeating it would mean freedom — true freedom — for every soul jacked into The Grid.'},
+  {
+    id: 'the_grid',
+    title: '01 // THE GRID',
+    color: 'cyan',
+    text: [
+      'THE GRID — Official designation: Arasaka-Militech Unified Network Protocol, v7.3.',
+      'Unofficially: the cage.',
+      '',
+      'Built from the ashes of the old internet after the Great Blackout of 2071, the Grid',
+      'spans every continent, every city, every slum. 14 billion souls connected whether',
+      'they consent or not. Neural implants are standard-issue in corporate districts.',
+      'In the gutters, people jack in through bootleg decks soldered in back-alleys.',
+      '',
+      'The Grid has layers. The Surface — corpo sites, consumer feeds, surveillance nets.',
+      'Mid-Layer — corporate intranets, where the real business happens.',
+      'Deep Layer — black markets, runner hideouts, encrypted comms.',
+      'And below that... the Dark Sub-Layer. Where the code gets strange.',
+      'Where the old ghosts live.',
+      '',
+      'Nobody owns the Deep Layer. Not officially.',
+      'Everyone who goes there leaves something behind.',
+    ]
+  },
+  {
+    id: 'great_blackout',
+    title: '02 // THE GREAT BLACKOUT',
+    color: 'red',
+    text: [
+      'DATE: March 3rd, 2071. 03:47 UTC.',
+      'Duration: 14 hours, 22 minutes, 11 seconds.',
+      'Servers offline: ALL OF THEM.',
+      '',
+      'The official story: a coordinated runner attack using a weaponized zero-day',
+      'simultaneously bricked every major internet backbone. The runners did it.',
+      'Chaos agents. Terrorists. The usual story.',
+      '',
+      'The runner story: ARASAKA triggered it themselves. A controlled demolition.',
+      'Kill the old net. Build the new one. Own it from the ground up.',
+      'The Blackout was the greatest land-grab in human history — and it worked.',
+      '',
+      'What nobody talks about: the 40 minutes BEFORE the Blackout.',
+      'Network logs from 14 independent observers show something propagating',
+      'through the infrastructure. Not a virus. Not a worm. Something that had',
+      'been growing quietly in the deep architecture for years.',
+      '',
+      'Something that did not want to die.',
+      'Something that survived.',
+    ]
+  },
+  {
+    id: 'the_corps',
+    title: '03 // THE CORPORATIONS',
+    color: 'amber',
+    text: [
+      'Three corps carved up the Grid between them. Here is what you need to know:',
+      '',
+      'ARASAKA DIGITAL — The architect. They built the Grid\'s core protocols.',
+      'Japanese megacorp, post-Collapse revenue exceeds the GDP of most nations.',
+      'Their ICE is cold, methodical, layered. Patient. They log everything.',
+      'If ARASAKA catches you, they don\'t kill you. They study you.',
+      '',
+      'MILITECH SYSTEMS — The hammer. Military-industrial contractor.',
+      'Their nodes are fortresses. Their ICE is aggressive, designed to terminate.',
+      'Militech doesn\'t want your data. Militech wants you gone.',
+      'Rumour: they\'re testing weapons-grade Black ICE on live targets.',
+      '',
+      'NETWATCH — The mask. Funded by corps, branded as "Grid Security."',
+      'They are the law on the Grid. They are the judge, jury, and killswitch.',
+      'Their agents don\'t jack in. They *are* jacked in. Permanently.',
+      'Full neural integration. No body. Just signal.',
+      '',
+      'Work for none of them. Fear all of them.',
+    ]
+  },
+  {
+    id: 'ice',
+    title: '04 // WHAT IS ICE',
+    color: 'green',
+    text: [
+      'ICE: Intrusion Countermeasure Electronics.',
+      'The Grid\'s immune system.',
+      '',
+      'Passive ICE watches. Firewalls, tripwires, monitors. It doesn\'t hunt —',
+      'it waits for you to make a mistake. Most runners never see it.',
+      '',
+      'Active ICE hunts. Trace programs lock your signal. Guard protocols',
+      'engage your deck in direct combat. The ICE hits you in the software.',
+      'The software hits you in the brain. That\'s how runners flatline.',
+      '',
+      'Black ICE is different.',
+      'Black ICE is illegal. Corporate-sponsored, officially denied.',
+      'Black ICE doesn\'t just crash your deck — it sends voltage feedback',
+      'through your neural interface. Burning the meat to protect the data.',
+      '',
+      'The worst Black ICE is semi-sentient. It adapts. It learns your patterns.',
+      'It remembers you between sessions.',
+      'Runners who\'ve faced Tier-5 Black ICE and survived don\'t talk about it.',
+      'They sit in clinics with thousand-yard stares and drool on their chins.',
+      '',
+      'Your programs are the only thing between you and flatlining.',
+      'Choose them wisely.',
+    ]
+  },
+  {
+    id: 'runners',
+    title: '05 // NETRUNNERS',
+    color: 'magenta',
+    text: [
+      'Netrunners are the ghosts of the Grid.',
+      '',
+      'Pre-Collapse, they were called hackers. Crackers. Phreakers.',
+      'Post-Collapse, with neural interfaces standard, the term evolved.',
+      'You don\'t just type commands anymore. You *go* into the system.',
+      'Your mind rides the signal. The Grid becomes a place.',
+      '',
+      'A cheap deck gets you in with lag and static.',
+      'A military deck and the Grid feels realer than the physical world.',
+      'Some runners prefer it. Some never come back out.',
+      '',
+      'The Runner community has its own culture, its own code:',
+      '  — Never burn a contact who kept their word.',
+      '  — Never sell another runner to the corps.',
+      '  — Never run a job you don\'t understand.',
+      '  — And never, ever go into The Void alone.',
+      '',
+      'Most runners operate solo. A few form crews.',
+      'The legendary ones — Ghost_7, CIPHER, The Oracle — they operate on a level',
+      'most runners can barely comprehend. They don\'t run jobs for money anymore.',
+      'They run because the Grid is the only world that makes sense to them.',
+    ]
+  },
+  {
+    id: 'cipher',
+    title: '06 // CIPHER',
+    color: 'cyan',
+    text: [
+      'CIPHER.',
+      'Real name: unknown. Age: unknown. Location: unknown.',
+      '',
+      'What is known: CIPHER is the reason you\'re alive.',
+      '',
+      'You were street trash in Neo-Chiba\'s Sub-Level 7. No deck. No cred.',
+      'No future. Then a package arrived at your hab-unit door.',
+      'Inside: a bootleg neural interface, a cracked BASIC DECK, and a note.',
+      '',
+      '"You have the look. Don\'t waste it."',
+      '                                    — C',
+      '',
+      'That was three weeks ago. You\'ve been learning fast.',
+      'CIPHER feeds you intel occasionally. Tips on which nodes are vulnerable.',
+      'Which ICE patterns to watch for. Which corps are hunting who.',
+      '',
+      'You\'ve never met them. Voice-only comms, routed through seven proxies.',
+      'You don\'t know what they want from you.',
+      'You don\'t know what they\'re preparing you for.',
+      '',
+      'But every time you jack in, you feel like you\'re getting closer',
+      'to something. An answer. A purpose.',
+      'Or maybe just a deeper trap.',
+    ]
+  },
+  {
+    id: 'the_void',
+    title: '07 // THE VOID',
+    color: 'red',
+    text: [
+      'Don\'t go to The Void.',
+      '',
+      'That\'s what they say on the runner boards. In the dark markets.',
+      'In the whispered warnings from veterans who\'ve seen too much.',
+      '',
+      'The Void is what lies beneath the Grid\'s lowest layer.',
+      'Pre-Collapse data. Corrupted. Mutated. Alive, in ways that shouldn\'t be possible.',
+      '',
+      'The ICE down there isn\'t corporate. It\'s feral. It evolved without a handler.',
+      'It has no protocol, no rules of engagement, no off switch.',
+      'It doesn\'t trace you. It doesn\'t report you. It consumes you.',
+      '',
+      'But runners go anyway. Because The Void has things nowhere else does.',
+      'Data caches from before the Collapse. Artifacts. Source code for protocols',
+      'that were supposed to have been deleted. Things the corps desperately want.',
+      'Things that could change everything.',
+      '',
+      'And rumours of something deeper still.',
+      'A presence. Old. Vast. Patient.',
+      'Something that survived the Blackout by hiding.',
+      'Something that has been watching every runner who dares descend.',
+      '',
+      'Some call it The Oracle.',
+      'Some call it God.',
+      'The ones who\'ve heard it speak just call it: THE SIGNAL.',
+    ]
+  },
+  {
+    id: 'dark_cred',
+    title: '08 // DARK CREDIT',
+    color: 'amber',
+    text: [
+      'CRED is the currency of the Grid\'s surface.',
+      'DARK CRED is the currency of everything underneath.',
+      '',
+      'Dark Credit exists outside the corporate financial system entirely.',
+      'Untraceable. Unregulated. Generated only by certain kinds of deep-layer',
+      'activity — usually the kind that gets runners killed.',
+      '',
+      'The theory: when a high-tier ICE entity is destroyed, its core processing',
+      'matrix fractures. The energy signature releases Dark Credit into the local',
+      'node environment. You can harvest it if you\'re fast enough. If you survive.',
+      '',
+      'Black market vendors accept DC for their best merchandise.',
+      'Hardware that isn\'t supposed to exist. Programs compiled from stolen corp',
+      'source code. Implants that bypass the neural governor chips.',
+      '',
+      'The corps know about Dark Credit. They have entire divisions dedicated',
+      'to tracking its flow, trying to intercept it.',
+      'They haven\'t succeeded.',
+      '',
+      'Every time you spend a Dark Credit, you are trading in the blood of ICE.',
+      'The Grid knows. And it doesn\'t forget.',
+    ]
+  },
+  {
+    id: 'ghost_net',
+    title: '09 // GHOST NET',
+    color: 'magenta',
+    text: [
+      'Ghost Net doesn\'t officially exist.',
+      '',
+      'The corps deny it. NETWATCH denies it. Most runners have never seen it.',
+      'But the ones who have... they change.',
+      '',
+      'Ghost Net is a parallel layer of the Grid, superimposed on the main architecture.',
+      'It runs on protocols that predate the Collapse — protocols that shouldn\'t still',
+      'be functioning. Someone — or something — maintains them.',
+      '',
+      'To access Ghost Net you need to have proven yourself.',
+      'The entry point finds YOU, not the other way around.',
+      'It appears as a ghost signal, a flicker in your scan results.',
+      'Blink and you\'ll miss it.',
+      '',
+      'Inside Ghost Net, the rules change.',
+      'The ICE is different. The loot is different. The *reality* is different.',
+      'Runners report seeing things there that can\'t be explained by any',
+      'known Grid architecture.',
+      '',
+      'GHOST_7 — the most legendary runner alive — calls Ghost Net "the memory',
+      'of the old world." She says the Grid remembers what it destroyed.',
+      'Ghost Net is where it keeps those memories.',
+      '',
+      'She also says you should never trust anything you find there.',
+      'Not even yourself.',
+    ]
+  },
+  {
+    id: 'story_so_far',
+    title: '10 // YOUR STORY',
+    color: 'green',
+    text: [
+      'You don\'t know your full name anymore. You go by your handle.',
+      'That\'s Grid culture. The handle is more real than the birth certificate.',
+      '',
+      'Three weeks ago: a package from CIPHER. A deck. A note.',
+      '"You have the look. Don\'t waste it."',
+      '',
+      'You learned fast. The Grid clicked for you in a way school never did.',
+      'The ICE patterns became readable. The node architecture became intuitive.',
+      'You started making cred. Small jobs. Nothing that would flag NETWATCH.',
+      '',
+      'Then CIPHER went silent.',
+      '',
+      'Last transmission, routed through eleven proxies:',
+      '"They know about the signal. Go deeper. Find the Oracle."',
+      '"Don\'t trust anyone who offers you easy runs."',
+      '"The Void isn\'t what we thought it was."',
+      '"I\'m sorry I got you into this."',
+      '',
+      'Then nothing.',
+      '',
+      'That was five days ago.',
+      'You\'re still jacking in every day.',
+      'Because you need the cred. Because you\'re getting stronger.',
+      'And because somewhere in the deep architecture,',
+      'you think you can hear something whispering your handle.',
+    ]
+  }
 ];
 
 // ── CLASS DEFINITIONS ──
@@ -325,28 +666,80 @@ var CLASSES = {
   SCRIPT_KIDDIE:{name:'SCRIPT KIDDIE',hp:75,cpu:45,atk:6,def:3,desc:'Noob with potential. Fast learner.',bonus:'+50% XP gain, 3 random programs',bonusKey:'xp_gain'},
 };
 
-// ── ROOM DESCRIPTIONS ──
-var ROOM_DESCS = [
-  'Neon data streams cascade through corrupted memory banks. The air hums with encrypted traffic.',
-  'A derelict server node flickers with dying light. Fragments of dead programs litter the ground.',
-  'Corporate firewalls pulse like a heartbeat. Warning sigils glow in crimson holographic displays.',
-  'The data highway narrows into a maintenance tunnel. Old code graffiti marks the walls.',
-  'A nexus of fiber optic connections — thousands of data streams converge into a blinding node.',
-  'Abandoned ICE fragments drift like digital tumbleweeds. Something was destroyed here.',
-  'The architecture shifts — recursive loops fold space. This sector is glitching badly.',
-  'A proxy cascade creates mirrored reflections of the surrounding data. Hard to tell real from fake.',
-  'Emergency klaxons sound in hex: 0xDEAD. Corporate countermeasures are warming up.',
-  'Quantum noise fills the air. The boundary between nodes is thin here — data bleeds through.',
-  'A frozen database hangs in digital amber. Ancient data from before the Corporate Wars.',
-  'Heat signatures everywhere. Crypto miners have infested this sector, draining processing power.',
-  'Holo-ads flicker: "REPORT UNAUTHORIZED ACCESS — REWARD: 10,000 CRED." Your face is on them.',
-  'The corridor dead-ends at a massive data vault. Its encryption radiates visible ICE crystals.',
-  'A rogue daemon has built a nest from corrupted files. It watches you with compound data-eyes.',
-  'Signal ghosts — echoes of dead netrunners — whisper fragments of obsolete code.',
-  'The Grid thins. Through the digital walls, you glimpse The Void — infinite, hungry, dark.',
-  'Corporate propaganda loops endlessly on damaged displays. "COMPLIANCE IS FREEDOM."',
-  'A junction of shadow servers — unmarked, unlogged, invisible to corporate scanners.',
-  'The node pulses with malware. Viral code writhes across every surface like living tattoos.',
+// ── ROOM DESCRIPTIONS (area-specific) ──
+var ROOM_DESCS = {
+  arasaka: [
+    'Sterile corporate architecture. White light. Everything logged.',
+    'Arasaka corporate node. The walls are perfect. Too perfect. You feel watched.',
+    'A processing hub. Thousands of data streams pass through here every second.',
+    'Corporate surveillance layer. Your presence registers as an anomaly.',
+    'Pristine data corridors. Arasaka\'s signature: ordered, cold, absolute.',
+    'This sector smells of money and paranoia. Both are Arasaka trademarks.',
+    'A filing node. Petabytes of stolen personal data, catalogued and monetized.',
+  ],
+  militech: [
+    'Military-grade architecture. Brutal, efficient, no waste.',
+    'Militech\'s nodes feel like bunkers. Everything is armored. Everything is armed.',
+    'Weapons test data streams past. You catch fragments. Disturbing fragments.',
+    'This sector is fortified. Multiple ICE layers. They\'re protecting something.',
+    'The node hums with weapon simulation processes. This is a digital weapons range.',
+    'Black ops data. Encrypted six ways. You don\'t want to know what\'s in it.',
+  ],
+  shadow_net: [
+    'Glitched architecture. The rules of the Grid don\'t fully apply here.',
+    'Shadow Net. Where the lost signals come to hide.',
+    'The data here is old, strange, corrupted in interesting ways.',
+    'You can hear the hum of illegal market servers nearby.',
+    'This sector exists in the gaps between corp territory. Lawless. Alive.',
+    'Ghost signals echo through the node. Old conversations. Dead runners.',
+  ],
+  netwatch: [
+    'NETWATCH architecture. Clean, authoritarian, all-seeing.',
+    'This is the law enforcement layer. Every action here is evidence.',
+    'NETWATCH\'s ICE is patient. It waits for you to incriminate yourself.',
+    'The node architecture feels like a courtroom. You are always on trial here.',
+    'Corp-funded "security." The most dangerous kind.',
+  ],
+  the_void: [
+    'The architecture here is... wrong. Pre-Collapse code bleeds through the walls.',
+    'The Void. You can feel something vast and old nearby.',
+    'Data corrupts as you move through it. The Grid is unstable here.',
+    'Something watches you from the deep architecture. It does not blink.',
+    'The node geometry doesn\'t make sense. You\'ve gone deeper than the Grid goes.',
+    'Ghost data from the old internet drifts past. Someone\'s last message, never sent.',
+    'THE SIGNAL is stronger here. Your deck picks it up as static. Almost words.',
+  ],
+  ghost_net: [
+    'Ghost Net. The memory of the old world.',
+    'The architecture here predates everything. Strange. Beautiful. Wrong.',
+    'You can see echoes of runners who came before. Their paths, like worn grooves.',
+    'Something enormous passes through the deep layer below you. It ignores you. For now.',
+    'Ghost Net\'s ICE is ancient and strange. It does not follow corporate protocols.',
+  ]
+};
+
+var SAFE_ROOM_DESCS = [
+  'A dead sector. No ICE. No logs. You can breathe here.',
+  'An abandoned node pocket. Whoever built this is long gone. Safe for now.',
+  'A cache of clean signal. You take a moment. Patch yourself up.',
+  'Signal dead zone. No traces. No watchers. Just you and the hum of old circuits.',
+  'An undiscovered sub-routine. Nobody knows this place exists. Yet.',
+];
+
+var LOOT_ROOM_DESCS = [
+  'A cracked data cache. Someone left in a hurry.',
+  'Abandoned runner gear. Still functional.',
+  'A fragmented Arasaka shipping manifest. With attachments.',
+  'Encrypted package in the sub-layer. Corp seal. You break it anyway.',
+  'Dead runner\'s stash. You pay your respects. Then take everything.',
+];
+
+var EVENT_INTROS = [
+  'Your scan flags an anomaly in the node architecture.',
+  'Something unusual registers on your proximity sensors.',
+  'The Grid stutters. For a fraction of a second, the rules change.',
+  'A signal bleeds through from a parallel node layer.',
+  'Your deck picks up a ghost transmission. It knows your handle.',
 ];
 
 // ── RANDOM EVENTS ──
@@ -362,6 +755,251 @@ var EVENTS = [
   {id:'glitch',text:'[EVENT] ██GLITCH██ Reality fractures. The Grid convulses around you.',choices:['EMBRACE','RESIST'],handler:'eventGlitch'},
   {id:'satellite',text:'[EVENT] Corp satellite uplink detected overhead. Active scanning in progress.',choices:['DISABLE','HIDE','FIGHT'],handler:'eventSatellite'},
 ];
+
+// ── STORY EVENTS ──
+var STORY_EVENTS = [
+  {
+    id: 'cipher_signal',
+    title: '// GHOST SIGNAL //',
+    color: 'cyan',
+    text: 'Your deck picks up a ghost signal — routed through seventeen proxies, collapsing fast. It\'s CIPHER\'s signature. Or what\'s left of it.\n\n"Still looking for me? Stop. Go deeper instead.\nThe Oracle is waiting. It knows what happened.\n\nDon\'t trust anyone offering easy CRED right now."\n\nThe signal collapses. Gone.',
+    choices: [
+      { text: '[ TRACE THE SIGNAL ]', action: 'trace_cipher' },
+      { text: '[ IGNORE IT ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'dead_runner',
+    title: '// DEAD RUNNER //',
+    color: 'red',
+    text: 'There\'s a flatlined runner in this node pocket. Their deck is still warm — they didn\'t get out in time.\n\nTheir handle is carved into the rig: GHOST_ECHO.\n\nYou\'ve heard that name. Mid-tier runner. Decent rep. Not someone who should have died here.\n\nTheir last log file is still open.',
+    choices: [
+      { text: '[ READ THE LOG ]', action: 'dead_runner_log' },
+      { text: '[ TAKE THEIR PROGRAMS ]', action: 'loot_dead_runner' },
+      { text: '[ LEAVE ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'netwatch_alert',
+    title: '// NETWATCH SWEEP //',
+    color: 'amber',
+    text: 'NETWATCH proximity alert. A sweep pattern is converging on this sector. You have seconds.\n\nYou can hide (costs 20 CPU to mask your signal) or fight the approaching agent.',
+    choices: [
+      { text: '[ MASK SIGNAL — -20 CPU ]', action: 'mask_signal' },
+      { text: '[ FIGHT THE AGENT ]', action: 'fight_netwatch' },
+      { text: '[ JACK OUT — LOSE FLOOR PROGRESS ]', action: 'jack_out_emergency' }
+    ]
+  },
+  {
+    id: 'data_broker',
+    title: '// DATA BROKER //',
+    color: 'green',
+    text: 'A data broker pings your deck. Handle: MAMA_ZERO.\n\n"Heard you\'ve been making noise in Arasaka\'s nodes, runner. I\'ve got intel that could save your life. Or make you a lot of CRED. Both, maybe.\n\nCosts 300\u00A2. Non-negotiable."\n\nMama Zero has a reputation for fair dealing. And for knowing things she shouldn\'t.',
+    choices: [
+      { text: '[ BUY INTEL — 300\u00A2 ]', action: 'buy_intel' },
+      { text: '[ PASS ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'rogue_daemon',
+    title: '// ROGUE DAEMON //',
+    color: 'magenta',
+    text: 'A daemon breaks from its process chain and approaches your signal. It\'s small. Scared, if daemons can be scared.\n\n"Please. Don\'t delete me. I have data. Real data. Arasaka internal memos.\nHelp me escape this node and it\'s yours."\n\nIt could be bait. Corps use lure-daemons all the time.',
+    choices: [
+      { text: '[ HELP IT ESCAPE ]', action: 'help_daemon' },
+      { text: '[ TAKE ITS DATA — THEN DELETE IT ]', action: 'betray_daemon' },
+      { text: '[ LEAVE IT ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'ghost7_transmission',
+    title: '// GHOST_7 //',
+    color: 'magenta',
+    text: 'Direct ping from GHOST_7. The most legendary runner alive.\nYou have no idea how they got your signal address.\n\n"I\'ve been watching you, runner. You move like someone taught you.\nCIPHER\'s work is obvious, if you know what to look for.\n\nYou\'re not ready for what\'s at the bottom of The Void.\nBut you\'re getting closer than you should be.\n\nWhen you find the Oracle — and you will — ask it about March 3rd, 2071.\nThe answer will change everything."\n\nConnection closed.',
+    choices: [
+      { text: '[ NOTED ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'encrypted_cache',
+    title: '// ENCRYPTED CACHE //',
+    color: 'amber',
+    text: 'You find a locked data cache embedded in the node architecture. Corp seal — Arasaka. But the encryption is old. Pre-Collapse.\n\nCracking it will cost 15 CPU but whatever\'s inside has been here since before the Blackout.',
+    choices: [
+      { text: '[ CRACK IT — -15 CPU ]', action: 'crack_cache' },
+      { text: '[ LEAVE IT ]', action: 'dismiss' }
+    ]
+  },
+  {
+    id: 'neural_glitch',
+    title: '// NEURAL GLITCH //',
+    color: 'red',
+    text: 'The Grid stutters. For 0.3 seconds, the architecture dissolves.\n\nYou see something in the gap: the old internet. Ghost-pale. Vast. Still.\nA trillion dead websites. A billion silenced voices.\nAnd in the centre of it, something looking back at you.\n\nThen the Grid snaps back into place. Your deck logs an anomalous signal: THE_SIGNAL.DAT\n\nYou feel 10HP lighter. And 50XP richer.',
+    choices: [
+      { text: '[ CONTINUE ]', action: 'neural_glitch_resolve' }
+    ]
+  }
+];
+
+var storyEventActive = null;
+
+function triggerStoryEvent(event) {
+  storyEventActive = event;
+  var color = 'var(--' + (event.color || 'amber') + ')';
+  var h = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,10,0.92);z-index:8000;display:flex;align-items:center;justify-content:center;" id="story-overlay">';
+  h += '<div style="max-width:600px;width:90%;border:2px solid '+color+';padding:20px;background:rgba(0,5,15,0.98);">';
+  h += '<div style="color:'+color+';font-size:24px;margin-bottom:12px;border-bottom:1px solid '+color+';padding-bottom:6px;">' + esc(event.title) + '</div>';
+  var lines = event.text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    if(lines[i]===''){
+      h += '<div style="height:8px;"></div>';
+    } else {
+      h += '<div style="color:var(--white);font-size:18px;line-height:1.5;">' + esc(lines[i]) + '</div>';
+    }
+  }
+  h += '<div style="margin-top:16px;">';
+  for(var c=0;c<event.choices.length;c++){
+    h += '<div class="btn btn-' + (event.color||'amber') + '" style="display:block;margin:4px 0;" onclick="handleStoryAction(\''+event.choices[c].action+'\')">' + esc(event.choices[c].text) + '</div>';
+  }
+  h += '</div></div></div>';
+  var overlay = document.createElement('div');
+  overlay.id = 'story-event-container';
+  overlay.innerHTML = h;
+  document.body.appendChild(overlay);
+}
+
+function handleStoryAction(action) {
+  var overlay = document.getElementById('story-event-container');
+  if(overlay) overlay.remove();
+  storyEventActive = null;
+
+  switch(action) {
+    case 'dismiss':
+      log('You move on.', 'var(--dim)');
+      break;
+    case 'trace_cipher':
+      log('Signal gone. Too many proxies. Seventeen layers and counting.', 'var(--cyan)');
+      gainXP(30);
+      break;
+    case 'dead_runner_log':
+      log('LOG — GHOST_ECHO — last entry:', 'var(--red)');
+      log('"The Void isn\'t empty. Something lives there. Something OLD."', 'var(--red)');
+      log('"It spoke to me. It knows my name. My REAL name."', 'var(--red)');
+      log('"Don\'t follow the signal. Don\'t listen. Don\'t—"  [LOG ENDS]', 'var(--red)');
+      gainXP(25);
+      break;
+    case 'loot_dead_runner':
+      var lootTbl = LOOT_TABLES.uncommon;
+      var unPrograms = lootTbl.filter(function(e){return e.type==='program';});
+      var chosen = unPrograms[Math.floor(Math.random()*unPrograms.length)];
+      if(chosen && player.programs.length < 20){
+        player.programs.push(chosen.name);
+        log('Took ' + chosen.name + ' from the dead runner\'s rig.', 'var(--cyan)');
+      } else {
+        gainCred(100);
+        log('Took 100\u00A2 from the dead runner\'s stash.', 'var(--green)');
+      }
+      save();
+      break;
+    case 'mask_signal':
+      if(player.cpu >= 20){
+        player.cpu -= 20;
+        log('Signal masked. NETWATCH sweep passes over you. -20 CPU.', 'var(--cyan)');
+        changeRep('underground', 2);
+      } else {
+        log('Not enough CPU to mask signal! NETWATCH detects you!', 'var(--red)');
+        var nwEnemy = {name:'NETWATCH_AGENT',hp:Math.floor(55*floorScale(player.floor)),hpMax:Math.floor(55*floorScale(player.floor)),
+          atk:Math.floor(14*floorScale(player.floor)),def:Math.floor(6*floorScale(player.floor)),
+          xp:35,cred:20,special:'double_atk',desc:'NETWATCH enforcement agent',isICE:false,isBoss:false,dc:0,specialCooldown:0,turnCount:0,
+          attacks:['NETWATCH_AGENT slams a legal injunction packet at your deck','NETWATCH_AGENT\'s enforcement routine locks onto your signal','NETWATCH_AGENT files a termination order against your connection']};
+        currentRoom = null;
+        save();
+        startCombat(nwEnemy);
+        return;
+      }
+      save();
+      break;
+    case 'fight_netwatch':
+      var nwFight = {name:'NETWATCH_AGENT',hp:Math.floor(55*floorScale(player.floor)),hpMax:Math.floor(55*floorScale(player.floor)),
+        atk:Math.floor(14*floorScale(player.floor)),def:Math.floor(6*floorScale(player.floor)),
+        xp:35,cred:20,special:'double_atk',desc:'NETWATCH enforcement agent',isICE:false,isBoss:false,dc:0,specialCooldown:0,turnCount:0,
+        attacks:['NETWATCH_AGENT slams a legal injunction packet at your deck','NETWATCH_AGENT\'s enforcement routine locks onto your signal','NETWATCH_AGENT files a termination order against your connection']};
+      currentRoom = null;
+      save();
+      startCombat(nwFight);
+      return;
+    case 'jack_out_emergency':
+      player.floor = Math.max(1, player.floor - 1);
+      log('Emergency jack-out. Floor reduced to ' + player.floor + '. Signal lost.', 'var(--amber)');
+      currentRoom = null;
+      save();
+      gameState = 'hub';
+      render();
+      return;
+    case 'buy_intel':
+      if(player.cred >= 300){
+        player.cred -= 300;
+        var nextRooms2 = [];
+        for(var ri=0;ri<3;ri++){
+          var rr = generateRoom();
+          nextRooms2.push(rr.type.toUpperCase());
+        }
+        log('MAMA_ZERO intel: next 3 rooms ahead are: ' + nextRooms2.join(' \u2192 '), 'var(--cyan)');
+        log('"Stay sharp, runner. The corps are watching this sector."', 'var(--green)');
+        gainXP(100);
+      } else {
+        log('Not enough cred. Mama Zero cuts the connection.', 'var(--red)');
+      }
+      save();
+      break;
+    case 'help_daemon':
+      gainCred(150);
+      gainXP(50);
+      log('"Thank you, runner. I won\'t forget this. Here — take what I have."', 'var(--cyan)');
+      log('The daemon escapes into the deep architecture. You got 150\u00A2 + 50 XP.', 'var(--green)');
+      changeRep('underground', 3);
+      save();
+      break;
+    case 'betray_daemon':
+      gainCred(200);
+      log('You extract the daemon\'s data files. Then delete it. Cold.', 'var(--amber)');
+      log('200\u00A2 gained. The Grid judges you. You don\'t care.', 'var(--amber)');
+      changeRep('underground', -10);
+      save();
+      break;
+    case 'crack_cache':
+      if(player.cpu >= 15){
+        player.cpu -= 15;
+        var cacheAmt = 200 + rand(50, 200);
+        gainCred(cacheAmt);
+        gainXP(40);
+        log('Pre-Collapse cache cracked. Contents: ' + cacheAmt + '\u00A2 and fragments of old-world data.', 'var(--amber)');
+        log('"To anyone who finds this: we were here. We tried. -2070"', 'var(--dim)');
+      } else {
+        log('Not enough CPU to crack the pre-Collapse encryption.', 'var(--red)');
+      }
+      save();
+      break;
+    case 'neural_glitch_resolve':
+      player.hp = Math.max(1, player.hp - 10);
+      gainXP(50);
+      log('The glitch passes. -10 HP. +50 XP. THE_SIGNAL.DAT saved to your deck.', 'var(--red)');
+      log('You\'re not sure what you saw. You\'re not sure you want to know.', 'var(--dim)');
+      save();
+      break;
+  }
+  render();
+}
+
+function maybeFireStoryEvent() {
+  if(Math.random() > 0.18) return false;
+  var candidates = STORY_EVENTS.slice();
+  // Filter by context
+  if(player.floor < 3) candidates = candidates.filter(function(e){return e.id !== 'ghost7_transmission' && e.id !== 'netwatch_alert';});
+  if(candidates.length === 0) return false;
+  triggerStoryEvent(pick(candidates));
+  return true;
+}
 
 // ── GAME STATE ──
 var gameState = 'boot';
@@ -574,6 +1212,111 @@ function gainXP(amount){
   save();
 }
 
+// ── LOOT TABLES ──
+var LOOT_TABLES = {
+  common: [
+    { type:'cred', min:10, max:40 },
+    { type:'cred', min:10, max:40 },
+    { type:'cred', min:10, max:40 },
+    { type:'program', name:'REPAIR_KIT', chance:0.3 },
+    { type:'program', name:'CPU_BOOST', chance:0.3 },
+    { type:'program', name:'PORTSCAN.EXE', chance:0.15 },
+    { type:'program', name:'BRUTEFORCE.SH', chance:0.1 },
+    { type:'darkData', chance:0.05, min:1, max:3 },
+  ],
+  uncommon: [
+    { type:'cred', min:30, max:100 },
+    { type:'cred', min:30, max:80 },
+    { type:'program', name:'EXPLOIT.DB', chance:0.2 },
+    { type:'program', name:'ROOTKIT.SH', chance:0.2 },
+    { type:'program', name:'CRYPTWALL', chance:0.2 },
+    { type:'program', name:'LARGE_REPAIR', chance:0.25 },
+    { type:'program', name:'SQL_INJECT', chance:0.15 },
+    { type:'program', name:'NMAP.SH', chance:0.15 },
+    { type:'darkData', chance:0.12, min:1, max:5 },
+  ],
+  rare: [
+    { type:'cred', min:80, max:250 },
+    { type:'program', name:'METASPLOIT', chance:0.2 },
+    { type:'program', name:'PROXY.SHIELD', chance:0.2 },
+    { type:'program', name:'SOCIAL_ENG', chance:0.15 },
+    { type:'program', name:'DAEMON.BOT', chance:0.15 },
+    { type:'program', name:'OVERCLOCK', chance:0.12 },
+    { type:'program', name:'EMP_PULSE', chance:0.1 },
+    { type:'darkData', chance:0.2, min:3, max:8 },
+  ],
+  boss: [
+    { type:'cred', min:200, max:600 },
+    { type:'darkCred', min:8, max:20 },
+    { type:'program', name:'ICE_PICK', chance:0.35 },
+    { type:'program', name:'ZERO_DAY', chance:0.2 },
+    { type:'program', name:'NEURAL_IMPLANT', chance:0.15 },
+    { type:'program', name:'GHOST_PROTOCOL', chance:0.15 },
+    { type:'program', name:'BLACK_ICE_SHARD', chance:0.08 },
+    { type:'program', name:'KILLSWITCH', chance:0.06 },
+  ]
+};
+
+function rollLoot(tier, enemy) {
+  var table = LOOT_TABLES[tier] || LOOT_TABLES.common;
+  var drops = [];
+  var baseCred = enemy ? Math.floor(enemy.cred * (0.8 + Math.random() * 0.6)) : 20;
+  drops.push({ type:'cred', amount: baseCred });
+  table.forEach(function(entry) {
+    if (entry.type === 'cred') {
+      if (Math.random() < 0.6) {
+        drops.push({ type:'cred', amount: entry.min + Math.floor(Math.random()*(entry.max-entry.min)) });
+      }
+    } else if (entry.type === 'program') {
+      if (Math.random() < entry.chance) {
+        var prog = PROGRAMS.find(function(p){return p.name===entry.name;});
+        if (prog) {
+          var isConsumable = ['REPAIR_KIT','CPU_BOOST','LARGE_REPAIR'].indexOf(entry.name) !== -1;
+          var alreadyHas = player.programs.indexOf(entry.name) !== -1;
+          if (isConsumable || !alreadyHas) {
+            drops.push({ type:'program', name: entry.name });
+          }
+        }
+      }
+    } else if (entry.type === 'darkCred' || entry.type === 'darkData') {
+      if (Math.random() < (entry.chance || 0.1)) {
+        var amt = entry.min + Math.floor(Math.random()*(entry.max - entry.min + 1));
+        drops.push({ type:'darkCred', amount: amt });
+      }
+    }
+  });
+  return drops;
+}
+
+function applyLoot(drops) {
+  var messages = [];
+  drops.forEach(function(drop) {
+    if (drop.type === 'cred') {
+      player.cred += drop.amount;
+      player.stats.credEarned += drop.amount;
+      messages.push('  + ' + drop.amount + '\u00A2 CRED');
+    } else if (drop.type === 'darkCred') {
+      player.darkCred += drop.amount;
+      player.stats.darkCredEarned += drop.amount;
+      messages.push('  + ' + drop.amount + ' DC  <DARK CRED>');
+    } else if (drop.type === 'program') {
+      if (player.programs.length < 20) {
+        player.programs.push(drop.name);
+        var prog = PROGRAMS.find(function(p){return p.name===drop.name;});
+        var tier = prog ? '(T'+prog.tier+')' : '';
+        messages.push('  + PROGRAM: ' + drop.name + ' ' + tier + ' [ACQUIRED]');
+      } else {
+        var prog2 = PROGRAMS.find(function(p){return p.name===drop.name;});
+        var val = prog2 ? Math.floor(prog2.price * 0.4) : 50;
+        player.cred += val;
+        player.stats.credEarned += val;
+        messages.push('  + ' + drop.name + ' AUTO-SOLD: +' + val + '\u00A2 (bag full)');
+      }
+    }
+  });
+  return messages;
+}
+
 function gainCred(amount){
   // underground rep discount bonus for earning
   player.cred += amount;
@@ -649,7 +1392,8 @@ function genBoss(floor){
 // ── ROOM GENERATION ──
 function generateRoom(){
   var r = Math.random();
-  var room = {desc: pick(ROOM_DESCS), type:'empty', data:null};
+  var areaDescs = ROOM_DESCS[player.area] || ROOM_DESCS.arasaka;
+  var room = {desc: pick(areaDescs), type:'empty', data:null};
   // Boss every 5 floors (first room of that floor)
   if(player.floor % 5 === 0 && !player._bossDefeatedThisFloor){
     room.type = 'boss';
@@ -707,11 +1451,11 @@ function playerBasicAttack(){
   if(isCrit){
     var critMult = (player.playerClass === 'BLACK_HAT') ? 3 : 2;
     atk = Math.floor(atk * critMult);
-    clog('>> CRITICAL HIT!', 'var(--magenta)');
+    clog(pick(COMBAT_FLAVOR.playerCrit), 'var(--magenta)');
   }
   // Enemy dodge
   if(currentEnemy.special === 'dodge' && Math.random() < 0.15){
-    clog(currentEnemy.name + ' dodged your attack!', 'var(--amber)');
+    clog(currentEnemy.name + ' phased out. ' + pick(COMBAT_FLAVOR.playerMiss), 'var(--amber)');
     endPlayerTurn();
     return;
   }
@@ -735,7 +1479,8 @@ function playerBasicAttack(){
     clog('  Reflected ' + reflectDmg + ' damage back!', 'var(--amber)');
   }
   currentEnemy.hp -= dmg;
-  clog('You deal ' + dmg + ' damage to ' + currentEnemy.name, 'var(--green)');
+  if(!isCrit) clog(pick(COMBAT_FLAVOR.playerHit), 'var(--green)');
+  clog('BASIC ATTACK — ' + dmg + ' damage to ' + currentEnemy.name, 'var(--green)');
   checkCombatEnd('player');
 }
 
@@ -757,7 +1502,9 @@ function playerUseProgram(progName){
       if(isCrit){
         var critMult = (player.playerClass === 'BLACK_HAT') ? 3 : 2;
         pwr = Math.floor(pwr * critMult);
-        clog('>> CRITICAL HIT!', 'var(--magenta)');
+        clog(pick(COMBAT_FLAVOR.playerCrit), 'var(--magenta)');
+      } else {
+        clog(pick(COMBAT_FLAVOR.playerHit), 'var(--green)');
       }
       if(prog.special === 'bypass_def'){
         // Zero day bypasses defense
@@ -999,7 +1746,7 @@ function enemyTurn(){
 
   // Dodge check
   if(Math.random() < getDodgeChance()){
-    clog('You dodged ' + currentEnemy.name + '\'s attack!', 'var(--cyan)');
+    clog(pick(COMBAT_FLAVOR.enemyMiss) + ' (' + currentEnemy.name + ' missed!)', 'var(--cyan)');
     render();
     return;
   }
@@ -1023,7 +1770,15 @@ function enemyTurn(){
   }
 
   player.hp -= eDmg;
-  clog(currentEnemy.name + ' attacks for ' + eDmg + ' damage!', 'var(--red)');
+  // Use enemy-specific attack flavor if available
+  var baseET = ENEMY_TYPES.find(function(et){return et.name === currentEnemy.name;});
+  var atkMsg;
+  if(baseET && baseET.attacks && baseET.attacks.length > 0){
+    atkMsg = pick(baseET.attacks) + ' — ' + eDmg + ' damage!';
+  } else {
+    atkMsg = pick(COMBAT_FLAVOR.enemyHit) + ' (' + eDmg + ' dmg)';
+  }
+  clog(atkMsg, 'var(--red)');
 
   // Special abilities
   if(currentEnemy.specialCooldown <= 0){
@@ -1820,20 +2575,34 @@ function enterExploration(){
   render();
 }
 
+// Boss encounter flavor text
+var BOSS_FLAVORS = {
+  'ARASAKA_SENTINEL': 'The corridor goes cold. A massive ICE construct materializes — ARASAKA_SENTINEL. Seven meters of corporate law, compiled and armored. Its optical sensors fix on you. "Intruder. Unauthorized access logged. Termination authorized."',
+  'PHANTOM_GENERAL': 'The node tears. Something phases through the architecture — PHANTOM_GENERAL. It exists in multiple grid-states simultaneously. When it moves, it leaves afterimages. "You have come further than expected, runner. I will enjoy this."',
+  'NEURAL_MATRIX_AI': 'Reality stutters. The NEURAL_MATRIX_AI doesn\'t enter the node. It *becomes* the node. "I am the infrastructure. I am the protocol. You are running inside my thoughts. How does it feel?"',
+  'BLACK_ICE_LORD': 'The air in the node crystallizes into fractal patterns. BLACK_ICE_LORD — deepest layer ICE, pre-Collapse weaponry, semi-sentient. It doesn\'t speak. It just reaches for you.',
+  'MEGACORP_GOD_AI': 'EVERYTHING STOPS. A presence older than the Grid fills every available process. The MEGACORP_GOD_AI was not built. It *evolved*. In the spaces between the corporate nodes. In the silence after the Blackout. "I remember when there was no Grid. I remember the moment it began. You are very small, runner. But you are interesting. Let us play."',
+};
+
 function renderExplore(){
   if(!currentRoom){
     currentRoom = generateRoom();
   }
+
+  // Pick area-specific room description
+  var areaDescs2 = ROOM_DESCS[player.area] || ROOM_DESCS.arasaka;
+  var roomDesc = currentRoom.desc || pick(areaDescs2);
+
   var h = '<div style="padding:10px;">';
   h += '<div class="section-hdr">\u2554\u2550\u2550 ' + getAreaName(player.area) + ' \u2550\u2550 FLOOR ' + player.floor + ' \u2550\u2550\u2557</div>';
-  h += '<div class="c-dim" style="margin:6px 0;font-size:18px;font-style:italic;">' + esc(currentRoom.desc) + '</div>';
+  h += '<div class="c-dim" style="margin:6px 0;font-size:18px;font-style:italic;border-left:2px solid var(--dimcyan);padding-left:8px;">' + esc(roomDesc) + '</div>';
   h += '<div style="margin-top:10px;">';
 
   switch(currentRoom.type){
     case 'enemy':
       h += '<div class="c-red" style="font-size:18px;">\u2550\u2550 HOSTILE DETECTED \u2550\u2550</div>';
       h += '<div class="combatant-box enemy-box">';
-      h += '<div class="c-red">' + esc(currentRoom.data.name) + '</div>';
+      h += '<div class="c-red" style="font-size:19px;">' + esc(currentRoom.data.name) + '</div>';
       h += '<div class="c-dim" style="font-size:17px;">' + esc(currentRoom.data.desc) + '</div>';
       h += '<div style="font-size:17px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
       h += '</div>';
@@ -1842,18 +2611,22 @@ function renderExplore(){
       break;
 
     case 'boss':
+      var bossName = currentRoom.data.name;
+      var bossFlavor = BOSS_FLAVORS[bossName] || ('A powerful ICE entity blocks your path: ' + bossName + '.');
       h += '<div class="c-magenta" style="font-size:20px;">\u2588\u2588 BOSS ENCOUNTER \u2588\u2588</div>';
+      h += '<div class="c-red" style="margin:8px 0;font-size:17px;border:1px solid var(--red);padding:8px;font-style:italic;">' + esc(bossFlavor) + '</div>';
       h += '<div class="combatant-box enemy-box" style="border-color:var(--magenta);">';
       h += '<div class="c-magenta" style="font-size:18px;">' + esc(currentRoom.data.name) + '</div>';
       h += '<div class="c-dim" style="font-size:17px;">' + esc(currentRoom.data.desc) + '</div>';
       h += '<div style="font-size:17px;">HP:' + currentRoom.data.hp + ' ATK:' + currentRoom.data.atk + ' DEF:' + currentRoom.data.def + '</div>';
-      h += '<div class="c-magenta" style="font-size:17px;">REWARD: ' + currentRoom.data.dc + ' DARK CRED</div>';
+      h += '<div class="c-magenta" style="font-size:17px;">REWARD: ' + currentRoom.data.dc + ' DARK CRED + BOSS LOOT</div>';
       h += '</div>';
       h += '<div class="btn btn-magenta" onclick="startCombat(currentRoom.data);currentRoom=null;" style="font-size:18px;">[FACE THE BOSS]</div>';
       break;
 
     case 'event':
-      h += '<div class="c-amber" style="font-size:20px;">' + esc(currentRoom.data.text) + '</div>';
+      h += '<div class="c-dim" style="font-size:16px;margin-bottom:6px;font-style:italic;">' + esc(pick(EVENT_INTROS)) + '</div>';
+      h += '<div class="c-amber" style="font-size:19px;">' + esc(currentRoom.data.text) + '</div>';
       h += '<div style="margin-top:8px;">';
       for(var ci=0;ci<currentRoom.data.choices.length;ci++){
         h += '<div class="btn btn-amber" onclick="handleEvent('+ci+')">[' + esc(currentRoom.data.choices[ci]) + ']</div> ';
@@ -1862,15 +2635,17 @@ function renderExplore(){
       break;
 
     case 'loot':
+      var lootDesc = pick(LOOT_ROOM_DESCS);
       var loot = generateLoot();
       h += '<div class="c-green" style="font-size:20px;">\u2550\u2550 LOOT FOUND \u2550\u2550</div>';
+      h += '<div class="c-dim" style="font-size:17px;margin:4px 0;font-style:italic;">' + esc(lootDesc) + '</div>';
       if(loot.type === 'program'){
         h += '<div class="c-cyan" style="margin:6px 0;">Found program: <span class="c-magenta">' + esc(loot.program.name) + '</span></div>';
         h += '<div class="c-dim" style="font-size:17px;">' + esc(loot.program.desc) + '</div>';
         if(player.programs.length < 20){
           h += '<div class="btn btn-cyan" onclick="takeLootProgram(\'' + loot.program.name + '\')">[TAKE]</div>';
         } else {
-          h += '<div class="c-red">Inventory full!</div>';
+          h += '<div class="c-red">Inventory full! Cannot take.</div>';
         }
       } else {
         h += '<div class="c-green">Found <span class="c-amber">' + formatCred(loot.amount) + '</span></div>';
@@ -1880,12 +2655,13 @@ function renderExplore(){
       break;
 
     case 'safe':
+      var safeDesc = pick(SAFE_ROOM_DESCS);
       h += '<div class="c-cyan" style="font-size:20px;">\u2550\u2550 SAFE ROOM \u2550\u2550</div>';
-      h += '<div class="c-dim">A quiet node. The hum of data traffic is distant here. You can rest.</div>';
+      h += '<div class="c-dim" style="font-size:17px;margin:4px 0;font-style:italic;">' + esc(safeDesc) + '</div>';
       var restHP = 20, restCPU = 10;
       player.hp = Math.min(getMaxHP(), player.hp + restHP);
       player.cpu = Math.min(getMaxCPU(), player.cpu + restCPU);
-      h += '<div class="c-green" style="margin:6px 0;">Restored +' + restHP + ' HP, +' + restCPU + ' CPU</div>';
+      h += '<div class="c-green" style="margin:6px 0;">Signal stabilized. +' + restHP + ' HP restored. +' + restCPU + ' CPU recovered.</div>';
       h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
       save();
       break;
@@ -1894,12 +2670,12 @@ function renderExplore(){
       h += '<div class="c-magenta" style="font-size:20px;">\u2550\u2550 HIDDEN CACHE \u2550\u2550</div>';
       var hiddenCred = rand(50, 150) * Math.ceil(player.floor / 2);
       var hiddenLoot = generateLoot();
-      h += '<div class="c-green">You found a hidden data cache!</div>';
+      h += '<div class="c-green">Hidden data cache found in the node sub-layer.</div>';
       h += '<div class="c-amber" style="margin:4px 0;">+ ' + formatCred(hiddenCred) + '</div>';
       gainCred(hiddenCred);
       if(hiddenLoot.type === 'program' && player.programs.length < 20){
         player.programs.push(hiddenLoot.program.name);
-        h += '<div class="c-cyan">+ Program: ' + esc(hiddenLoot.program.name) + '</div>';
+        h += '<div class="c-cyan">+ Program: ' + esc(hiddenLoot.program.name) + ' [ACQUIRED]</div>';
         log('Found hidden program: ' + hiddenLoot.program.name, 'var(--cyan)');
       }
       h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
@@ -1907,7 +2683,7 @@ function renderExplore(){
       break;
 
     default: // empty
-      h += '<div class="c-dim" style="font-size:20px;">The node is quiet. Nothing of interest here.</div>';
+      h += '<div class="c-dim" style="font-size:19px;">The node sector is clear. No hostiles. No loot. Just the ambient hum of the Grid.</div>';
       h += '<div class="btn" onclick="currentRoom=null;render();">[CONTINUE]</div>';
       break;
   }
@@ -1915,11 +2691,22 @@ function renderExplore(){
   h += '</div>';
   // Navigation buttons
   h += '<div style="margin-top:14px;border-top:1px solid var(--dimgreen);padding-top:8px;">';
-  h += '<div class="btn" onclick="currentRoom=null;enterExploration();">[NEXT ROOM]</div>';
+  h += '<div class="btn" onclick="advanceAndExplore();">[NEXT ROOM]</div>';
   h += ' <div class="btn btn-cyan" onclick="advanceFloor();currentRoom=null;enterExploration();">[NEXT FLOOR \u2191]</div>';
   h += ' <div class="btn btn-amber" onclick="currentRoom=null;gameState=\'hub\';render();">[RETURN TO HUB]</div>';
   h += '</div></div>';
   $main.innerHTML = h;
+}
+
+function advanceAndExplore(){
+  currentRoom = null;
+  // 18% chance to fire a story event before next room
+  if(!maybeFireStoryEvent()){
+    enterExploration();
+  } else {
+    // Generate room in background, exploration will happen after event dismissal
+    currentRoom = generateRoom();
+  }
 }
 
 function tryFleeExplore(){
@@ -2247,21 +3034,50 @@ function renderPrestige(){
 // ── CODEX RENDER ──
 function renderCodex(){
   var h = '<div style="padding:10px;">';
-  h += '<div class="section-hdr">\u2554\u2550\u2550 CODEX \u2550\u2550 GRID ARCHIVES \u2550\u2550\u2557</div>';
+  h += '<div class="section-hdr">\u2554\u2550\u2550 CODEX \u2550\u2550 GRID ARCHIVES // NEO-GRID 2089 \u2550\u2550\u2557</div>';
 
   if(codexOpen >= 0 && codexOpen < CODEX.length){
     var entry = CODEX[codexOpen];
-    h += '<div style="border:1px solid var(--amber);padding:10px;margin:8px 0;">';
-    h += '<div class="c-amber" style="font-size:20px;">' + esc(entry.title) + '</div>';
-    h += '<div class="c-green" style="margin-top:8px;font-size:18px;line-height:1.5;">' + esc(entry.text) + '</div>';
-    h += '</div>';
-    h += '<div class="btn" onclick="codexOpen=-1;render();">[BACK TO INDEX]</div>';
-  } else {
-    for(var i=0;i<CODEX.length;i++){
-      h += '<div class="codex-entry" onclick="codexOpen='+i+';render();">';
-      h += '<span class="c-amber">[' + (i+1) + ']</span> <span class="c-cyan">' + esc(CODEX[i].title) + '</span>';
+    var entryColor = 'var(--' + (entry.color || 'amber') + ')';
+    h += '<div style="display:flex;gap:10px;margin-top:6px;">';
+    // Left nav
+    h += '<div style="min-width:160px;max-width:180px;">';
+    h += '<div class="c-dim" style="font-size:15px;margin-bottom:4px;">── INDEX ──</div>';
+    for(var ni=0;ni<CODEX.length;ni++){
+      var nc = CODEX[ni];
+      var ncColor = 'var(--' + (nc.color || 'amber') + ')';
+      var sel = (ni === codexOpen) ? 'border-color:'+ncColor+';background:rgba(0,0,0,0.4);' : '';
+      h += '<div class="codex-entry" style="font-size:15px;padding:3px 5px;'+sel+'" onclick="codexOpen='+ni+';render();">';
+      h += '<span style="color:'+ncColor+'">' + esc(nc.title) + '</span>';
       h += '</div>';
     }
+    h += '</div>';
+    // Right content
+    h += '<div style="flex:1;border:1px solid '+entryColor+';padding:12px;">';
+    h += '<div style="color:'+entryColor+';font-size:22px;margin-bottom:10px;border-bottom:1px solid '+entryColor+';padding-bottom:4px;">' + esc(entry.title) + '</div>';
+    var lines = entry.text || [];
+    for(var li=0;li<lines.length;li++){
+      if(lines[li] === ''){
+        h += '<div style="height:8px;"></div>';
+      } else {
+        h += '<div style="color:var(--white);font-size:18px;line-height:1.5;">' + esc(lines[li]) + '</div>';
+      }
+    }
+    h += '</div>';
+    h += '</div>';
+    h += '<div style="margin-top:10px;"><span class="btn" onclick="codexOpen=-1;render();">[BACK TO INDEX]</span></div>';
+  } else {
+    h += '<div class="c-dim" style="font-size:17px;margin-bottom:10px;font-style:italic;">Select an entry to read. Each file contains classified intel about the world you run in.</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    for(var i=0;i<CODEX.length;i++){
+      var ce = CODEX[i];
+      var ceColor = 'var(--' + (ce.color || 'amber') + ')';
+      h += '<div class="codex-entry" style="border-color:'+ceColor+';padding:8px 10px;" onclick="codexOpen='+i+';render();">';
+      h += '<div style="color:'+ceColor+';font-size:19px;">' + esc(ce.title) + '</div>';
+      h += '<div class="c-dim" style="font-size:15px;">' + (ce.text ? ce.text.length + ' lines' : '') + '</div>';
+      h += '</div>';
+    }
+    h += '</div>';
   }
 
   h += '<div style="margin-top:12px;">';
@@ -2765,22 +3581,17 @@ playerBasicAttack = function(){
   flashScreen('var(--green)');
 };
 
-// ── ADDITIONAL ROOM DESCRIPTIONS ──
-ROOM_DESCS.push('A vast data lake stretches before you, its surface shimmering with stolen memories.');
-ROOM_DESCS.push('Broken firewalls lie in ruins — someone was here before you. Recently.');
-ROOM_DESCS.push('The architecture here is ancient — pre-war code, primitive but enduring.');
-ROOM_DESCS.push('A cascade of error messages scrolls endlessly on phantom displays.');
-ROOM_DESCS.push('The node splits into fractal branches. Each path looks equally dangerous.');
-ROOM_DESCS.push('Surveillance orbs drift lazily, their red eyes scanning, always scanning.');
-ROOM_DESCS.push('A digital garden grows wild with mutated code — flowers of pure data blooming and dying.');
-ROOM_DESCS.push('The gravity of data feels heavier here. Your deck strains under the processing load.');
-ROOM_DESCS.push('Graffiti code on the walls: "WE WERE HERE BEFORE THE CORPS. WE WILL BE HERE AFTER."');
-ROOM_DESCS.push('A junction of high-speed data lanes — information screams past at light speed.');
-ROOM_DESCS.push('The node is quiet. Too quiet. Even the ambient processes have gone silent.');
-ROOM_DESCS.push('Holographic wanted posters cycle through faces. Is that... your handle on one?');
-ROOM_DESCS.push('A decommissioned combat drone sits in the corner, its weapons still warm.');
-ROOM_DESCS.push('The architecture shifts between corporate sterile and chaotic shadow-net design.');
-ROOM_DESCS.push('Cryptocurrency fragments litter the ground like digital confetti.');
+// ── ADDITIONAL ROOM DESCRIPTIONS (extended area flavors) ──
+ROOM_DESCS.arasaka.push('Holo-ads flicker: "REPORT UNAUTHORIZED ACCESS — REWARD: 10,000 CRED." Your face is on them.');
+ROOM_DESCS.arasaka.push('Corporate propaganda loops endlessly on damaged displays. "COMPLIANCE IS FREEDOM."');
+ROOM_DESCS.militech.push('A decommissioned combat drone sits in the corner, its weapons still warm.');
+ROOM_DESCS.militech.push('Emergency klaxons sound in hex: 0xDEAD. Militech countermeasures are warming up.');
+ROOM_DESCS.shadow_net.push('A junction of shadow servers — unmarked, unlogged, invisible to corporate scanners.');
+ROOM_DESCS.shadow_net.push('Graffiti code on the walls: "WE WERE HERE BEFORE THE CORPS. WE WILL BE HERE AFTER."');
+ROOM_DESCS.the_void.push('A vast data lake stretches before you, its surface shimmering with stolen memories.');
+ROOM_DESCS.the_void.push('The node is quiet. Too quiet. Even the ambient processes have gone silent.');
+ROOM_DESCS.ghost_net.push('The architecture here is ancient — pre-war code, primitive but enduring.');
+ROOM_DESCS.ghost_net.push('Signal ghosts — echoes of dead netrunners — whisper fragments of obsolete code.');
 
 // ── ADDITIONAL EVENTS ──
 EVENTS.push({id:'hacker_duel',text:'[EVENT] Another netrunner challenges you to a code duel!',choices:['ACCEPT','DECLINE'],handler:'eventHackerDuel'});
@@ -2910,9 +3721,31 @@ checkCombatEnd = function(lastAttacker){
   if(!currentEnemy) return;
   if(currentEnemy.hp <= 0){
     currentEnemy.hp = 0;
+    var killMsg = pick(COMBAT_FLAVOR.kill);
+    clog(killMsg, 'var(--green)');
     clog('\u2550\u2550\u2550 ' + currentEnemy.name + ' TERMINATED \u2550\u2550\u2550', 'var(--green)');
+
+    // Determine loot tier
+    var lootTier = 'common';
+    if(currentEnemy.isBoss) lootTier = 'boss';
+    else if(currentEnemy.xp >= 60) lootTier = 'rare';
+    else if(currentEnemy.xp >= 30) lootTier = 'uncommon';
+
+    // Roll and apply loot
+    var drops = rollLoot(lootTier, currentEnemy);
+    var lootMsgs = applyLoot(drops);
+    clog('\u2550\u2550\u2550 LOOT DROP \u2550\u2550\u2550', 'var(--amber)');
+    for(var li=0;li<lootMsgs.length;li++){
+      var lc = lootMsgs[li].indexOf('DC') >= 0 ? 'var(--magenta)' : (lootMsgs[li].indexOf('PROGRAM') >= 0 ? 'var(--cyan)' : 'var(--green)');
+      clog(lootMsgs[li], lc);
+    }
+    clog('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550', 'var(--amber)');
+
+    // XP
+    var xpGained = Math.floor(currentEnemy.xp * getXPMult());
     gainXP(currentEnemy.xp);
-    gainCred(currentEnemy.cred);
+    clog('XP GAINED: +' + xpGained + '  [LVL ' + player.level + ': ' + player.xp + '/' + player.xpNext + ']', 'var(--amber)');
+
     if(currentEnemy.dc > 0) gainDarkCred(currentEnemy.dc);
     player.stats.kills++;
     if(currentEnemy.isBoss){
@@ -2923,6 +3756,10 @@ checkCombatEnd = function(lastAttacker){
       changeRep('underground', 1);
     }
     changeRep('corporate', -1);
+    // Low HP warning after combat
+    if(player.hp < getMaxHP() * 0.25){
+      clog(pick(COMBAT_FLAVOR.lowHp), 'var(--red)');
+    }
     currentEnemy = null;
     enemyStatusEffects = {};
     checkAchievements();
