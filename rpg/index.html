@@ -96,6 +96,8 @@ font-size:20px;cursor:pointer;transition:all 0.15s;
 .btn-red:hover{background:rgba(255,51,85,0.12);text-shadow:0 0 8px var(--red);}
 .btn-magenta{border-color:var(--magenta);color:var(--magenta);}
 .btn-magenta:hover{background:rgba(255,68,204,0.12);text-shadow:0 0 8px var(--magenta);}
+.btn-green{border-color:var(--green);color:var(--green);}
+.btn-green:hover{background:rgba(0,255,65,0.12);text-shadow:0 0 8px var(--green);}
 .btn-disabled{opacity:0.35;cursor:default;pointer-events:none;}
 /* Log lines */
 .log-line{font-size:18px;line-height:1.3;white-space:pre-wrap;word-break:break-word;}
@@ -325,6 +327,102 @@ var HARDWARE = {
     {name:'VOID SHARD',tier:4,bonus:'+90% ICE DMG',iceBonus:0.90,price:11000,dc:12},
   ]
 };
+
+// ── WEAPONS DATABASE ──
+var WEAPONS = [
+  // Tier 1 - Basic
+  { name:'RAZOR_NET',    tier:1, atkBonus:5,  critBonus:0,    price:300,  dc:0,  desc:'A frayed but functional attack net. Basic offensive edge.' },
+  { name:'SHOCK_SPIKE',  tier:1, atkBonus:7,  critBonus:0.02, price:500,  dc:0,  desc:'Delivers voltage feedback on hit. Chance to stun.' },
+  { name:'DATA_BLADE',   tier:1, atkBonus:6,  critBonus:0.03, price:450,  dc:0,  desc:'Slices through surface-layer defenses cleanly.' },
+  // Tier 2 - Advanced
+  { name:'ICE_LANCE',    tier:2, atkBonus:14, critBonus:0.05, price:1200, dc:0,  desc:'Military-grade penetration weapon. Punches through ICE.' },
+  { name:'VOID_HOOK',    tier:2, atkBonus:12, critBonus:0.08, price:1400, dc:0,  desc:'Latches onto enemy processes and tears. High crit chance.' },
+  { name:'KILLCODE_MK2', tier:2, atkBonus:18, critBonus:0.03, price:1800, dc:0,  desc:'Derived from stolen NETWATCH source. Pure damage.' },
+  // Tier 3 - Rare
+  { name:'PHANTOM_BLADE',tier:3, atkBonus:25, critBonus:0.10, price:4000, dc:0,  desc:'Ghost Net artifact. Phases through enemy armor.' },
+  { name:'NEURAL_SPIKE_X',tier:3,atkBonus:22, critBonus:0.12, price:3500, dc:0,  desc:'Direct neural interface weapon. Bypasses 20% defense.' },
+  { name:'ARASAKA_STOLEN',tier:3,atkBonus:30, critBonus:0.05, price:5500, dc:0,  desc:'Stolen corp-weapon. Maximum raw damage.' },
+  // Tier 4 - Elite
+  { name:'BLACK_LANCE',  tier:4, atkBonus:45, critBonus:0.15, price:12000,dc:8,  desc:'Forged from Black ICE fragments. Illegal. Devastating.' },
+  { name:'VOID_BREAKER', tier:4, atkBonus:40, critBonus:0.18, price:10000,dc:6,  desc:'Void-tier weapon. Crits deal 4x damage with this equipped.' },
+  // Tier 5 - Legendary
+  { name:'ORACLE_EDGE',  tier:5, atkBonus:70, critBonus:0.25, price:25000,dc:20, desc:'A weapon whispered about in deep-net legend. The Oracle\'s gift.' },
+  { name:'SIGNAL_BLADE', tier:5, atkBonus:65, critBonus:0.20, price:22000,dc:18, desc:'Compiled from THE_SIGNAL itself. Each hit echoes across the Grid.' },
+];
+
+// ── ARMOR DATABASE ──
+var ARMOR = [
+  // Tier 1
+  { name:'PROXY_CLOAK',   tier:1, defBonus:4,  hpBonus:10, price:250,  dc:0,  desc:'Basic proxy routing cloak. Reduces traceability.' },
+  { name:'DATA_SHIELD',   tier:1, defBonus:6,  hpBonus:5,  price:380,  dc:0,  desc:'Packet-level shield. Absorbs minor hits.' },
+  { name:'STATIC_VEST',   tier:1, defBonus:5,  hpBonus:15, price:420,  dc:0,  desc:'Dissipates incoming signal spikes. Tough.' },
+  // Tier 2
+  { name:'FIREWALL_COAT', tier:2, defBonus:12, hpBonus:20, price:1100, dc:0,  desc:'Layered firewall architecture worn as armor.' },
+  { name:'CRYPTO_SHELL',  tier:2, defBonus:10, hpBonus:30, price:1300, dc:0,  desc:'End-to-end encrypted armor. Hard to penetrate.' },
+  { name:'GHOST_MESH',    tier:2, defBonus:15, hpBonus:15, price:1600, dc:0,  desc:'Mesh of ghost protocols. +15% dodge chance when worn.' },
+  // Tier 3
+  { name:'NEURAL_PLATE',  tier:3, defBonus:22, hpBonus:40, price:3800, dc:0,  desc:'Military neural-layer armor. Standard corp-security issue.' },
+  { name:'VOID_SHROUD',   tier:3, defBonus:20, hpBonus:50, price:4200, dc:0,  desc:'Woven from deep-net data. Absorbs 10% of all damage.' },
+  { name:'PHANTOM_SHELL', tier:3, defBonus:28, hpBonus:35, price:5000, dc:0,  desc:'Phase-state armor. Attacks sometimes pass straight through.' },
+  // Tier 4
+  { name:'BLACK_CARAPACE',tier:4, defBonus:40, hpBonus:70, price:11000,dc:7,  desc:'Black ICE processed into armor. Hurts to wear. Worth it.' },
+  { name:'APEX_SHROUD',   tier:4, defBonus:35, hpBonus:80, price:9500, dc:5,  desc:'Pinnacle of runner armor technology. Minimal signal bleed.' },
+  // Tier 5
+  { name:'ORACLE_WEAVE',  tier:5, defBonus:60, hpBonus:120,price:24000,dc:18, desc:'The Oracle\'s protection. The Grid bends around the wearer.' },
+  { name:'SIGNAL_CLOAK',  tier:5, defBonus:55, hpBonus:100,price:20000,dc:15, desc:'Become one with the signal. Enemies struggle to target you.' },
+];
+
+// ── SPECIAL ITEMS DATABASE ──
+var SPECIAL_ITEMS = [
+  { name:'STIM_CHIP',      price:120,  dc:0, consumable:true,  desc:'Combat stimulant. Boosts ATK+10 and DEF+5 for 5 combat turns.' },
+  { name:'SIGNAL_JAMMER',  price:200,  dc:0, consumable:true,  desc:'Jams enemy specials for 3 turns. They can only basic attack.' },
+  { name:'DARK_LENS',      price:350,  dc:0, consumable:false, desc:'Passive: See enemy HP and remaining specials during combat.' },
+  { name:'NEURAL_LINK_X',  price:800,  dc:0, consumable:false, desc:'Passive: CPU regenerates 5 extra per turn in combat.' },
+  { name:'GHOST_CHIP',     price:1500, dc:0, consumable:false, desc:'Passive: 20% chance each turn to avoid enemy attack completely.' },
+  { name:'OVERCLOCK_CHIP', price:2000, dc:0, consumable:false, desc:'Passive: All programs cost 10 less CPU (min 1).' },
+  { name:'CORPUS_DOSSIER', price:500,  dc:0, consumable:true,  desc:'Corp intel file. Gain +200 XP and reveal a hidden node sector.' },
+  { name:'DEAD_DROP',      price:0,    dc:3, consumable:true,  desc:'Underground dead drop. Contains random rare program or weapon.' },
+  { name:'VOID_SHARD_X',   price:0,    dc:5, consumable:false, desc:'Passive: All attacks deal +15% bonus damage in The Void area.' },
+  { name:'GUILD_BEACON',   price:3000, dc:0, consumable:false, desc:'Passive: Summon a guild ally once per combat when HP drops below 30%.' },
+  { name:'BLACKMAIL_FILE', price:0,    dc:8, consumable:true,  desc:'Use in combat: 40% chance to instantly end fight (enemy flees or surrenders). Cannot work on bosses.' },
+  { name:'ARASAKA_KEYCARD',price:0,    dc:12,consumable:true,  desc:'One-time access to a hidden Arasaka vault node. Enormous loot.' },
+];
+
+// ── HEALTH DISCS DATABASE ──
+var HEALTH_DISCS = [
+  { name:'NANO_PATCH',    heal:25,  price:60,   dc:0, desc:'Basic nano-repair kit. Restores 25 HP.' },
+  { name:'REPAIR_DISC',   heal:60,  price:150,  dc:0, desc:'Standard field repair disc. Restores 60 HP.' },
+  { name:'TRAUMA_KIT',    heal:120, price:300,  dc:0, desc:'Military trauma repair. Restores 120 HP.' },
+  { name:'FULL_RESTORE',  heal:999, price:800,  dc:0, desc:'Full system restore. Restores ALL HP.' },
+  { name:'STIM_PACK',     cpu:40,   price:80,   dc:0, desc:'CPU stimulant. Restores 40 CPU cycles.' },
+  { name:'OVERCHARGE',    cpu:999,  price:400,  dc:0, desc:'Overcharge pack. Restores ALL CPU.' },
+  { name:'COMBAT_STIM',   heal:40,  cpu:30,     price:200, dc:0, desc:'Dual-action combat stim. +40 HP and +30 CPU.' },
+  { name:'GHOST_SERUM',   heal:200, price:0,    dc:4, desc:'Rare Ghost Net medicine. Restores 200 HP and removes all debuffs.' },
+];
+
+// ── WEAPON/ARMOR BONUS HELPERS ──
+function getWeaponBonus() {
+  if (!player.equippedWeapon) return { atk: 0, crit: 0 };
+  var w = WEAPONS.find(function(x){ return x.name === player.equippedWeapon; });
+  return w ? { atk: w.atkBonus, crit: w.critBonus } : { atk: 0, crit: 0 };
+}
+function getArmorBonus() {
+  if (!player.equippedArmor) return { def: 0, hp: 0 };
+  var a = ARMOR.find(function(x){ return x.name === player.equippedArmor; });
+  return a ? { def: a.defBonus, hp: a.hpBonus } : { def: 0, hp: 0 };
+}
+function getEffectiveAtk() {
+  return player.atk + getWeaponBonus().atk;
+}
+function getEffectiveDef() {
+  return player.def + getArmorBonus().def;
+}
+function getEffectiveCrit() {
+  return player.crit + getWeaponBonus().crit;
+}
+function getEffectiveHpMax() {
+  return player.hpMax + getArmorBonus().hp;
+}
 
 // ── ENEMIES DATABASE ──
 var ENEMY_TYPES = [
@@ -1033,10 +1131,129 @@ function defaultPlayer(){
     reputation:{underground:0,corporate:0,ghost_net:0},
     stats:{kills:0,nodesHacked:0,credEarned:0,darkCredEarned:0,bossKills:0,floorRecord:0},
     floor:1,area:'arasaka',prestige:0,prestigeBonus:0,
-    dailyBonus:false,lastLogin:0,loginStreak:0
+    dailyBonus:false,lastLogin:0,loginStreak:0,
+    weapons:[],armor:[],specialItems:[],
+    equippedWeapon:null,equippedArmor:null,
+    guild:null,guildAllies:[]
   };
 }
 var player = defaultPlayer();
+
+// ── GUILD SYSTEM ──
+var guildState = {
+  page: 'main'  // 'main', 'create', 'manage', 'allies'
+};
+
+var NPC_GUILD_MEMBERS = [
+  { handle: 'GHOST_ECHO',    level: 5,  class: 'GHOST',     atkBonus: 8,  desc: 'Silent runner. Specializes in evasion.' },
+  { handle: 'MAMA_ZERO',     level: 8,  class: 'PHREAKER',  atkBonus: 12, desc: 'Underground legend. Knows every black market.' },
+  { handle: 'CIPHER_7',      level: 12, class: 'NETRUNNER', atkBonus: 18, desc: 'CIPHER\'s old partner. Ruthless, precise.' },
+  { handle: 'VOIDWALKER',    level: 15, class: 'BLACK HAT', atkBonus: 25, desc: 'Has been to The Void and come back. Twice.' },
+  { handle: 'ORACLE_SHARD',  level: 20, class: 'NETRUNNER', atkBonus: 35, desc: 'Fragment of something greater. Origin unknown.' },
+  { handle: 'STATIC_QUEEN',  level: 6,  class: 'PHREAKER',  atkBonus: 10, desc: 'WiFi phreaker turned Grid runner.' },
+  { handle: 'R4Z0R',         level: 3,  class: 'SCRIPT KIDDIE', atkBonus: 5, desc: 'Young. Eager. Surprisingly effective.' },
+  { handle: 'NETWATCH_EXILE',level: 10, class: 'BLACK HAT', atkBonus: 20, desc: 'Ex-NETWATCH agent. Knows their playbook.' },
+];
+
+function loadGuild() {
+  try {
+    var g = localStorage.getItem('gridrunner_guild');
+    return g ? JSON.parse(g) : null;
+  } catch(e) { return null; }
+}
+
+function saveGuild(guild) {
+  try { localStorage.setItem('gridrunner_guild', JSON.stringify(guild)); } catch(e) {}
+}
+
+function createGuild(name, tag, motto) {
+  var code = Math.random().toString(36).substr(2,6).toUpperCase();
+  var guild = {
+    name: name,
+    tag: '[' + tag.toUpperCase().substr(0,4) + ']',
+    motto: motto,
+    code: code,
+    founded: new Date().toLocaleDateString(),
+    level: 1,
+    xp: 0,
+    bank: 0,
+    members: [ { handle: player.handle, class: player.playerClass, level: player.level, joined: new Date().toLocaleDateString() } ],
+    npcMembers: [ NPC_GUILD_MEMBERS[0] ],
+    log: [ '[ GUILD FOUNDED ] ' + player.handle + ' created ' + name + ' — ' + new Date().toLocaleDateString() ]
+  };
+  saveGuild(guild);
+  player.guild = { name: guild.name, tag: guild.tag, code: guild.code };
+  save();
+  return guild;
+}
+
+function joinGuildByCode(code) {
+  var existing = loadGuild();
+  if (existing && existing.code === code) {
+    var alreadyIn = existing.members.find(function(m){ return m.handle === player.handle; });
+    if (!alreadyIn) {
+      existing.members.push({ handle: player.handle, class: player.playerClass, level: player.level, joined: new Date().toLocaleDateString() });
+      existing.log.push('[ JOINED ] ' + player.handle + ' joined the guild.');
+      saveGuild(existing);
+    }
+    player.guild = { name: existing.name, tag: existing.tag, code: existing.code };
+    save();
+    return existing;
+  }
+  var seed = code.split('').reduce(function(a,c){ return a + c.charCodeAt(0); }, 0);
+  var names = ['VOID_COLLECTIVE','GHOST_NETWORK','DARK_SIGNAL','NETRUNNER_SYNDICATE','CIPHER_COUNCIL','GRID_PHANTOMS','BLACK_ICE_CREW','ORACLE_GUILD'];
+  var mottos = ['Run fast. Die slow.','The Grid fears us.','Information is power.','We are the signal.','No corp can cage us.','Born in the Void.'];
+  var guildName = names[seed % names.length];
+  var guild = {
+    name: guildName, tag: '[' + code.substr(0,3) + ']', motto: mottos[seed % mottos.length],
+    code: code, founded: 'Unknown', level: Math.max(1, Math.floor(seed % 10)),
+    xp: 0, bank: 0,
+    members: [
+      { handle: 'UNKNOWN_RUNNER', class: 'NETRUNNER', level: seed % 15 + 1, joined: 'Unknown' },
+      { handle: player.handle, class: player.playerClass, level: player.level, joined: new Date().toLocaleDateString() }
+    ],
+    npcMembers: NPC_GUILD_MEMBERS.slice(0, 2),
+    log: ['[ JOINED ] ' + player.handle + ' joined ' + guildName + ' via code ' + code + '.']
+  };
+  saveGuild(guild);
+  player.guild = { name: guild.name, tag: guild.tag, code: guild.code };
+  save();
+  return guild;
+}
+
+function getGuildBonuses(guild) {
+  if (!guild) return { xp: 0, cred: 0, atk: 0, def: 0 };
+  var memberCount = (guild.members ? guild.members.length : 1) + (guild.npcMembers ? guild.npcMembers.length : 0);
+  var lvl = guild.level || 1;
+  return {
+    xp:   Math.min(50, memberCount * 3 + lvl * 2),
+    cred: Math.min(30, memberCount * 2 + lvl),
+    atk:  Math.min(20, lvl * 2 + Math.floor(memberCount/2)),
+    def:  Math.min(15, lvl + Math.floor(memberCount/3))
+  };
+}
+
+function contributeToGuildBank(amount) {
+  var guild = loadGuild();
+  if (!guild || player.cred < amount) return false;
+  player.cred -= amount;
+  guild.bank += amount;
+  guild.xp += Math.floor(amount / 10);
+  guild.level = Math.floor(Math.sqrt(guild.xp / 100)) + 1;
+  guild.log.push('[ BANK ] ' + player.handle + ' deposited ' + formatCred(amount));
+  saveGuild(guild);
+  save();
+  return true;
+}
+
+function callGuildAlly() {
+  var guild = loadGuild();
+  if (!guild) return null;
+  var allMembers = (guild.npcMembers || []).concat(guild.members || []);
+  if (allMembers.length === 0) return null;
+  var ally = allMembers[Math.floor(Math.random() * allMembers.length)];
+  return ally;
+}
 
 // ── UTILITY FUNCTIONS ──
 function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
@@ -1069,6 +1286,7 @@ function toast(msg, dur){
   document.getElementById('toast-container').appendChild(t);
   setTimeout(function(){t.remove();},dur);
 }
+function showToast(msg, dur){ toast(msg, dur); }
 
 function save(){
   try{localStorage.setItem(SAVE_KEY, JSON.stringify(player));}catch(e){}
@@ -1184,6 +1402,12 @@ function xpForLevel(lv){
 
 // ── LEVEL UP ──
 function gainXP(amount){
+  // Guild XP bonus
+  var guildForXP = loadGuild();
+  if (guildForXP && player.guild) {
+    var gBonusXP = getGuildBonuses(guildForXP);
+    amount = Math.floor(amount * (1 + gBonusXP.xp / 100));
+  }
   amount = Math.floor(amount * getXPMult());
   player.xp += amount;
   log('+ ' + amount + ' XP', 'var(--amber)');
@@ -1318,6 +1542,12 @@ function applyLoot(drops) {
 }
 
 function gainCred(amount){
+  // Guild cred bonus
+  var guildForCred = loadGuild();
+  if (guildForCred && player.guild) {
+    var gBonusCred = getGuildBonuses(guildForCred);
+    amount = Math.floor(amount * (1 + gBonusCred.cred / 100));
+  }
   // underground rep discount bonus for earning
   player.cred += amount;
   player.stats.credEarned += amount;
@@ -1446,7 +1676,7 @@ function clog(msg, color){
 
 function playerBasicAttack(){
   if(gameState !== 'combat' || !currentEnemy) return;
-  var atk = getATK() + rand(1,5);
+  var atk = getATK() + getWeaponBonus().atk + rand(1,5);
   var isCrit = Math.random() < getCritChance();
   if(isCrit){
     var critMult = (player.playerClass === 'BLACK_HAT') ? 3 : 2;
@@ -1752,10 +1982,10 @@ function enemyTurn(){
   }
 
   // Calculate damage
-  var eDmg = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+  var eDmg = Math.max(1, currentEnemy.atk - getEffectiveDef() + rand(-3,3));
   // Boss pierce
   if(currentEnemy.special === 'pierce'){
-    eDmg = Math.max(1, currentEnemy.atk - Math.floor(getDEF() * 0.5) + rand(-3,3));
+    eDmg = Math.max(1, currentEnemy.atk - Math.floor(getEffectiveDef() * 0.5) + rand(-3,3));
   }
   // Traced
   if(playerStatusEffects.traced) eDmg = Math.floor(eDmg * 1.1);
@@ -1789,7 +2019,7 @@ function enemyTurn(){
         currentEnemy.specialCooldown = 4;
         break;
       case 'double_atk':
-        var eDmg2 = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+        var eDmg2 = Math.max(1, currentEnemy.atk - getEffectiveDef() + rand(-3,3));
         player.hp -= eDmg2;
         clog('  >> Double attack! ' + eDmg2 + ' more damage!', 'var(--red)');
         currentEnemy.specialCooldown = 3;
@@ -1802,7 +2032,7 @@ function enemyTurn(){
         break;
       case 'multi_atk':
         if(Math.random() < 0.4){
-          var eDmg3 = Math.max(1, currentEnemy.atk - getDEF() + rand(-3,3));
+          var eDmg3 = Math.max(1, currentEnemy.atk - getEffectiveDef() + rand(-3,3));
           player.hp -= eDmg3;
           clog('  >> Second attack! ' + eDmg3 + ' more damage!', 'var(--red)');
         }
@@ -1834,7 +2064,7 @@ function enemyTurn(){
       case 'summon':
         if(Math.random() < 0.3){
           clog('  >> Summons a WATCHDOG! (Bonus attack)', 'var(--amber)');
-          player.hp -= Math.max(1, 8 - getDEF() + rand(-2,2));
+          player.hp -= Math.max(1, 8 - getEffectiveDef() + rand(-2,2));
         }
         currentEnemy.specialCooldown = 3;
         break;
@@ -2208,6 +2438,7 @@ function render(){
     case 'dead': renderDead(); break;
     case 'prestige': renderPrestige(); break;
     case 'codex': renderCodex(); break;
+    case 'guild': renderGuild(); break;
   }
 }
 
@@ -2240,9 +2471,9 @@ function renderStatsPanel(){
   h += '</div>';
 
   h += '<div style="margin-top:8px;font-size:18px;">';
-  h += '\u251C\u2500 ATK: <span class="c-red">' + getATK() + '</span><br>';
-  h += '\u251C\u2500 DEF: <span class="c-cyan">' + getDEF() + '</span><br>';
-  h += '\u251C\u2500 CRIT: <span class="c-magenta">' + Math.floor(getCritChance()*100) + '%</span><br>';
+  h += '\u251C\u2500 ATK: <span class="c-red">' + (getATK() + getWeaponBonus().atk) + '</span><br>';
+  h += '\u251C\u2500 DEF: <span class="c-cyan">' + (getDEF() + getArmorBonus().def) + '</span><br>';
+  h += '\u251C\u2500 CRIT: <span class="c-magenta">' + Math.floor((getCritChance() + getWeaponBonus().crit)*100) + '%</span><br>';
   h += '\u251C\u2500 DODGE: <span class="c-cyan">' + Math.floor(getDodgeChance()*100) + '%</span><br>';
   h += '\u2514\u2500 FLOOR: <span class="c-amber">' + player.floor + '</span>';
   h += '</div>';
@@ -2272,6 +2503,17 @@ function renderStatsPanel(){
   h += '\u251C\u2500 RIG:  <span class="c-cyan">' + esc(player.hardware.rig.name) + '</span><br>';
   h += '\u2514\u2500 ICE:  <span class="c-cyan">' + esc(player.hardware.icebreaker.name) + '</span>';
   h += '</div>';
+
+  // Weapon & Armor
+  if (player.equippedWeapon) {
+    h += '<div style="margin-top:4px;font-size:17px;color:var(--amber);">WPN: ' + esc(player.equippedWeapon) + '</div>';
+  }
+  if (player.equippedArmor) {
+    h += '<div style="font-size:17px;color:var(--cyan);">ARM: ' + esc(player.equippedArmor) + '</div>';
+  }
+  if (player.guild) {
+    h += '<div style="font-size:17px;color:var(--amber);">' + esc(player.guild.tag) + ' ' + esc(player.guild.name) + '</div>';
+  }
 
   // Rep
   h += '<div style="margin-top:8px;font-size:16px;">';
@@ -2480,6 +2722,7 @@ function renderHub(){
   h += '<div class="btn" onclick="enterExploration()" style="width:220px;">[1] EXPLORE NODE</div><br>';
   h += '<div class="btn btn-amber" onclick="gameState=\'shop\';shopPage=\'buy\';render();" style="width:220px;">[2] BLACK MARKET</div><br>';
   h += '<div class="btn btn-cyan" onclick="gameState=\'upgrade\';render();" style="width:220px;">[3] HARDWARE SHOP</div><br>';
+  h += '<div class="btn btn-amber" onclick="gameState=\'guild\';render();" style="width:220px;">[G] GUILD HALL</div><br>';
   h += '<div class="btn" onclick="gameState=\'inventory\';render();" style="width:220px;">[4] INVENTORY</div><br>';
   h += '<div class="btn btn-amber" onclick="gameState=\'codex\';render();" style="width:220px;">[5] CODEX</div><br>';
 
@@ -2809,6 +3052,179 @@ function renderCombat(){
   if(clb) clb.scrollTop = clb.scrollHeight;
 }
 
+// ── GUILD SYSTEM RENDER ──
+function renderGuild() {
+  var guild = loadGuild();
+  var h = '<div style="padding:10px;overflow-y:auto;max-height:calc(100vh - 280px);">';
+  h += '<div class="section-hdr">╔══ GUILD HALL ══╗</div>';
+
+  if (!guild && !player.guild) {
+    h += '<div class="c-dim" style="margin:10px 0;">You are not in a guild. Guilds provide XP bonuses, combat allies, a shared bank, and crew identity.</div>';
+
+    if (guildState.page === 'create') {
+      h += '<div class="c-cyan" style="margin:8px 0;">╔══ CREATE GUILD ══╗</div>';
+      h += '<div style="margin:6px 0;"><div class="c-dim">GUILD NAME:</div>';
+      h += '<input id="g-name" maxlength="24" style="background:rgba(0,20,0,0.5);border:1px solid var(--green);color:var(--green);font-family:VT323,monospace;font-size:20px;padding:4px 8px;width:100%;outline:none;" placeholder="e.g. VOID_COLLECTIVE"></div>';
+      h += '<div style="margin:6px 0;"><div class="c-dim">GUILD TAG (max 4 chars):</div>';
+      h += '<input id="g-tag" maxlength="4" style="background:rgba(0,20,0,0.5);border:1px solid var(--cyan);color:var(--cyan);font-family:VT323,monospace;font-size:20px;padding:4px 8px;width:100px;outline:none;" placeholder="VOID"></div>';
+      h += '<div style="margin:6px 0;"><div class="c-dim">MOTTO:</div>';
+      h += '<input id="g-motto" maxlength="60" style="background:rgba(0,20,0,0.5);border:1px solid var(--amber);color:var(--amber);font-family:VT323,monospace;font-size:18px;padding:4px 8px;width:100%;outline:none;" placeholder="e.g. Run fast. Die slow."></div>';
+      h += '<div style="margin-top:12px;">';
+      h += '<span class="btn btn-cyan" onclick="doCreateGuild()">[INITIALIZE GUILD]</span>';
+      h += '<span class="btn" onclick="guildState.page=\'main\';render();">[BACK]</span>';
+      h += '</div>';
+
+    } else if (guildState.page === 'join') {
+      h += '<div class="c-cyan" style="margin:8px 0;">╔══ JOIN GUILD ══╗</div>';
+      h += '<div class="c-dim" style="margin:6px 0;">Enter a guild code shared by another runner:</div>';
+      h += '<input id="g-code" maxlength="8" style="background:rgba(0,20,0,0.5);border:1px solid var(--green);color:var(--green);font-family:VT323,monospace;font-size:24px;padding:4px 8px;width:180px;outline:none;letter-spacing:4px;" placeholder="XXXXXX">';
+      h += '<div style="margin-top:12px;">';
+      h += '<span class="btn btn-green" onclick="doJoinGuild()">[JACK INTO GUILD]</span>';
+      h += '<span class="btn" onclick="guildState.page=\'main\';render();">[BACK]</span>';
+      h += '</div>';
+
+    } else {
+      h += '<div style="margin-top:16px;">';
+      h += '<div class="btn btn-cyan" onclick="guildState.page=\'create\';render();" style="display:block;margin:8px 0;width:220px;">[FOUND A GUILD]</div>';
+      h += '<div class="btn btn-amber" onclick="guildState.page=\'join\';render();" style="display:block;margin:8px 0;width:220px;">[JOIN BY CODE]</div>';
+      h += '</div>';
+    }
+
+  } else {
+    guild = guild || { name: player.guild.name, tag: player.guild.tag, code: player.guild.code, level:1, bank:0, members:[], npcMembers:[], log:[] };
+    var bonuses = getGuildBonuses(guild);
+    var totalMembers = (guild.members||[]).length + (guild.npcMembers||[]).length;
+
+    h += '<div class="c-amber" style="font-size:22px;text-shadow:0 0 10px var(--amber);">' + esc(guild.tag) + ' ' + esc(guild.name) + '</div>';
+    h += '<div class="c-dim" style="margin:4px 0;">"' + esc(guild.motto||'') + '"</div>';
+    h += '<div style="margin:8px 0;display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+    h += '<div class="panel-border" style="padding:6px;"><div class="c-dim">GUILD LEVEL</div><div class="c-cyan" style="font-size:22px;">' + (guild.level||1) + '</div></div>';
+    h += '<div class="panel-border" style="padding:6px;"><div class="c-dim">MEMBERS</div><div class="c-green" style="font-size:22px;">' + totalMembers + '</div></div>';
+    h += '<div class="panel-border" style="padding:6px;"><div class="c-dim">GUILD BANK</div><div class="c-amber" style="font-size:22px;">' + formatCred(guild.bank||0) + '</div></div>';
+    h += '<div class="panel-border" style="padding:6px;"><div class="c-dim">FOUNDED</div><div class="c-cyan" style="font-size:18px;">' + esc(guild.founded||'?') + '</div></div>';
+    h += '</div>';
+
+    h += '<div class="c-cyan" style="margin:8px 0;">╔══ GUILD BONUSES ══╗</div>';
+    h += '<div style="color:var(--green);">+ ' + bonuses.xp + '% XP &nbsp; + ' + bonuses.cred + '% CRED &nbsp; +'+ bonuses.atk +' ATK &nbsp; +' + bonuses.def + ' DEF</div>';
+
+    h += '<div class="c-amber" style="margin:10px 0;">GUILD CODE: <span style="letter-spacing:4px;color:var(--cyan);font-size:22px;">' + esc(guild.code) + '</span>';
+    h += ' <span class="c-dim" style="font-size:17px;">— Share this with your crew</span></div>';
+
+    h += '<div class="c-cyan" style="margin:8px 0;">╔══ CREW ROSTER ══╗</div>';
+    var allMembers = (guild.npcMembers||[]).concat(guild.members||[]);
+    allMembers.forEach(function(m) {
+      var isNpc = !!m.atkBonus;
+      h += '<div class="panel-border" style="padding:4px 8px;margin:3px 0;display:flex;justify-content:space-between;align-items:center;">';
+      h += '<span class="c-cyan">' + esc(m.handle||'Unknown') + '</span>';
+      h += '<span class="c-dim">' + esc(m.class||'') + '</span>';
+      h += '<span class="c-green">LVL ' + (m.level||'?') + '</span>';
+      if (isNpc) h += '<span class="c-amber">+' + m.atkBonus + ' ATK ALLY</span>';
+      h += '</div>';
+    });
+
+    h += '<div class="c-amber" style="margin:10px 0;">╔══ GUILD BANK ══╗</div>';
+    h += '<div class="c-dim">Contribute CRED to the guild bank to level up your guild.</div>';
+    h += '<div style="margin:6px 0;">';
+    h += '<span class="btn" onclick="doGuildContrib(100)">[ +100¢ ]</span>';
+    h += '<span class="btn" onclick="doGuildContrib(500)">[ +500¢ ]</span>';
+    h += '<span class="btn" onclick="doGuildContrib(1000)">[ +1000¢ ]</span>';
+    h += '<span class="btn" onclick="doGuildContrib(5000)">[ +5000¢ ]</span>';
+    h += '</div>';
+
+    if ((guild.npcMembers||[]).length < NPC_GUILD_MEMBERS.length) {
+      var nextNpc = NPC_GUILD_MEMBERS[(guild.npcMembers||[]).length];
+      h += '<div class="c-magenta" style="margin:10px 0;">╔══ RECRUIT ══╗</div>';
+      h += '<div class="panel-border" style="padding:8px;">';
+      h += '<div class="c-cyan">' + nextNpc.handle + ' — LVL ' + nextNpc.level + ' ' + nextNpc.class + '</div>';
+      h += '<div class="c-dim">' + nextNpc.desc + '</div>';
+      h += '<div class="c-amber">+' + nextNpc.atkBonus + ' ATK when called as ally</div>';
+      var recruitCost = nextNpc.level * 500;
+      h += '<div style="margin-top:6px;"><span class="btn btn-cyan" onclick="doRecruitNpc(\'' + nextNpc.handle + '\',' + recruitCost + ')">[ RECRUIT — ' + formatCred(recruitCost) + ' ]</span></div>';
+      h += '</div>';
+    }
+
+    h += '<div class="c-dim" style="margin:10px 0;">╔══ GUILD LOG ══╗</div>';
+    var logEntries = (guild.log || []).slice(-8).reverse();
+    logEntries.forEach(function(entry) {
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(entry) + '</div>';
+    });
+
+    h += '<div style="margin-top:14px;">';
+    h += '<span class="btn btn-red" onclick="doLeaveGuild()">[ LEAVE GUILD ]</span>';
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:14px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK TO HUB]</span></div>';
+  h += '</div>';
+  document.getElementById('main-panel').innerHTML = h;
+}
+
+function doCreateGuild() {
+  var name = (document.getElementById('g-name')||{}).value || '';
+  var tag = (document.getElementById('g-tag')||{}).value || '';
+  var motto = (document.getElementById('g-motto')||{}).value || '';
+  if (!name.trim()) { showToast('ERROR: Guild name required'); return; }
+  if (!tag.trim()) { showToast('ERROR: Tag required'); return; }
+  var guild = createGuild(name.trim(), tag.trim(), motto.trim());
+  showToast('GUILD FOUNDED: ' + guild.name + ' [' + guild.code + ']');
+  log('You founded ' + guild.name + ' — Code: ' + guild.code, 'var(--amber)');
+  guildState.page = 'main';
+  gameState = 'guild';
+  render();
+}
+
+function doJoinGuild() {
+  var code = ((document.getElementById('g-code')||{}).value || '').trim().toUpperCase();
+  if (!code || code.length < 4) { showToast('ERROR: Invalid guild code'); return; }
+  var guild = joinGuildByCode(code);
+  showToast('JOINED: ' + guild.name);
+  log('You joined ' + guild.name + '. Welcome to the crew.', 'var(--cyan)');
+  guildState.page = 'main';
+  gameState = 'guild';
+  render();
+}
+
+function doGuildContrib(amount) {
+  if (!loadGuild()) { showToast('No guild found'); return; }
+  if (player.cred < amount) { showToast('Not enough CRED'); return; }
+  if (contributeToGuildBank(amount)) {
+    showToast('Deposited ' + formatCred(amount) + ' to guild bank');
+    render();
+  }
+}
+
+function doRecruitNpc(handle, cost) {
+  if (player.cred < cost) { showToast('Not enough CRED — need ' + formatCred(cost)); return; }
+  var guild = loadGuild();
+  if (!guild) return;
+  var npc = NPC_GUILD_MEMBERS.find(function(n){ return n.handle === handle; });
+  if (!npc) return;
+  var alreadyIn = (guild.npcMembers||[]).find(function(n){ return n.handle === handle; });
+  if (alreadyIn) { showToast('Already recruited'); return; }
+  player.cred -= cost;
+  guild.npcMembers = guild.npcMembers || [];
+  guild.npcMembers.push(npc);
+  guild.log.push('[ RECRUIT ] ' + handle + ' joined the crew.');
+  saveGuild(guild);
+  save();
+  showToast(handle + ' recruited to the guild!');
+  log(handle + ' joins your crew. Welcome aboard.', 'var(--magenta)');
+  render();
+}
+
+function doLeaveGuild() {
+  var guild = loadGuild();
+  if (guild) {
+    guild.members = (guild.members||[]).filter(function(m){ return m.handle !== player.handle; });
+    guild.log.push('[ LEFT ] ' + player.handle + ' left the guild.');
+    saveGuild(guild);
+  }
+  player.guild = null;
+  save();
+  showToast('You left the guild.');
+  render();
+}
+
 // ── SHOP RENDER ──
 function renderShop(){
   var h = '<div style="padding:10px;">';
@@ -2820,9 +3236,12 @@ function renderShop(){
 
   // Tab buttons
   h += '<div style="margin:8px 0;">';
-  h += '<span class="btn' + (shopPage==='buy'?' btn-cyan':'') + '" onclick="shopPage=\'buy\';render();">[BUY]</span>';
+  h += '<span class="btn' + (shopPage==='buy'?' btn-cyan':'') + '" onclick="shopPage=\'buy\';render();">[PROGRAMS]</span>';
+  h += '<span class="btn' + (shopPage==='weapons'?' btn-amber':'') + '" onclick="shopPage=\'weapons\';render();">[WEAPONS]</span>';
+  h += '<span class="btn' + (shopPage==='armor'?' btn-cyan':'') + '" onclick="shopPage=\'armor\';render();">[ARMOR]</span>';
+  h += '<span class="btn' + (shopPage==='health'?' btn-green':'') + '" onclick="shopPage=\'health\';render();">[HEALTH]</span>';
+  h += '<span class="btn' + (shopPage==='special'?' btn-magenta':'') + '" onclick="shopPage=\'special\';render();">[SPECIALS]</span>';
   h += '<span class="btn' + (shopPage==='sell'?' btn-amber':'') + '" onclick="shopPage=\'sell\';render();">[SELL]</span>';
-  h += '<span class="btn' + (shopPage==='consumables'?' btn-cyan':'') + '" onclick="shopPage=\'consumables\';render();">[CONSUMABLES]</span>';
   h += '</div>';
 
   if(shopPage === 'buy'){
@@ -2878,11 +3297,204 @@ function renderShop(){
       h += ' <span class="c-dim" style="font-size:16px;">' + esc(cp.desc) + '</span>';
       h += '</div>';
     }
+  } else if (shopPage === 'weapons') {
+    var maxWTier = Math.min(5, 1 + Math.floor(player.level / 8));
+    h += '<div class="c-amber" style="margin:6px 0;">WEAPONS — Equipped: <span class="c-cyan">' + (player.equippedWeapon || 'NONE') + '</span></div>';
+    h += '<div class="shop-grid">';
+    WEAPONS.forEach(function(w) {
+      if (w.tier > maxWTier) return;
+      var owned = (player.weapons||[]).indexOf(w.name) >= 0;
+      var equipped = player.equippedWeapon === w.name;
+      var price = Math.floor(w.price * (1 - getShopDiscount()));
+      var dcText = w.dc ? ' + ' + w.dc + 'DC' : '';
+      var canBuy = player.cred >= price && (!w.dc || player.darkCred >= w.dc);
+      var style = (!owned && !canBuy) ? 'opacity:0.4;' : '';
+      h += '<div class="shop-item" style="' + style + (equipped?'border-color:var(--amber);':'')+'" onclick="shopWeapon(\'' + w.name + '\')">';
+      h += '<div class="c-amber">' + esc(w.name) + ' <span class="tier c-dim">T' + w.tier + '</span>' + (equipped?' <span class="c-green">[EQ]</span>':'') + '</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(w.desc) + '</div>';
+      h += '<div style="font-size:17px;">+' + w.atkBonus + ' ATK &nbsp; +' + Math.floor(w.critBonus*100) + '% CRIT</div>';
+      if (owned) h += '<div class="c-green">[OWNED — click to equip]</div>';
+      else h += '<div class="c-amber">' + formatCred(price) + dcText + '</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+
+  } else if (shopPage === 'armor') {
+    var maxATier = Math.min(5, 1 + Math.floor(player.level / 8));
+    h += '<div class="c-cyan" style="margin:6px 0;">ARMOR — Equipped: <span class="c-green">' + (player.equippedArmor || 'NONE') + '</span></div>';
+    h += '<div class="shop-grid">';
+    ARMOR.forEach(function(a) {
+      if (a.tier > maxATier) return;
+      var owned = (player.armor||[]).indexOf(a.name) >= 0;
+      var equipped = player.equippedArmor === a.name;
+      var price = Math.floor(a.price * (1 - getShopDiscount()));
+      var dcText = a.dc ? ' + ' + a.dc + 'DC' : '';
+      var canBuy = player.cred >= price && (!a.dc || player.darkCred >= a.dc);
+      var style = (!owned && !canBuy) ? 'opacity:0.4;' : '';
+      h += '<div class="shop-item" style="' + style + (equipped?'border-color:var(--cyan);':'')+'" onclick="shopArmor(\'' + a.name + '\')">';
+      h += '<div class="c-cyan">' + esc(a.name) + ' <span class="tier c-dim">T' + a.tier + '</span>' + (equipped?' <span class="c-green">[EQ]</span>':'') + '</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(a.desc) + '</div>';
+      h += '<div style="font-size:17px;">+' + a.defBonus + ' DEF &nbsp; +' + a.hpBonus + ' HP</div>';
+      if (owned) h += '<div class="c-green">[OWNED — click to equip]</div>';
+      else h += '<div class="c-amber">' + formatCred(price) + dcText + '</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+
+  } else if (shopPage === 'health') {
+    h += '<div class="c-green" style="margin:6px 0;">HEALTH DISCS & STIMS — Your HP: <span class="c-green">' + player.hp + '/' + getEffectiveHpMax() + '</span> &nbsp; CPU: <span class="c-cyan">' + player.cpu + '/' + player.cpuMax + '</span></div>';
+    h += '<div class="shop-grid">';
+    HEALTH_DISCS.forEach(function(item) {
+      var dcText = item.dc ? ' + ' + item.dc + 'DC' : '';
+      var canBuy = player.cred >= item.price && (!item.dc || player.darkCred >= item.dc);
+      h += '<div class="shop-item" style="' + (!canBuy?'opacity:0.4;':'') + '" onclick="buyHealthDisc(\'' + item.name + '\')">';
+      h += '<div class="c-green">' + esc(item.name) + '</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(item.desc) + '</div>';
+      h += '<div class="c-amber">' + formatCred(item.price) + dcText + '</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+
+  } else if (shopPage === 'special') {
+    h += '<div class="c-magenta" style="margin:6px 0;">SPECIAL ITEMS — Passive and consumable rare items</div>';
+    h += '<div class="shop-grid">';
+    SPECIAL_ITEMS.forEach(function(item) {
+      var owned = (player.specialItems||[]).indexOf(item.name) >= 0;
+      var dcText = item.dc ? ' + ' + item.dc + 'DC' : '';
+      var canBuy = player.cred >= item.price && (!item.dc || player.darkCred >= item.dc);
+      var style = (!owned && !canBuy) ? 'opacity:0.4;' : '';
+      h += '<div class="shop-item" style="' + style + '" onclick="buySpecialItem(\'' + item.name + '\')">';
+      h += '<div class="c-magenta">' + esc(item.name) + (item.consumable?' <span class="c-dim">[USE]</span>':' <span class="c-cyan">[PASSIVE]</span>') + '</div>';
+      h += '<div class="c-dim" style="font-size:17px;">' + esc(item.desc) + '</div>';
+      if (owned && !item.consumable) h += '<div class="c-green">[OWNED]</div>';
+      else h += '<div class="c-amber">' + (item.price > 0 ? formatCred(item.price) : '') + dcText + '</div>';
+      h += '</div>';
+    });
+    h += '</div>';
   }
 
   h += '<div style="margin-top:12px;"><span class="btn" onclick="gameState=\'hub\';render();">[BACK TO HUB]</span></div>';
   h += '</div>';
   $main.innerHTML = h;
+}
+
+// ── SHOP PURCHASE HANDLERS ──
+function shopWeapon(name) {
+  var w = WEAPONS.find(function(x){ return x.name === name; });
+  if (!w) return;
+  var owned = (player.weapons||[]).indexOf(name) >= 0;
+  if (owned) {
+    player.equippedWeapon = player.equippedWeapon === name ? null : name;
+    save(); render();
+    showToast(player.equippedWeapon ? 'Equipped: ' + name : 'Unequipped ' + name);
+    return;
+  }
+  var price = Math.floor(w.price * (1 - getShopDiscount()));
+  if (player.cred < price) { showToast('Not enough CRED — need ' + formatCred(price)); return; }
+  if (w.dc && player.darkCred < w.dc) { showToast('Not enough DC — need ' + w.dc + ' DC'); return; }
+  player.cred -= price;
+  if (w.dc) player.darkCred -= w.dc;
+  player.weapons = player.weapons || [];
+  player.weapons.push(name);
+  player.equippedWeapon = name;
+  save(); render();
+  showToast('ACQUIRED & EQUIPPED: ' + name);
+  log('+ WEAPON: ' + name + ' equipped. +' + w.atkBonus + ' ATK', 'var(--amber)');
+}
+
+function shopArmor(name) {
+  var a = ARMOR.find(function(x){ return x.name === name; });
+  if (!a) return;
+  var owned = (player.armor||[]).indexOf(name) >= 0;
+  if (owned) {
+    player.equippedArmor = player.equippedArmor === name ? null : name;
+    save(); render();
+    showToast(player.equippedArmor ? 'Equipped: ' + name : 'Unequipped ' + name);
+    return;
+  }
+  var price = Math.floor(a.price * (1 - getShopDiscount()));
+  if (player.cred < price) { showToast('Not enough CRED'); return; }
+  if (a.dc && player.darkCred < a.dc) { showToast('Not enough DC'); return; }
+  player.cred -= price;
+  if (a.dc) player.darkCred -= a.dc;
+  player.armor = player.armor || [];
+  player.armor.push(name);
+  player.equippedArmor = name;
+  save(); render();
+  showToast('ACQUIRED & EQUIPPED: ' + name);
+  log('+ ARMOR: ' + name + ' equipped. +' + a.defBonus + ' DEF +' + a.hpBonus + ' HP', 'var(--cyan)');
+}
+
+function buyHealthDisc(name) {
+  var item = HEALTH_DISCS.find(function(x){ return x.name === name; });
+  if (!item) return;
+  if (player.cred < item.price) { showToast('Not enough CRED'); return; }
+  if (item.dc && player.darkCred < item.dc) { showToast('Not enough DC'); return; }
+  player.cred -= item.price;
+  if (item.dc) player.darkCred -= item.dc;
+  var maxHp = getEffectiveHpMax();
+  if (item.heal) {
+    var healed = Math.min(item.heal, maxHp - player.hp);
+    player.hp = Math.min(maxHp, player.hp + item.heal);
+    showToast('HEALED: +' + healed + ' HP');
+    log('+ ' + name + ': restored ' + healed + ' HP', 'var(--green)');
+  }
+  if (item.cpu) {
+    var cpuRest = Math.min(item.cpu, player.cpuMax - player.cpu);
+    player.cpu = Math.min(player.cpuMax, player.cpu + item.cpu);
+    showToast('CPU RESTORED: +' + cpuRest);
+    log('+ ' + name + ': restored ' + cpuRest + ' CPU', 'var(--cyan)');
+  }
+  save(); render();
+}
+
+function buySpecialItem(name) {
+  var item = SPECIAL_ITEMS.find(function(x){ return x.name === name; });
+  if (!item) return;
+  var owned = (player.specialItems||[]).indexOf(name) >= 0;
+  if (owned && !item.consumable) { showToast('Already owned (passive active)'); return; }
+  if (player.cred < item.price) { showToast('Not enough CRED'); return; }
+  if (item.dc && player.darkCred < item.dc) { showToast('Not enough DC — need ' + item.dc + ' DC'); return; }
+  player.cred -= item.price;
+  if (item.dc) player.darkCred -= item.dc;
+  player.specialItems = player.specialItems || [];
+  if (!item.consumable) {
+    player.specialItems.push(name);
+    showToast('SPECIAL ITEM: ' + name + ' active (passive)');
+    log('+ SPECIAL: ' + name + ' — ' + item.desc, 'var(--magenta)');
+  } else {
+    applySpecialItem(item);
+  }
+  save(); render();
+}
+
+function applySpecialItem(item) {
+  if (item.name === 'STIM_CHIP') {
+    showToast('STIM CHIP: +10 ATK +5 DEF for 5 turns');
+    log('STIM CHIP activated. Combat performance enhanced.', 'var(--amber)');
+  } else if (item.name === 'CORPUS_DOSSIER') {
+    gainXP(200);
+    showToast('CORPUS DOSSIER: +200 XP');
+    log('Corp intel processed. +200 XP gained.', 'var(--cyan)');
+  } else if (item.name === 'DEAD_DROP') {
+    var allLoot = WEAPONS.concat(ARMOR).filter(function(x){ return x.tier >= 2 && x.tier <= 3; });
+    var drop = allLoot[Math.floor(Math.random() * allLoot.length)];
+    if (drop) {
+      var isWeapon = WEAPONS.indexOf(drop) >= 0;
+      if (isWeapon) { player.weapons = player.weapons||[]; player.weapons.push(drop.name); }
+      else { player.armor = player.armor||[]; player.armor.push(drop.name); }
+      showToast('DEAD DROP: Found ' + drop.name + '!');
+      log('Dead drop contained: ' + drop.name + ' — secured.', 'var(--magenta)');
+    }
+  } else if (item.name === 'BLACKMAIL_FILE') {
+    showToast('BLACKMAIL FILE ready — use in combat with [BLACKMAIL] command');
+    player.specialItems = player.specialItems || [];
+    player.specialItems.push('BLACKMAIL_READY');
+  } else if (item.name === 'GHOST_SERUM') {
+    player.hp = Math.min(getEffectiveHpMax(), player.hp + 200);
+    showToast('GHOST SERUM: +200 HP, all debuffs cleared');
+    log('Ghost Serum administered. Full neural recovery.', 'var(--magenta)');
+  }
 }
 
 // ── INVENTORY RENDER ──
@@ -3511,6 +4123,7 @@ render = function(){
     case 'training': renderTraining(); break;
     case 'nodemap': renderMinimap(); break;
     case 'chardetail': renderCharDetail(); break;
+    case 'guild': renderGuild(); break;
     default: renderHub(); break;
   }
 };
@@ -3525,10 +4138,12 @@ processCommand = function(cmd){
     if(cmd === '0' || cmd === 'train' || cmd === 'training'){gameState='training';render();return;}
     if(cmd === 'm' || cmd === 'map'){gameState='nodemap';render();return;}
     if(cmd === 's' || cmd === 'dossier'){gameState='chardetail';render();return;}
+    if(cmd === 'g' || cmd === 'guild'){gameState='guild';render();return;}
   }
   if(gameState === 'achievements' || gameState === 'bestiary' || gameState === 'gamble' ||
-     gameState === 'training' || gameState === 'nodemap' || gameState === 'chardetail'){
-    if(cmd === 'back' || cmd === 'hub'){gameState='hub';render();return;}
+     gameState === 'training' || gameState === 'nodemap' || gameState === 'chardetail' ||
+     gameState === 'guild'){
+    if(cmd === 'back' || cmd === 'hub'){gameState='hub';guildState.page='main';render();return;}
   }
   _oldProcessCommand(cmd);
 };
@@ -4108,6 +4723,7 @@ render = function(){
     case 'hackgame': renderHackGame(); break;
     case 'bounties': renderBounties(); break;
     case 'crafting': renderCrafting(); break;
+    case 'guild': renderGuild(); break;
     default: renderHub(); break;
   }
 };
@@ -4119,8 +4735,9 @@ processCommand = function(cmd){
     if(cmd === 'h' || cmd === 'hack'){startHackGame();return;}
     if(cmd === 'b' || cmd === 'bounty' || cmd === 'bounties'){gameState='bounties';render();return;}
     if(cmd === 'c' || cmd === 'craft' || cmd === 'forge'){gameState='crafting';render();return;}
+    if(cmd === 'g' || cmd === 'guild'){gameState='guild';render();return;}
   }
-  if(gameState === 'bounties' || gameState === 'crafting' || gameState === 'hackgame'){
+  if(gameState === 'bounties' || gameState === 'crafting' || gameState === 'hackgame' || gameState === 'guild'){
     if(cmd === 'back' || cmd === 'hub'){hackGame.active=false;gameState='hub';render();return;}
   }
   _cmd2(cmd);
@@ -4146,6 +4763,7 @@ processCommand = function(cmd){
     log('  hack / h       - ICE Cracker mini-game', 'var(--magenta)');
     log('  bounty / b     - Bounty board quests', 'var(--amber)');
     log('  craft / c      - Program forge', 'var(--cyan)');
+    log('  guild / g      - Guild Hall', 'var(--amber)');
     log('  prestige       - Jack out (level 20+)', 'var(--magenta)');
     log('  save           - Manual save', 'var(--green)');
     log('  export         - Export save code', 'var(--amber)');
